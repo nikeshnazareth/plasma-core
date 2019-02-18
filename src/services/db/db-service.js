@@ -1,5 +1,5 @@
-const BaseService = require('base-service.js')
-const EphemDBProvider = require('./db/ephem-provider.js')
+const BaseService = require('../base-service.js')
+const EphemDBProvider = require('./backends/ephem-provider.js')
 
 class DBService extends BaseService {
   async openDB (name) {
