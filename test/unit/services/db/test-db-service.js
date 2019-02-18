@@ -1,16 +1,40 @@
 const chai = require('chai')
-
-chai.should()
+const should = chai.should()
 
 const DBService = require('../../../../src/services/db/db-service.js')
 const EphemDBProvider = require('../../../../src/services/db/backends/ephem-provider')
 
-describe('DBService', async () => {
-  const db = new EphemDBProvider()
+
+describe('DBService Core', async() => {
   const dbs = new DBService()
 
-  it('should add a new item to the database', async () => {
+  it('should open a DB', async () => {    
+    const expected = 'dbname'
+    await dbs.openDB(expected)
+    should.exist(dbs[expected])
+  })
 
+  it('should open a DB', async () => {    
+    const db1Name = 'db1'
+    const db2Name = 'db2'
+    await dbs.openDB(db1Name)
+    should.exist(dbs[db1Name])
+
+    await dbs.openDB(db2Name)
+    should.exist(dbs[db2Name])
+  })
+
+
+
+})
+
+describe('DBService Databases', async () => {
+  const dbs = new DBService()
+  const dbname = 'dbname'
+  await dbs.openDB(dbname)
+  const db = dbs[dbname]
+
+  it('should add a new item to the database', async () => {
     
     const expected = 'value'
     await db.set('key', expected)
