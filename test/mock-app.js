@@ -1,9 +1,10 @@
 const ganache = require('ganache-cli')
 const PlasmaCore = require('../src/plasma')
+const MockContractProvider = require('./mock/mock-contract')
+const MockWalletProvider = require('./mock/mock-wallet')
+const MockOperatorProvider = require('./mock/mock-operator')
 const services = require('../src/services/index')
 const EphemDBProvider = services.DBProviders.EphemDBProvider
-const MockContractProvider = services.ContractProviders.MockContractProvider
-const MockWalletProvider = services.WalletProviders.MockWalletProvider
 
 const stopServer = async (server) => {
   return new Promise((resolve) => {
@@ -21,6 +22,7 @@ const options = {
   dbProvider: EphemDBProvider,
   contractProvider: MockContractProvider,
   walletProvider: MockWalletProvider,
+  operatorProvider: MockOperatorProvider,
   logger: {
     log: () => { return true }
   },

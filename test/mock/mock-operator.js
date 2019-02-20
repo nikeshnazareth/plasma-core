@@ -1,20 +1,22 @@
 const BigNum = require('bn.js')
-const BaseOperatorProvider = require('./base-provider')
+const BaseService = require('../../src/services/base-service')
 const utils = require('plasma-utils')
 const models = utils.serialization.models
 const SignedTransaction = models.SignedTransaction
 const UnsignedTransaction = models.UnsignedTransaction
 
-// TODO: Should we even bother with a mock operator?
-
 /**
  * Mocks an operator instead of sending real external requests.
  */
-class MockOperatorProvider extends BaseOperatorProvider {
+class MockOperatorProvider extends BaseService {
   constructor (options) {
     super(options)
 
     this.transactions = {}
+  }
+
+  get name () {
+    return 'operator'
   }
 
   async getTransaction (encoded) {

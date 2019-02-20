@@ -1,9 +1,13 @@
-const BaseWalletProvider = require('./base-provider')
+const BaseService = require('../../src/services/base-service')
 
 /**
  * Provider that mocks a wallet and shouldn't be used in production.
  */
-class MockWalletProvider extends BaseWalletProvider {
+class MockWalletProvider extends BaseService {
+  get name () {
+    return 'wallet'
+  }
+
   get dependencies () {
     return ['web3']
   }

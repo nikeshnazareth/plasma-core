@@ -1,10 +1,10 @@
 const BigNum = require('bn.js')
-const BaseContractProvider = require('./base-provider')
+const BaseService = require('../../src/services/base-service')
 
 /**
  * Mock contract provider for use in tests.
  */
-class MockContractProvider extends BaseContractProvider {
+class MockContractProvider extends BaseService {
   constructor (options) {
     super(options)
 
@@ -12,6 +12,10 @@ class MockContractProvider extends BaseContractProvider {
     this.nextBlock = 1
     this.blocks = {}
     this.deposits = []
+  }
+
+  get name () {
+    return 'contract'
   }
 
   async _onStop () {

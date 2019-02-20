@@ -24,11 +24,14 @@ describe('DBService', () => {
     })
   })
 
-  describe('Database', async () => {
-    const dbs = new DBService()
-    const dbname = 'dbname'
-    await dbs.open(dbname)
-    const db = dbs[dbname]
+  describe('Database', () => {
+    let db
+    before(async () => {
+      const dbs = new DBService()
+      const dbname = 'dbname'
+      await dbs.open(dbname)
+      db = dbs[dbname]
+    })
 
     it('should add a new item to the database', async () => {
       const expected = 'value'
@@ -64,18 +67,20 @@ describe('DBService', () => {
     })
   })
 
-  describe('Multiple Databases', async () => {
-    // Create two different databases.
-    const dbs = new DBService()
+  describe('Multiple Databases', () => {
+    let db1, db2
+    before(async () => {
+      const dbs = new DBService()
 
-    const db1Name = 'db1'
-    const db2Name = 'db2'
+      const db1Name = 'db1'
+      const db2Name = 'db2'
 
-    await dbs.open(db1Name)
-    await dbs.open(db2Name)
+      await dbs.open(db1Name)
+      await dbs.open(db2Name)
 
-    const db1 = dbs[db1Name]
-    const db2 = dbs[db2Name]
+      db1 = dbs[db1Name]
+      db2 = dbs[db2Name]
+    })
 
     it('should add two same keys with different items to two different databases', async () => {
       // Set 1st DB's value, check if consistent.

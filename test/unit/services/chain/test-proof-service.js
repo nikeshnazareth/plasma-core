@@ -9,7 +9,7 @@ const UnsignedTransaction = utils.serialization.models.UnsignedTransaction
 chai.should()
 
 const ProofService = require('../../../../src/services/chain/proof-service')
-const MockContractProvider = require('../../../../src/services/contract/mock-provider')
+const MockContractProvider = require('../../../mock/mock-contract')
 
 const app = require('../../../mock-app')
 const constants = utils.constants
