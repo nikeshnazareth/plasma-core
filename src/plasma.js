@@ -1,4 +1,5 @@
 const debug = require('debug')
+const toposort = require('toposort')
 const EventEmitter = require('events').EventEmitter
 const services = require('./services/index')
 
@@ -73,26 +74,45 @@ class Plasma extends EventEmitter {
    */
   _registerServices () {
     const available = [
+      // Service providers.
       this.options.web3Provider,
-      services.DBService,
-      services.dbInterfaces.WalletDB,
+      this.options.operatorProvider,
       this.options.walletProvider,
       this.options.contractProvider,
+      // Database Interfaces.
+      services.dbInterfaces.WalletDB,
       services.dbInterfaces.ChainDB,
       services.dbInterfaces.SyncDB,
-      this.options.operatorProvider,
+      // Services.
+      services.DBService,
       services.ETHService,
       services.ProofService,
       services.ChainService,
       services.JSONRPCService,
+      services.SyncService,
       services.EventWatcher,
-      services.EventHandler,
-      services.SyncService
+      services.EventHandler
     ]
 
     for (let service of available) {
       this.registerService(service, this.options)
     }
+  }
+
+  /**
+   * Returns the names of services ordered by their dependencies.
+   * Automatically resolves dependencies.
+   * @return {Array<string>} List of service names ordered by dependencies.
+   */
+  _getOrderedServices () {
+    const dependencyGraph = Object.keys(this.services).reduce((graph, key) => {
+      const service = this.services[key]
+      for (const dependency of service.dependencies) {
+        graph.push([service.name, dependency])
+      }
+      return graph
+    }, [])
+    return toposort(dependencyGraph).reverse()
   }
 
   /**
@@ -141,7 +161,8 @@ class Plasma extends EventEmitter {
    * Starts all available services.
    */
   async start () {
-    for (let service in this.services) {
+    const services = this._getOrderedServices()
+    for (let service of services) {
       await this.startService(service)
     }
   }
@@ -150,7 +171,9 @@ class Plasma extends EventEmitter {
    * Stops all available services.
    */
   async stop () {
-    for (let service in this.services) {
+    // Stop services backwards to avoid dependencies being killed off.
+    const services = this._getOrderedServices().reverse()
+    for (let service of services) {
       await this.stopService(service)
     }
   }
