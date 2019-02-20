@@ -3,12 +3,12 @@ const utils = require('plasma-utils')
 const AsyncLock = require('async-lock')
 
 const utilModels = utils.serialization.models
-const models = require('./models')
+const models = require('../models')
 const Exit = models.Exit
 const Deposit = models.Deposit
 const SignedTransaction = utilModels.SignedTransaction
 
-const BaseService = require('../base-service')
+const BaseService = require('../../base-service')
 
 /**
  * Handles chain-related DB calls.

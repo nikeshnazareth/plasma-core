@@ -2,10 +2,8 @@ const BaseService = require('./base-service')
 const GuardService = require('./guard-service')
 const SyncService = require('./sync-service')
 const ChainService = require('./chain/chain-service')
-const ChainDB = require('./db/chain-db')
-const SyncDB = require('./db/sync-db')
-const WalletDB = require('./db/wallet-db')
 const DBService = require('./db/db-service')
+const dbInterfaces = require('./db/interfaces/index')
 const DBProviders = require('./db/backends/index')
 const ContractProviders = require('./contract/index')
 const ETHService = require('./eth-service')
@@ -30,10 +28,8 @@ module.exports = {
   GuardService,
   SyncService,
   ChainService,
-  ChainDB,
-  SyncDB,
-  WalletDB,
   DBService,
+  dbInterfaces,
   DBProviders,
   ContractProviders,
   ETHService,

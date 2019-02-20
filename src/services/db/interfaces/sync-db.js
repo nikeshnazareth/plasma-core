@@ -1,4 +1,4 @@
-const BaseService = require('../base-service')
+const BaseService = require('../../base-service')
 
 /**
  * Handles sync-related DB calls.
