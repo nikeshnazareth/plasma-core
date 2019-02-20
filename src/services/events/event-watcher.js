@@ -1,5 +1,5 @@
 const utils = require('plasma-utils')
-const BaseService = require('../../base-service')
+const BaseService = require('../base-service')
 
 const defaultOptions = {
   finalityDepth: 12,

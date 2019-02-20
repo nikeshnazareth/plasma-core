@@ -1,13 +1,15 @@
 const axios = require('axios')
 const uuidv4 = require('uuid/v4')
-const utils = require('plasma-utils')
 const BigNum = require('bn.js')
+
+/* Models */
+const utils = require('plasma-utils')
 const models = utils.serialization.models
 const UnsignedTransaction = models.UnsignedTransaction
 const SignedTransaction = models.SignedTransaction
 const TransferProof = models.TransferProof
 
-const BaseOperatorProvider = require('./base-provider')
+const BaseService = require('./base-service')
 
 const defaultOptions = {
   operatorPingInterval: 10000
@@ -16,10 +18,14 @@ const defaultOptions = {
 /**
  * Service that wraps the interface to the operator.
  */
-class HttpOperatorProvider extends BaseOperatorProvider {
+class OperatorProvider extends BaseService {
   constructor (options) {
     super(options, defaultOptions)
     this.online = false
+  }
+
+  get name () {
+    return 'operator'
   }
 
   get dependencies () {
@@ -238,4 +244,4 @@ class HttpOperatorProvider extends BaseOperatorProvider {
   }
 }
 
-module.exports = HttpOperatorProvider
+module.exports = OperatorProvider

@@ -10,7 +10,7 @@ chai.use(chaiAsPromised)
 chai.use(sinonChai)
 
 const services = require('../../../../src/services')
-const ContractProvider = services.ContractProviders.ContractProvider
+const ContractProvider = services.ContractProvider
 const app = require('../../../mock-app')
 
 const ETH = 0

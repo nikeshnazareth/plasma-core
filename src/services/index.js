@@ -1,44 +1,57 @@
-const BaseService = require('./base-service')
+/* Services */
 const GuardService = require('./guard-service')
 const SyncService = require('./sync-service')
 const ChainService = require('./chain/chain-service')
 const DBService = require('./db/db-service')
-const dbInterfaces = require('./db/interfaces/index')
-const DBProviders = require('./db/backends/index')
-const ContractProviders = require('./contract/index')
 const ETHService = require('./eth-service')
 const JSONRPCService = require('./jsonrpc/jsonrpc-service')
-const OperatorProviders = require('./operator/index')
 const ProofService = require('./chain/proof-service')
+const EventHandler = require('./events/event-handler')
+const EventWatcher = require('./events/event-watcher')
+
+/* Providers */
+const DBProviders = require('./db/backends/index')
+const ContractProvider = require('./contract-provider')
+const OperatorProvider = require('./operator-provider')
 const WalletProviders = require('./wallet/index')
 const Web3Provider = require('./web3-provider')
-const EventHandler = require('./contract/events/event-handler')
-const EventWatcher = require('./contract/events/event-watcher')
 
+/* Database Interfaces */
+const dbInterfaces = require('./db/interfaces/index')
+
+/* Base Classes */
+const BaseService = require('./base-service')
 const BaseDBProvider = require('./db/backends/base-provider')
 const BaseWalletProvider = require('./wallet/base-provider')
 
 const base = {
+  BaseService,
   BaseDBProvider,
   BaseWalletProvider
 }
 
 module.exports = {
-  BaseService,
+  /* Services */
   GuardService,
   SyncService,
   ChainService,
   DBService,
-  dbInterfaces,
-  DBProviders,
-  ContractProviders,
   ETHService,
   JSONRPCService,
-  OperatorProviders,
   ProofService,
-  WalletProviders,
-  Web3Provider,
   EventHandler,
   EventWatcher,
+
+  /* Providers */
+  DBProviders,
+  ContractProvider,
+  OperatorProvider,
+  WalletProviders,
+  Web3Provider,
+
+  /* Database Interfaces */
+  dbInterfaces,
+
+  /* Base Classes */
   base
 }

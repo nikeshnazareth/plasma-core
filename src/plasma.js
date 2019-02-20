@@ -3,11 +3,15 @@ const toposort = require('toposort')
 const EventEmitter = require('events').EventEmitter
 const services = require('./services/index')
 
+/**
+ * Providers are plug-in classes that interface with external services.
+ * As a result, we allow clients to modify providers if necessary.
+ */
 const defaultOptions = {
   dbProvider: services.DBProviders.DefaultDBProvider,
-  operatorProvider: services.OperatorProviders.DefaultOperatorProvider,
+  operatorProvider: services.OperatorProvider,
   walletProvider: services.WalletProviders.DefaultWalletProvider,
-  contractProvider: services.ContractProviders.DefaultContractProvider,
+  contractProvider: services.ContractProvider,
   web3Provider: services.Web3Provider
 }
 
@@ -74,16 +78,18 @@ class Plasma extends EventEmitter {
    */
   _registerServices () {
     const available = [
-      // Service providers.
+      /* Providers */
       this.options.web3Provider,
       this.options.operatorProvider,
       this.options.walletProvider,
       this.options.contractProvider,
-      // Database Interfaces.
+
+      /* Database Interfaces */
       services.dbInterfaces.WalletDB,
       services.dbInterfaces.ChainDB,
       services.dbInterfaces.SyncDB,
-      // Services.
+
+      /* Services */
       services.DBService,
       services.ETHService,
       services.ProofService,

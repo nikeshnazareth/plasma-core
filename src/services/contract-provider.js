@@ -1,5 +1,4 @@
 const BigNum = require('bn.js')
-const BaseContractProvider = require('./base-provider')
 const utils = require('plasma-utils')
 
 /* Compiled Contracts */
@@ -13,6 +12,8 @@ const eventModels = require('./events/event-models')
 const DepositEvent = eventModels.DepositEvent
 const ChainCreatedEvent = eventModels.ChainCreatedEvent
 
+const BaseService = require('./base-service')
+
 const defaultOptions = {
   registryAddress: '0x18d8BD44a01fb8D5f295a2B3Ab15789F26385df7'
 }
@@ -20,9 +21,13 @@ const defaultOptions = {
 /**
  * Wraps contract calls for clean access.
  */
-class ContractProvider extends BaseContractProvider {
+class ContractProvider extends BaseService {
   constructor (options) {
     super(options, defaultOptions)
+  }
+
+  get name () {
+    return 'contract'
   }
 
   get dependencies () {

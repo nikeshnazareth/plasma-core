@@ -3,7 +3,7 @@ const BigNum = require('bn.js')
 
 chai.should()
 
-const models = require('../../../../../src/services/contract/events/event-models')
+const models = require('../../../../../src/services/events/event-models')
 
 describe('Event Models', async () => {
   describe('DepositEvent', () => {
