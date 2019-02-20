@@ -18,6 +18,22 @@ class MockContractProvider extends BaseContractProvider {
     this.removeAllListeners()
   }
 
+  get address () {
+    return '0x0000000000000000000000000000000000000000'
+  }
+
+  get hasAddress () {
+    return true
+  }
+
+  get contract () {
+    return {
+      getPastEvents: async () => {
+        return []
+      }
+    }
+  }
+
   async deposit (token, amount, owner) {
     token = new BigNum(token, 'hex')
     amount = new BigNum(amount, 'hex')

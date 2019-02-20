@@ -57,7 +57,7 @@ class EventHandler extends BaseService {
       return new models.DepositEvent(event)
     })
     deposits.forEach((deposit) => {
-      this.logger(
+      this.log(
         `Detected new deposit of ${deposit.amount} [${deposit.token}] for ${
           deposit.owner
         }`
@@ -75,7 +75,7 @@ class EventHandler extends BaseService {
       return new models.BlockSubmittedEvent(event)
     })
     blocks.forEach((block) => {
-      this.logger(`Detected block #${block.number}: ${block.hash}`)
+      this.log(`Detected block #${block.number}: ${block.hash}`)
     })
     this._emitContractEvent('BlockSubmitted', blocks)
   }
@@ -89,7 +89,7 @@ class EventHandler extends BaseService {
       return new models.ExitStartedEvent(event)
     })
     exits.forEach((exit) => {
-      this.logger(`Detected new started exit: ${exit.id}`)
+      this.log(`Detected new started exit: ${exit.id}`)
     })
     this._emitContractEvent('ExitStarted', exits)
   }
@@ -103,7 +103,7 @@ class EventHandler extends BaseService {
       return new models.ExitFinalizedEvent(event)
     })
     exits.forEach((exit) => {
-      this.logger(`Detected new finalized exit: ${exit.id}`)
+      this.log(`Detected new finalized exit: ${exit.id}`)
     })
     this._emitContractEvent('ExitFinalized', exits)
   }

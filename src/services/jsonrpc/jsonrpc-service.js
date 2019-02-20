@@ -103,7 +103,7 @@ class JSONRPCService extends BaseService {
     try {
       result = await this.handle(request.method, request.params)
     } catch (err) {
-      this.logger(`ERROR: ${err}`)
+      this.log(`ERROR: ${err}`)
       return this._buildError('INTERNAL_ERROR', request.id, err)
     }
 

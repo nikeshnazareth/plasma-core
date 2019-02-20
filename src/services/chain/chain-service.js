@@ -74,7 +74,7 @@ class ChainService extends BaseService {
     await this.services.chaindb.addExitableEnds(deposits)
 
     for (const deposit of deposits) {
-      this.logger(
+      this.log(
         `Added deposit to database: ${deposit.owner}, ${deposit.amount}, [${
           deposit.token
         }]`
@@ -165,7 +165,7 @@ class ChainService extends BaseService {
         exitTxHashes.push(exitTx.transactionHash)
         exited.push(transfer)
       } catch (err) {
-        this.logger(`ERROR: ${err}`)
+        this.log(`ERROR: ${err}`)
       }
     }
 
@@ -198,7 +198,7 @@ class ChainService extends BaseService {
         finalizedTxHashes.push(finalizeTx.transactionHash)
         finalized.push(exit)
       } catch (err) {
-        this.logger(`ERROR: ${err}`)
+        this.log(`ERROR: ${err}`)
       }
     }
 
@@ -214,33 +214,33 @@ class ChainService extends BaseService {
   async addTransaction (transaction, deposits, proof) {
     const tx = new SignedTransaction(transaction)
 
-    this.logger(`Verifying transaction proof for: ${tx.hash}`)
+    this.log(`Verifying transaction proof for: ${tx.hash}`)
     if (!(await this.services.proof.checkProof(tx, deposits, proof))) {
-      this.logger(`ERROR: Rejecting transaction proof for: ${tx.hash}`)
+      this.log(`ERROR: Rejecting transaction proof for: ${tx.hash}`)
       throw new Error('Invalid transaction proof')
     }
-    this.logger(`Verified transaction proof for: ${tx.hash}`)
+    this.log(`Verified transaction proof for: ${tx.hash}`)
 
     // Calculate the new state.
-    this.logger(`Computing new verified state for: ${tx.hash}`)
+    this.log(`Computing new verified state for: ${tx.hash}`)
     const tempManager = new SnapshotManager()
     this.services.proof.applyProof(tempManager, deposits, proof)
-    this.logger(`Computed new verified state for: ${tx.hash}`)
+    this.log(`Computed new verified state for: ${tx.hash}`)
 
     // Merge and save the new head state.
-    this.logger(`Saving head state for: ${tx.hash}`)
+    this.log(`Saving head state for: ${tx.hash}`)
     await this.lock.acquire('state', async () => {
       const stateManager = await this.loadState()
       stateManager.merge(tempManager)
       this.saveState(stateManager)
     })
-    this.logger(`Saved head state for: ${tx.hash}`)
+    this.log(`Saved head state for: ${tx.hash}`)
 
     // Store the transaction and proof information.
-    this.logger(`Adding transaction to database: ${tx.hash}`)
+    this.log(`Adding transaction to database: ${tx.hash}`)
     await this.services.chaindb.setTransaction(tx)
     await this.services.chaindb.setTransactionProof(tx.hash, proof)
-    this.logger(`Added transaction to database: ${tx.hash}`)
+    this.log(`Added transaction to database: ${tx.hash}`)
   }
 
   /**
@@ -253,18 +253,18 @@ class ChainService extends BaseService {
     // This relies on the revamp of internal storage, not really important for now.
 
     // TODO: Check that the transaction receipt is valid.
-    this.logger(`Sending transaction to operator: ${tx.hash}.`)
+    this.log(`Sending transaction to operator: ${tx.hash}.`)
     const receipt = await this.services.operator.sendTransaction(tx)
-    this.logger(`Sent transaction to operator: ${tx.hash}.`)
+    this.log(`Sent transaction to operator: ${tx.hash}.`)
 
-    this.logger(`Adding transaction to database: ${tx.hash}`)
+    this.log(`Adding transaction to database: ${tx.hash}`)
     await this.lock.acquire('state', async () => {
       const stateManager = await this.loadState()
       stateManager.applySentTransaction(tx)
       this.saveState(stateManager)
     })
     await this.services.chaindb.setTransaction(tx)
-    this.logger(`Added transaction to database: ${tx.hash}.`)
+    this.log(`Added transaction to database: ${tx.hash}.`)
 
     return receipt
   }

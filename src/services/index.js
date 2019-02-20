@@ -4,6 +4,8 @@ const SyncService = require('./sync-service')
 const ChainService = require('./chain/chain-service')
 const ChainDB = require('./db/chain-db')
 const SyncDB = require('./db/sync-db')
+const WalletDB = require('./db/wallet-db')
+const DBService = require('./db/db-service')
 const DBProviders = require('./db/backends/index')
 const ContractProviders = require('./contract/index')
 const ETHService = require('./eth-service')
@@ -30,6 +32,8 @@ module.exports = {
   ChainService,
   ChainDB,
   SyncDB,
+  WalletDB,
+  DBService,
   DBProviders,
   ContractProviders,
   ETHService,

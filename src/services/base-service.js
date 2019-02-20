@@ -13,27 +13,21 @@ class BaseService extends EventEmitter {
   }
 
   /**
-   * Convenience method for accessing debug loggers.
-   * @return {Object} An object that houses loggers.
+   * Returns the name of this service.
+   * @return {string} Name of the service.
    */
-  get loggers () {
-    return this.app.loggers
+  get name () {
+    throw new Error(
+      'Classes that extend BaseService must implement this method'
+    )
   }
 
   /**
-   * Returns a default logger based on the service's name.
-   * @return {Logger} A logger instance.
+   * List of services this service depends on, identified by name.
+   * @return {Array<string>} List of dependencies.
    */
-  get logger () {
-    return this.loggers[`service:${this.name}`]
-  }
-
-  /**
-   * Returns a debug logger based on the service's name.
-   * @return {Logger} A logger instance.
-   */
-  get debug () {
-    return this.loggers[`debug:service:${this.name}`]
+  get dependencies () {
+    return []
   }
 
   /**
@@ -53,21 +47,27 @@ class BaseService extends EventEmitter {
   }
 
   /**
-   * Returns the name of this service.
-   * @return {string} Name of the service.
+   * Convenience method for accessing debug loggers.
+   * @return {Object} An object that houses loggers.
    */
-  get name () {
-    throw new Error(
-      'Classes that extend BaseService must implement this method'
-    )
+  get loggers () {
+    return this.app.loggers
   }
 
   /**
-   * List of services this service depends on, identified by name.
-   * @return {Array<string>} List of dependencies.
+   * Returns a default logger based on the service's name.
+   * @return {Logger} A logger instance.
    */
-  get dependencies () {
-    return []
+  get log () {
+    return this.loggers[`service:${this.name}`]
+  }
+
+  /**
+   * Returns a debug logger based on the service's name.
+   * @return {Logger} A logger instance.
+   */
+  get debug () {
+    return this.loggers[`debug:service:${this.name}`]
   }
 
   /**
@@ -89,6 +89,7 @@ class BaseService extends EventEmitter {
   async start () {
     this.started = true
     await this._onStart()
+    this.emit('started')
   }
 
   /**
@@ -104,6 +105,7 @@ class BaseService extends EventEmitter {
   async stop () {
     this.started = false
     await this._onStop()
+    this.emit('stopped')
   }
 
   /**

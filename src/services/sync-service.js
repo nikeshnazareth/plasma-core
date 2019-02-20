@@ -1,9 +1,8 @@
 const BaseService = require('./base-service')
 
+/* Models */
 const utils = require('plasma-utils')
 const SignedTransaction = utils.serialization.models.SignedTransaction
-
-const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const defaultOptions = {
   transactionPollInterval: 15000
@@ -84,11 +83,11 @@ class SyncService extends BaseService {
     const prevFailed = await this.services.syncdb.getFailedTransactions()
 
     if (firstUnsyncedBlock <= currentBlock) {
-      this.logger(
+      this.log(
         `Checking for new transactions between plasma blocks ${firstUnsyncedBlock} and ${currentBlock}`
       )
     } else if (prevFailed.length > 0) {
-      this.logger(`Attempting to apply failed transactions`)
+      this.log(`Attempting to apply failed transactions`)
     } else {
       return
     }
@@ -126,8 +125,8 @@ class SyncService extends BaseService {
         await this._addTransaction(tx)
       } catch (err) {
         failed.push(encoded)
-        this.logger(`ERROR: ${err}`)
-        this.logger(
+        this.log(`ERROR: ${err}`)
+        this.log(
           `Ran into an error while importing transaction: ${
             tx.hash
           }, trying again in a few seconds...`
@@ -146,19 +145,19 @@ class SyncService extends BaseService {
   async _addTransaction (tx) {
     // TODO: The operator should really be avoiding this.
     if (
-      tx.transfers[0].sender === NULL_ADDRESS ||
+      tx.transfers[0].sender === utils.constants.NULL_ADDRESS ||
       (await this.services.chaindb.hasTransaction(tx.hash))
     ) {
       return
     }
 
-    this.logger(`Detected new transaction: ${tx.hash}`)
-    this.logger(`Attemping to pull information for transaction: ${tx.hash}`)
+    this.log(`Detected new transaction: ${tx.hash}`)
+    this.log(`Attemping to pull information for transaction: ${tx.hash}`)
     let txInfo
     try {
       txInfo = await this.services.operator.getTransaction(tx.encoded)
     } catch (err) {
-      this.logger(
+      this.log(
         `ERROR: Operator failed to return information for transaction: ${
           tx.hash
         }`
@@ -166,13 +165,13 @@ class SyncService extends BaseService {
       throw err
     }
 
-    this.logger(`Importing new transaction: ${tx.hash}`)
+    this.log(`Importing new transaction: ${tx.hash}`)
     await this.services.chain.addTransaction(
       txInfo.transaction,
       txInfo.deposits,
       txInfo.proof
     )
-    this.logger(`Successfully imported transaction: ${tx.hash}`)
+    this.log(`Successfully imported transaction: ${tx.hash}`)
   }
 
   /**

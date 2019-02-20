@@ -19,7 +19,7 @@ class EventWatcher extends BaseService {
   }
 
   get dependencies () {
-    return ['contract', 'web3', 'db']
+    return ['contract', 'web3', 'syncdb']
   }
 
   async _onStart () {
@@ -75,7 +75,7 @@ class EventWatcher extends BaseService {
    */
   async _pollEvents () {
     if (!this.started) {
-      this.logger(`ERROR: Stopped watching for events`)
+      this.log(`ERROR: Stopped watching for events`)
       return
     }
 
@@ -94,7 +94,7 @@ class EventWatcher extends BaseService {
   async _checkEvents () {
     const connected = await this.services.web3.connected()
     if (!connected) {
-      this.logger(`ERROR: Could not connect to Ethereum`)
+      this.log(`ERROR: Could not connect to Ethereum`)
       return
     }
 
@@ -119,13 +119,12 @@ class EventWatcher extends BaseService {
       return
     }
 
-    let lastLoggedBLock = await this.services.db.get(
-      `lastlogged:${eventName}`,
-      -1
+    let lastLoggedBLock = await this.services.syncdb.getLastLoggedEventBlock(
+      eventName
     )
     let firstUnsyncedBlock = lastLoggedBLock + 1
     if (firstUnsyncedBlock > lastFinalBlock) return
-    this.logger(
+    this.log(
       `Checking for new ${eventName} events between Ethereum blocks ${firstUnsyncedBlock} and ${lastFinalBlock}`
     )
 
@@ -138,25 +137,11 @@ class EventWatcher extends BaseService {
     )
 
     // Filter out events that we've already seen.
-    events.forEach((event) => {
-      event.hash = this._getEventHash(event)
-    })
-    const isUnique = await Promise.all(
-      events.map(async (event) => {
-        return !(await this.services.db.exists(`event:${event.hash}`))
-      })
-    )
-    events = events.filter((_, i) => isUnique[i])
+    events = await this._getUniqueEvents(events)
 
     if (events.length > 0) {
       // Mark these events as seen.
-      const objects = events.map((event) => {
-        return {
-          key: `event:${event.hash}`,
-          value: true
-        }
-      })
-      await this.services.db.bulkPut(objects)
+      await this.services.syncdb.addEvents(events)
 
       // Alert any listeners.
       for (let listener of this.subscriptions[eventName]) {
@@ -168,11 +153,36 @@ class EventWatcher extends BaseService {
       }
     }
 
-    await this.services.db.set(`lastlogged:${eventName}`, lastFinalBlock)
+    await this.services.syncdb.setLastLoggedEventBlock(
+      eventName,
+      lastFinalBlock
+    )
   }
 
-  _getEventHash ({ transactionHash, logIndex }) {
-    return this.services.web3.utils.sha3(transactionHash + logIndex)
+  /**
+   * Computes a unique hash for an event
+   * @param {*} event An Ethereum event.
+   * @return {string} The event hash.
+   */
+  _getEventHash (event) {
+    return this.services.web3.utils.sha3(event.transactionHash + event.logIndex)
+  }
+
+  /**
+   * Filters out any events we've already seen.
+   * @param {Array} events A series of Ethereum events.
+   * @return {Array} Events we haven't seen already.
+   */
+  async _getUniqueEvents (events) {
+    events.forEach((event) => {
+      event.hash = this._getEventHash(event)
+    })
+    const isUnique = await Promise.all(
+      events.map(async (event) => {
+        return !(await this.services.syncdb.hasEvent(event))
+      })
+    )
+    return events.filter((_, i) => isUnique[i])
   }
 
   /**

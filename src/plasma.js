@@ -74,11 +74,12 @@ class Plasma extends EventEmitter {
   _registerServices () {
     const available = [
       this.options.web3Provider,
-      this.options.dbProvider,
-      services.ChainDB,
-      services.SyncDB,
+      services.DBService,
+      services.WalletDB,
       this.options.walletProvider,
       this.options.contractProvider,
+      services.ChainDB,
+      services.SyncDB,
       this.options.operatorProvider,
       services.ETHService,
       services.ProofService,

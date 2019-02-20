@@ -1,10 +1,14 @@
 const BigNum = require('bn.js')
 const BaseContractProvider = require('./base-provider')
 const utils = require('plasma-utils')
+
+/* Compiled Contracts */
 const compiledContracts = require('plasma-contracts')
 const plasmaChainCompiled = compiledContracts.plasmaChainCompiled
 const erc20Compiled = compiledContracts.erc20Compiled
 const registryCompiled = compiledContracts.plasmaRegistryCompiled
+
+/* Event Models */
 const eventModels = require('./events/event-models')
 const DepositEvent = eventModels.DepositEvent
 const ChainCreatedEvent = eventModels.ChainCreatedEvent
@@ -352,9 +356,9 @@ class ContractProvider extends BaseContractProvider {
 
     this.emit('initialized')
 
-    this.logger(`Connected to plasma chain: ${this.plasmaChainName}`)
-    this.logger(`Contract address set: ${this.address}`)
-    this.logger(`Operator endpoint set: ${this.operatorEndpoint}`)
+    this.log(`Connected to plasma chain: ${this.plasmaChainName}`)
+    this.log(`Contract address set: ${this.address}`)
+    this.log(`Operator endpoint set: ${this.operatorEndpoint}`)
   }
 }
 

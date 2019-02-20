@@ -30,26 +30,26 @@ class ProofSerivce extends BaseService {
   async checkProof (transaction, deposits, proof) {
     transaction = new SignedTransaction(transaction)
 
-    this.logger(`Checking signatures for: ${transaction.hash}`)
+    this.log(`Checking signatures for: ${transaction.hash}`)
     if (!transaction.checkSigs()) {
       throw new Error('Invalid transaction signatures')
     }
 
-    this.logger(`Checking validity of deposits for: ${transaction.hash}`)
+    this.log(`Checking validity of deposits for: ${transaction.hash}`)
     for (const deposit of deposits) {
       if (!(await this._depositValid(deposit))) {
         throw new Error('Invalid deposit')
       }
     }
 
-    this.logger(`Checking validity of proof elements for: ${transaction.hash}`)
+    this.log(`Checking validity of proof elements for: ${transaction.hash}`)
     for (const element of proof) {
       if (!(await this._transactionValid(element.transaction, element.proof))) {
         throw new Error('Invalid transaction')
       }
     }
 
-    this.logger(`Applying proof elements for: ${transaction.hash}`)
+    this.log(`Applying proof elements for: ${transaction.hash}`)
     const snapshotManager = new SnapshotManager()
     this.applyProof(snapshotManager, deposits, proof)
     if (!snapshotManager.validateTransaction(transaction)) {
@@ -110,7 +110,7 @@ class ProofSerivce extends BaseService {
     // If the root is '0x00....', then this block was empty.
     if (root === EMPTY_BLOCK_HASH) {
       if (transaction.transfers.length > 0) {
-        this.logger(
+        this.log(
           `WARNING: Block #${
             transaction.block
           } is empty but received a non-empty proof element. Proof will likely be rejected. This is probably due to an error in the operator.`

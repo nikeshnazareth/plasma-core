@@ -65,24 +65,28 @@ describe('Contract Interactions', () => {
   before(async () => {
     // Reset and start Ethereum.
     await app.startEth()
+
     await app.reset()
-
-    watcher = app.services.eventWatcher
     web3 = app.services.web3
-
-    await watcher.stop()
 
     // Pick an account to be the operator.
     operator = (await web3.eth.getAccounts())[0]
 
+    // Deploy the plasma chain.
     const { registryAddress } = await deployPlasmaChain(web3, operator, 'testchain', '0.0.0.0')
 
+    // Initialize the contract provider.
     contract = new ContractProvider({
       app: app,
       plasmaChainName: 'testchain',
       registryAddress: registryAddress
     })
+
+    await app.stop()
+    app.services = {}
+    app._registerServices()
     app.services.contract = contract
+    await app.start()
 
     await contract.start()
     await new Promise((resolve) => {
@@ -90,6 +94,8 @@ describe('Contract Interactions', () => {
         resolve()
       })
     })
+
+    watcher = app.services.eventWatcher
     await watcher.start()
   })
 

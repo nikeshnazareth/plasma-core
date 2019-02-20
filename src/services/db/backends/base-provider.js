@@ -1,11 +1,12 @@
-const BaseService = require('../../base-service')
-
 /**
  * Class that DB interfaces must implement.
  */
-class BaseDBProvider extends BaseService {
-  get name () {
-    return 'db'
+class BaseDBProvider {
+  /**
+   * Starts up the database.
+   */
+  async start () {
+    return new Error('Classes that extend BaseDB must implement this method')
   }
 
   /**
@@ -50,6 +51,15 @@ class BaseDBProvider extends BaseService {
    * @return {string} The next key with the same prefix.
    */
   async findNextKey (key) {
+    return new Error('Classes that extend BaseDB must implement this method')
+  }
+
+  /**
+   * Puts a series of objects into the database in bulk.
+   * Should be more efficient than simply calling `set` repeatedly.
+   * @param {Array<{key: string, value: string}>} objects A series of objects to put into the database.
+   */
+  async bulkPut (objects) {
     return new Error('Classes that extend BaseDB must implement this method')
   }
 

@@ -6,8 +6,11 @@ const BaseDBProvider = require('./base-provider')
 class EphemDBProvider extends BaseDBProvider {
   constructor (options) {
     super(options)
-
     this.db = new Map()
+  }
+
+  async start () {
+    return true
   }
 
   async get (key, fallback) {

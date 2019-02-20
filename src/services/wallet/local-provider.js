@@ -2,28 +2,26 @@ const BaseWalletProvider = require('./base-provider')
 
 class LocalWalletProvider extends BaseWalletProvider {
   get dependencies () {
-    return ['web3', 'db']
+    return ['web3', 'walletdb']
   }
 
   async getAccounts () {
-    const accounts = await this.services.db.get('accounts', [])
-    return accounts
+    return this.services.walletdb.getAccounts()
+  }
+
+  async getAccount (address) {
+    return this.services.walletdb.getAccount(address)
   }
 
   async sign (address, data) {
-    const account = await this._getAccount(address)
+    const account = await this.getAccount(address)
     return account.sign(data)
   }
 
   async createAccount () {
     // TODO: Support encrypted accounts.
     const account = this.services.web3.eth.accounts.create()
-
-    const accounts = await this.getAccounts()
-    accounts.push(account.address)
-    await this.services.db.set('accounts', accounts)
-
-    await this.services.db.set(`keystore:${account.address}`, account)
+    await this.services.walletdb.addAccount(account)
     await this.addAccountToWallet(account.address)
     return account.address
   }
@@ -37,24 +35,8 @@ class LocalWalletProvider extends BaseWalletProvider {
     const accounts = await this.services.web3.eth.accounts.wallet
     if (address in accounts) return
 
-    const account = await this._getAccount(address)
+    const account = await this.getAccount(address)
     await this.services.web3.eth.accounts.wallet.add(account.privateKey)
-  }
-
-  /**
-   * Returns an account object for a given address.
-   * @param {string} address Adress of the account.
-   * @return {*} A Web3 account object.
-   */
-  async _getAccount (address) {
-    const keystore = await this.services.db.get(`keystore:${address}`, null)
-    if (!keystore) {
-      throw new Error('Account not found')
-    }
-
-    return this.services.web3.eth.accounts.privateKeyToAccount(
-      keystore.privateKey
-    )
   }
 }
 

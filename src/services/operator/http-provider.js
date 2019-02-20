@@ -204,7 +204,7 @@ class HttpOperatorProvider extends BaseOperatorProvider {
         id: uuidv4()
       })
     } catch (err) {
-      this.logger(`ERROR: ${err}`)
+      this.log(`ERROR: ${err}`)
       throw err
     }
     const data = utils.utils.isString(response)
@@ -224,15 +224,13 @@ class HttpOperatorProvider extends BaseOperatorProvider {
       if (this.endpoint) {
         await this.getEthInfo()
         if (!this.online) {
-          this.logger('Successfully connected to operator')
+          this.log('Successfully connected to operator')
         }
         this.online = true
       }
     } catch (err) {
       this.online = false
-      this.logger(
-        'ERROR: Cannot connect to operator. Attempting to reconnect...'
-      )
+      this.log('ERROR: Cannot connect to operator. Attempting to reconnect...')
     } finally {
       await utils.utils.sleep(this.options.operatorPingInterval)
       this._pingInterval()
