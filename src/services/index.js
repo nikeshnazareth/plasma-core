@@ -11,8 +11,8 @@ const EventWatcher = require('./events/event-watcher')
 
 /* Providers */
 const DBProviders = require('./db/backends/index')
-const ContractProvider = require('./contract-provider')
-const OperatorProvider = require('./operator-provider')
+const ContractProvider = require('./contract/contract-provider')
+const OperatorProvider = require('./operator/operator-provider')
 const WalletProviders = require('./wallet/index')
 const Web3Provider = require('./web3-provider')
 
@@ -23,11 +23,15 @@ const dbInterfaces = require('./db/interfaces/index')
 const BaseService = require('./base-service')
 const BaseDBProvider = require('./db/backends/base-provider')
 const BaseWalletProvider = require('./wallet/base-provider')
+const BaseOperatorProvider = require('./operator/base-provider')
+const BaseContractProvider = require('./contract/base-provider')
 
 const base = {
   BaseService,
   BaseDBProvider,
-  BaseWalletProvider
+  BaseWalletProvider,
+  BaseOperatorProvider,
+  BaseContractProvider
 }
 
 module.exports = {

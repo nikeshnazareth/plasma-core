@@ -8,11 +8,11 @@ const erc20Compiled = compiledContracts.erc20Compiled
 const registryCompiled = compiledContracts.plasmaRegistryCompiled
 
 /* Event Models */
-const eventModels = require('./events/event-models')
+const eventModels = require('../events/event-models')
 const DepositEvent = eventModels.DepositEvent
 const ChainCreatedEvent = eventModels.ChainCreatedEvent
 
-const BaseService = require('./base-service')
+const BaseContractProvider = require('./base-provider')
 
 const defaultOptions = {
   registryAddress: '0x18d8BD44a01fb8D5f295a2B3Ab15789F26385df7'
@@ -21,13 +21,9 @@ const defaultOptions = {
 /**
  * Wraps contract calls for clean access.
  */
-class ContractProvider extends BaseService {
+class ContractProvider extends BaseContractProvider {
   constructor (options) {
     super(options, defaultOptions)
-  }
-
-  get name () {
-    return 'contract'
   }
 
   get dependencies () {
@@ -39,23 +35,14 @@ class ContractProvider extends BaseService {
     this._initContractInfo()
   }
 
-  /**
-   * @return {string} Address of the connected contract.
-   */
   get address () {
     return this.contract.options.address
   }
 
-  /**
-   * @return {boolean} `true` if the contract has an address, `false` otherwise.
-   */
   get hasAddress () {
     return this.contract && this.address !== null
   }
 
-  /**
-   * @return {boolean} `true` if the contract is ready to be used, `false` otherwise.
-   */
   get ready () {
     return this.hasAddress && this.operatorEndpoint
   }
@@ -69,9 +56,6 @@ class ContractProvider extends BaseService {
     return this.services.web3
   }
 
-  /**
-   * @return {string} Plasma Chain contract name.
-   */
   get plasmaChainName () {
     return this.options.plasmaChainName
   }
@@ -87,42 +71,23 @@ class ContractProvider extends BaseService {
     }
   }
 
-  /**
-   * Queries a given block.
-   * @param {number} block Number of the block to query.
-   * @return {string} Root hash of the block with that number.
-   */
   async getBlock (block) {
     return this.contract.methods.blockHashes(block).call()
   }
 
-  /**
-   * @return {number} Number of the block that will be submitted next.
-   */
   async getNextBlock () {
     return this.contract.methods.nextPlasmaBlockNumber().call()
   }
 
-  /**
-   * @return {number} Number of the last submitted block.
-   */
   async getCurrentBlock () {
     const nextBlockNumber = await this.getNextBlock()
     return nextBlockNumber - 1
   }
 
-  /**
-   * @return {string} Address of the current operator.
-   */
   async getOperator () {
     return this.contract.methods.operator().call()
   }
 
-  /**
-   * Returns the address for a given token ID.
-   * @param {string} token The token ID.
-   * @return {string} Address of the contract for that token.
-   */
   async getTokenAddress (token) {
     if (this.web3.utils.isAddress(token)) {
       return token
@@ -132,22 +97,8 @@ class ContractProvider extends BaseService {
     ).call()
   }
 
-  /**
-   * Lists a token with the given address
-   * so that it can be deposited.
-   * @param {string} tokenAddress Address of the token.
-   * @param {string} senderAddress Address of the account sending the listToken transaction.
-   * @return {EthereumTransaction} The Ethereum transaction result.
-   */
-  async listToken (tokenAddress, senderAddress) {
-    let sender
-    if (senderAddress === undefined) {
-      const accounts = await this.services.wallet.getAccounts()
-      sender = accounts[0]
-    } else {
-      sender = senderAddress
-    }
-
+  async listToken (tokenAddress, sender) {
+    sender = sender || (await this.services.wallet.getAccounts())[0]
     await this.checkAccountUnlocked(sender)
 
     const tx = this.contract.methods.listToken(tokenAddress, 0)
@@ -158,31 +109,14 @@ class ContractProvider extends BaseService {
     })
   }
 
-  /**
-   * Gets the current challenge period.
-   * Challenge period is returned in number of blocks.
-   * @return {number} Current challenge period.
-   */
   async getChallengePeriod () {
     return this.contract.methods['CHALLENGE_PERIOD']().call()
   }
 
-  /**
-   * Gets the token ID for a specific token.
-   * Token IDs are unique to each plasma chain.
-   * TODO: Add link that explains how token IDs work.
-   * @param {string} tokenAddress Token contract address.
-   * @return {string} ID of that token.
-   */
   async getTokenId (tokenAddress) {
     return this.contract.methods.listed(tokenAddress).call()
   }
 
-  /**
-   * Checks whether a specific deposit actually exists.
-   * @param {Deposit} deposit Deposit to check.
-   * @return {boolean} `true` if the deposit exists, `false` otherwise.
-   */
   async depositValid (deposit) {
     // Find past deposit events.
     const depositEvents = await this.contract.getPastEvents('DepositEvent', {
@@ -205,15 +139,6 @@ class ContractProvider extends BaseService {
     })
   }
 
-  /**
-   * Submits a deposit for a user.
-   * This method will pipe the `deposit` call to the correct
-   * ERC20 or ETH call.
-   * @param {BigNum} token Token to deposit, specified by ID.
-   * @param {BigNum} amount Amount to deposit.
-   * @param {string} owner Address of the user to deposit for.
-   * @return {EthereumTransaction} Deposit transaction receipt.
-   */
   async deposit (token, amount, owner) {
     if (!this.hasAddress) {
       throw new Error('Plasma chain contract address has not yet been set.')
@@ -264,18 +189,6 @@ class ContractProvider extends BaseService {
     })
   }
 
-  /**
-   * Starts an exit for a user.
-   * Exits can only be started on *transfers*, meaning you
-   * need to specify the block in which the transfer was received.
-   * TODO: Add link that explains this in more detail.
-   * @param {BigNum} block Block in which the transfer was received.
-   * @param {BigNum} token Token to be exited.
-   * @param {BigNum} start Start of the range received in the transfer.
-   * @param {BigNum} end End of the range received in the transfer.
-   * @param {string} owner Adress to exit from.
-   * @return {EthereumTransaction} Exit transaction receipt.
-   */
   async startExit (block, token, start, end, owner) {
     await this.checkAccountUnlocked(owner)
     return this.contract.methods.beginExit(token, block, start, end).send({
@@ -284,13 +197,6 @@ class ContractProvider extends BaseService {
     })
   }
 
-  /**
-   * Finalizes an exit for a user.
-   * @param {string} exitId ID of the exit to finalize.
-   * @param {BigNum} exitableEnd Weird quirk in how we handle exits. For more information, see: https://github.com/plasma-group/plasma-contracts/issues/44.
-   * @param {string} owner Address that owns this exit.
-   * @return {EthereumTransaction} Finalization transaction receipt.
-   */
   async finalizeExit (exitId, exitableEnd, owner) {
     await this.checkAccountUnlocked(owner)
     return this.contract.methods.finalizeExit(exitId, exitableEnd).send({
@@ -299,13 +205,6 @@ class ContractProvider extends BaseService {
     })
   }
 
-  /**
-   * Submits a block with the given hash.
-   * Will only work if the operator's account is unlocked and
-   * available to the node.
-   * @param {string} hash Hash of the block to submit.
-   * @return {EthereumTransaction} Block submission transaction receipt.
-   */
   async submitBlock (hash) {
     const operator = await this.getOperator()
     await this.checkAccountUnlocked(operator)
