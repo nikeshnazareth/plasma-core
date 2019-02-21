@@ -47,14 +47,6 @@ class BaseService extends EventEmitter {
   }
 
   /**
-   * Convenience method for accessing debug loggers.
-   * @return {Object} An object that houses loggers.
-   */
-  get loggers () {
-    return this.app.loggers
-  }
-
-  /**
    * Returns a default logger based on the service's name.
    * @return {Logger} A logger instance.
    */

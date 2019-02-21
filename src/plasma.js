@@ -74,38 +74,6 @@ class Plasma extends EventEmitter {
   }
 
   /**
-   * Registers all services.
-   */
-  _registerServices () {
-    const available = [
-      /* Providers */
-      this.options.web3Provider,
-      this.options.operatorProvider,
-      this.options.walletProvider,
-      this.options.contractProvider,
-
-      /* Database Interfaces */
-      services.dbInterfaces.WalletDB,
-      services.dbInterfaces.ChainDB,
-      services.dbInterfaces.SyncDB,
-
-      /* Services */
-      services.DBService,
-      services.ETHService,
-      services.ProofService,
-      services.ChainService,
-      services.JSONRPCService,
-      services.SyncService,
-      services.EventWatcher,
-      services.EventHandler
-    ]
-
-    for (let service of available) {
-      this.registerService(service, this.options)
-    }
-  }
-
-  /**
    * Returns the names of services ordered by their dependencies.
    * Automatically resolves dependencies.
    * @return {Array<string>} List of service names ordered by dependencies.
