@@ -1,4 +1,4 @@
-import BigNum = require('bn.js');
+import BigNum from 'bn.js';
 import { Deposit } from '../models/chain-objects';
 import { EthereumTransaction } from '../models/eth-objects';
 import { BaseService } from '../base-service';

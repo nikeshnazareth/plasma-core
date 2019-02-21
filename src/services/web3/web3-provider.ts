@@ -1,15 +1,11 @@
 import Web3 from 'web3';
-import {
-  BaseWeb3Provider, DefaultWeb3Options, UserWeb3Options
-} from './base-provider';
+import { BaseWeb3Provider, DefaultWeb3Options, UserWeb3Options } from './base-provider';
 
 const defaultOptions: DefaultWeb3Options = {
   ethereumEndpoint: 'http://localhost:8545'
 };
 
 export class Web3Provider extends BaseWeb3Provider {
-  web3?: Web3;
-
   constructor(options: UserWeb3Options) {
     super(options, defaultOptions);
   }

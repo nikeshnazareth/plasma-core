@@ -4,6 +4,7 @@ import { EthInfo } from '../models/operator-objects';
 
 export class BaseOperatorProvider extends BaseService {
   name = 'operator';
+  online = false;
 
   /**
    * Returns the next plasma block, according the operator.

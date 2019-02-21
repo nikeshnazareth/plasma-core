@@ -1,4 +1,4 @@
-import BigNum = require('bn.js');
+import BigNum from 'bn.js';
 import { OperatorTransfer, OperatorProof } from './operator-objects';
 import { serialization } from 'plasma-utils';
 

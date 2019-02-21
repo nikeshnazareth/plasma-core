@@ -6,11 +6,10 @@ import { BaseOperatorProvider } from './base-provider';
 import { utils, serialization } from 'plasma-utils';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import uuidv4 from 'uuid/v4';
-import BigNum = require('bn.js');
+import BigNum from 'bn.js';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
-const UnsignedTransaction = models.UnsignedTransaction;
 
 interface UserOperatorOptions extends ServiceOptions {
   operatorPingInterval?: number;
@@ -24,7 +23,7 @@ interface DefaultOperatorOptions {
   operatorPingInterval: number;
 }
 
-interface OperatorServices {
+interface OperatorExposedServices {
   contract: BaseContractProvider;
 }
 
@@ -40,9 +39,9 @@ const defaultOptions: DefaultOperatorOptions = {
 
 export class OperatorProvider extends BaseOperatorProvider {
   options!: OperatorOptions;
-  services!: OperatorServices;
+  services!: OperatorExposedServices;
+  dependencies = ['contract'];
   pinging = false;
-  online = false;
   endpoint?: string;
   http?: AxiosInstance;
 
@@ -177,7 +176,7 @@ export class OperatorProvider extends BaseOperatorProvider {
       throw err;
     }
 
-    const data = utils.isString(response.data) ? JSON.parse(response.data) : response.data;
+    const data: JSONRPCResponse = utils.isString(response.data) ? JSON.parse(response.data) : response.data;
     if (data.error) {
       throw data.error;
     }

@@ -1,3 +1,4 @@
+import Web3 from 'web3';
 import { BaseService, ServiceOptions } from '../base-service';
 
 export interface UserWeb3Options extends ServiceOptions {
@@ -15,6 +16,7 @@ export interface DefaultWeb3Options {
 export class BaseWeb3Provider extends BaseService {
   options!: Web3Options;
   name = 'web3';
+  web3?: Web3;
 
   /**
    * Whether or not the provider is connected.

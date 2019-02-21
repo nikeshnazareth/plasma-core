@@ -1,9 +1,15 @@
 declare module 'plasma-utils' {
-  import BigNum = require('bn.js');
+  import BigNum from 'bn.js';
+
+  namespace constants {
+    const NULL_ADDRESS: string;
+  }
 
   namespace utils {
     function isString(value: any): boolean;
     function sleep(ms: number): Promise<void>;
+    
+    var web3Utils: any;
   }
 
   namespace serialization {
