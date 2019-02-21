@@ -2,6 +2,24 @@ import BigNum from 'bn.js';
 import { OperatorTransfer, OperatorProof } from './operator-objects';
 import { serialization } from 'plasma-utils';
 
+export class Exit {
+  owner: string;
+  id: BigNum;
+  token: BigNum;
+  start: BigNum;
+  end: BigNum;
+  block: BigNum;
+
+  constructor (args: Exit) {
+    this.owner = args.owner;
+    this.id = args.id;
+    this.token = args.token;
+    this.start = args.start;
+    this.end = args.end;
+    this.block = args.block;
+  }
+}
+
 export class Deposit {
   owner: string;
   token: BigNum;
@@ -61,4 +79,19 @@ export interface Proof {
   transaction: any;
   proof: any;
   deposits: any;
+}
+
+export interface Block {
+  number: number;
+  hash: string;
+}
+
+export interface Range {
+  token: BigNum;
+  start: BigNum;
+  end: BigNum;
+}
+
+export interface Snapshot {
+  test: string;
 }

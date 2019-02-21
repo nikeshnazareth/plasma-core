@@ -2,7 +2,10 @@ import { utils, serialization, constants } from 'plasma-utils';
 import { BaseService, ServiceOptions } from './base-service';
 import { BaseContractProvider } from './contract/base-provider';
 import { BaseOperatorProvider } from './operator/base-provider';
+import { BaseWalletProvider } from './wallet/base-provider';
 import { DepositEvent, BlockSubmittedEvent, ExitStartedEvent, ExitFinalizedEvent } from './models/event-objects';
+import { SyncDB, ChainDB } from './db/interfaces';
+import { EventHandler } from './events/event-handler';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
@@ -23,10 +26,10 @@ interface SyncExposedServices {
   contract: BaseContractProvider;
   wallet: BaseWalletProvider;
   operator: BaseOperatorProvider;
-  syncdb: SyncDB,
-  chaindb: ChainDB,
-  chain: ChainService,
-  eventHandler: EventHandler
+  syncdb: SyncDB;
+  chaindb: ChainDB;
+  chain: ChainService;
+  eventHandler: EventHandler;
 }
 
 const defaultOptions: DefaultSyncOptions = {
@@ -84,27 +87,15 @@ export class SyncService extends BaseService {
    * Attaches handlers to Ethereum events.
    */
   private attachHandlers(): void {
-    const handlers = [
-      {
-        name: 'Deposit',
-        listener: this.onDeposit
-      },
-      {
-        name: 'BlockSubmitted',
-        listener: this.onBlockSubmitted
-      },
-      {
-        name: 'ExitStarted',
-        listener: this.onExitStarted
-      },
-      {
-        name: 'ExitFinalized',
-        listener: this.onExitFinalized
-      }
-    ];
+    const handlers: { [key: string]: any } = {
+      Deposit: this.onDeposit,
+      BlockSubmitted: this.onBlockSubmitted,
+      ExitStarted: this.onExitStarted,
+      ExitFinalized: this.onExitFinalized
+    };
 
-    for (const handler of handlers) {
-      this.services.eventHandler.on(`event:${handler.name}`, handler.listener.bind(this));
+    for (const event of Object.keys(handlers)) {
+      this.services.eventHandler.on(`event:${event}`, handlers[event].bind(this));
     }
   }
 

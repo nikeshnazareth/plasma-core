@@ -1,6 +1,5 @@
 import BigNum from 'bn.js';
 import { utils } from 'plasma-utils';
-import { EthereumEvent } from './eth-objects';
 
 const web3Utils = utils.web3Utils;
 
@@ -10,8 +9,8 @@ const web3Utils = utils.web3Utils;
  * @param event An Ethereum event.
  * @returns A parsed event.
  */
-const parseEvent = (event: EthereumEvent): any => {
-  const parsed = event.returnValues;
+const parseEvent = (event: any): any => {
+  const parsed = Object.assign({}, event.returnValues);
   for (const key of Object.keys(parsed)) {
     const value = parsed[key];
     if (!isNaN(value) && !web3Utils.isAddress(value)) {
@@ -29,7 +28,7 @@ export class DepositEvent {
   token: BigNum;
   block: BigNum;
 
-  constructor (event: EthereumEvent) {
+  constructor (event: any) {
     const parsed = parseEvent(event);
 
     this.owner = parsed.depositer;
@@ -48,7 +47,7 @@ export class BlockSubmittedEvent {
   number: number;
   hash: string;
 
-  constructor (event: EthereumEvent) {
+  constructor (event: any) {
     const unparsed = Object.assign({}, event.returnValues);
     const parsed = parseEvent(event);
 
@@ -65,7 +64,7 @@ export class ExitStartedEvent {
   block: BigNum;
   exiter: string;
 
-  constructor (event: EthereumEvent) {
+  constructor (event: any) {
     const parsed = parseEvent(event);
 
     this.token = parsed.tokenType;
@@ -83,7 +82,7 @@ export class ExitFinalizedEvent {
   end: BigNum;
   id: BigNum;
 
-  constructor (event: EthereumEvent) {
+  constructor (event: any) {
     const parsed = parseEvent(event);
 
     this.token = parsed.tokenType;
@@ -99,7 +98,7 @@ export class ChainCreatedEvent {
   operatorEndpoint: string;
   operatorAddress: string;
 
-  constructor (event: EthereumEvent) {
+  constructor (event: any) {
     const unparsed = Object.assign({}, event.returnValues);
 
     this.plasmaChainAddress = unparsed.PlasmaChainAddress;
