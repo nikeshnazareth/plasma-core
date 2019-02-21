@@ -5,7 +5,7 @@ export class BaseWalletProvider extends BaseService {
 
   /**
    * Returns the addresses of all accounts in this wallet.
-   * @returns the list of addresses in this wallet
+   * @returns the list of addresses in this wallet.
    */
   async getAccounts(): Promise<string[]> {
     throw new Error(

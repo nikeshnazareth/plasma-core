@@ -1,6 +1,7 @@
 import { BaseService } from '../base-service';
-import { EventLog } from 'web3/types';
-import { DepositEvent, ExitFinalizedEvent, ExitStartedEvent, BlockSubmittedEvent } from '../models/event-objects';
+import { DepositEvent, ExitFinalizedEvent, ExitStartedEvent, BlockSubmittedEvent } from '../models/events';
+import { EventWatcher } from './event-watcher';
+import { EthereumEvent } from '../models/eth-objects';
 
 interface EventHandlerExposedServices {
   eventWatcher: EventWatcher;
@@ -32,7 +33,7 @@ export class EventHandler extends BaseService {
    * Registers event handlers.
    */
   private registerHandlers(): void {
-    const handlers: { [key: string]: any } = {
+    const handlers: { [key: string]: Function } = {
       DepositEvent: this.onDeposit,
       SubmitBlockEvent: this.onBlockSubmitted,
       BeginExitEvent: this.onExitStarted,
@@ -47,9 +48,9 @@ export class EventHandler extends BaseService {
    * Handles Deposit events.
    * @param events Deposit events.
    */
-  private onDeposit(events: EventLog[]): void {
+  private onDeposit(events: EthereumEvent[]): void {
     const deposits = events.map((event) => {
-      return new DepositEvent(event);
+      return DepositEvent.from(event);
     });
     deposits.forEach((deposit) => {
       this.log(
@@ -65,9 +66,9 @@ export class EventHandler extends BaseService {
    * Handles BlockSubmitted events.
    * @param events BlockSubmitted events.
    */
-  private onBlockSubmitted(events: EventLog[]): void {
+  private onBlockSubmitted(events: EthereumEvent[]): void {
     const blocks = events.map((event) => {
-      return new BlockSubmittedEvent(event);
+      return BlockSubmittedEvent.from(event);
     });
     blocks.forEach((block) => {
       this.log(`Detected block #${block.number}: ${block.hash}`);
@@ -79,9 +80,9 @@ export class EventHandler extends BaseService {
    * Handles ExitStarted events.
    * @param events ExitStarted events.
    */
-  private onExitStarted(events: EventLog[]): void {
+  private onExitStarted(events: EthereumEvent[]): void {
     const exits = events.map((event) => {
-      return new ExitStartedEvent(event);
+      return ExitStartedEvent.from(event);
     });
     exits.forEach((exit) => {
       this.log(`Detected new started exit: ${exit.id}`);
@@ -93,9 +94,9 @@ export class EventHandler extends BaseService {
    * Handles ExitFinalized events.
    * @param events ExitFinalized events.
    */
-  private onExitFinalized(events: EventLog[]): void {
+  private onExitFinalized(events: EthereumEvent[]): void {
     const exits = events.map((event) => {
-      return new ExitFinalizedEvent(event);
+      return ExitFinalizedEvent.from(event);
     });
     exits.forEach((exit) => {
       this.log(`Detected new finalized exit: ${exit.id}`);

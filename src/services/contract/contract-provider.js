@@ -35,6 +35,15 @@ class ContractProvider extends BaseContractProvider {
     this._initContractInfo()
   }
 
+  /**
+   * Returns the current web3 instance.
+   * Mainly used for convenience.
+   * @return {*} The current web3 instance.
+   */
+  get web3 () {
+    return this.services.web3
+  }
+
   get address () {
     return this.contract.options.address
   }
@@ -45,15 +54,6 @@ class ContractProvider extends BaseContractProvider {
 
   get ready () {
     return this.hasAddress && this.operatorEndpoint
-  }
-
-  /**
-   * Returns the current web3 instance.
-   * Mainly used for convenience.
-   * @return {*} The current web3 instance.
-   */
-  get web3 () {
-    return this.services.web3
   }
 
   get plasmaChainName () {

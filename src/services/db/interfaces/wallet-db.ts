@@ -1,18 +1,16 @@
 import { BaseService } from '../../base-service';
-import { BaseWeb3Provider } from '../../web3/base-provider';
 import { DBService } from '../db-service';
 import { BaseDBProvider } from '../backends/base-provider';
-import { Account } from 'web3/types';
-import Web3 from 'web3';
+import { EthereumAccount } from '../../models/eth-objects';
+import { Account } from 'eth-lib';
 
 interface WalletDBExposedServices {
-  web3: BaseWeb3Provider;
   dbservice: DBService;
 }
 
 export class WalletDB extends BaseService {
   services!: WalletDBExposedServices;
-  dependencies = ['web3', 'db'];
+  dependencies = ['eth', 'db'];
   name = 'walletdb';
 
   /**
@@ -24,17 +22,6 @@ export class WalletDB extends BaseService {
       throw new Error('WalletDB is not yet initialized.');
     }
     return db;
-  }
-
-  /**
-   * @returns the current Web3 instance.
-   */
-  get web3(): Web3 {
-    const web3 = this.services.web3.web3;
-    if (web3 === undefined) {
-      throw new Error('Web3 is undefined.');
-    }
-    return web3;
   }
 
   async onStart(): Promise<void> {
@@ -52,22 +39,22 @@ export class WalletDB extends BaseService {
   /**
    * Returns an account object for a given address.
    * @param address Adress of the account.
-   * @returns a Web3 account object.
+   * @returns an Ethereum account object.
    */
-  async getAccount(address: string): Promise<Account> {
+  async getAccount(address: string): Promise<EthereumAccount> {
     const keystore = await this.db.get(`keystore:${address}`, undefined);
     if (keystore === undefined) {
       throw new Error('Account not found.');
     }
 
-    return this.web3.eth.accounts.privateKeyToAccount(keystore.privateKey);
+    return Account.fromPrivate(keystore.privateKey);
   }
 
   /**
    * Adds an account to the database.
-   * @param account A Web3 account object.
+   * @param account An Ethereum account object.
    */
-  async addAccount(account: Account): Promise<void> {
+  async addAccount(account: EthereumAccount): Promise<void> {
     const accounts = await this.getAccounts();
     accounts.push(account.address);
     await this.db.set('accounts', accounts);

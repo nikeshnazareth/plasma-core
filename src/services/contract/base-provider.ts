@@ -2,6 +2,7 @@ import BigNum from 'bn.js';
 import { Deposit } from '../models/chain-objects';
 import { BaseService } from '../base-service';
 import { TransactionReceipt } from 'web3/types';
+import { EthereumEvent } from '../models/eth-objects';
 
 export class BaseContractProvider extends BaseService {
   name = 'contract';
@@ -46,6 +47,18 @@ export class BaseContractProvider extends BaseService {
    * @returns Plasma Chain contract name.
    */
   get plasmaChainName(): string {
+    throw new Error(
+      'Classes that extend BaseContractProvider must implement this method.'
+    );
+  }
+
+  /**
+   * Returns past events for the contract
+   * @param event The name of the event.
+   * @param filter The filter object.
+   * @returns past events with the given filter.
+   */
+  async getPastEvents(event: string, filter: any): Promise<EthereumEvent[]> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     );

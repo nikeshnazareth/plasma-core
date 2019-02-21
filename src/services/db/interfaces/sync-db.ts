@@ -2,6 +2,7 @@ import { BaseService } from '../../base-service';
 import { BaseContractProvider } from '../../contract/base-provider';
 import { DBService } from '../db-service';
 import { BaseDBProvider } from '../backends';
+import { EthereumEvent } from '../../models/eth-objects';
 
 interface SyncDBExposedServices {
   contract: BaseContractProvider;
@@ -99,7 +100,7 @@ export class SyncDB extends BaseService {
    * Marks a set of Ethereum events as seen.
    * @param events Ethereum events.
    */
-  async addEvents(events: Array<{ hash: string }>): Promise<void> {
+  async addEvents(events: EthereumEvent[]): Promise<void> {
     const objects = events.map((event) => {
       return {
         key: `event:${event.hash}`,
@@ -114,7 +115,7 @@ export class SyncDB extends BaseService {
    * @param event An Ethereum event.
    * @returns `true` if we've seen the event, `false` otherwise.
    */
-  async hasEvent(event: { hash: string }): Promise<boolean> {
+  async hasEvent(event: EthereumEvent): Promise<boolean> {
     return this.db.exists(`event:${event.hash}`);
   }
 }
