@@ -1,6 +1,6 @@
-import { BaseWalletProvider } from './base-provider';
-import { EthereumAccount } from '../models/eth-objects';
 import { Account } from 'eth-lib';
+import { BaseWalletProvider } from './base-provider';
+import { EthereumAccount } from '../models/eth';
 
 export class LocalWalletProvider extends BaseWalletProvider {
   dependencies = ['eth', 'walletdb'];

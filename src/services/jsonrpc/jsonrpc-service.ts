@@ -1,8 +1,8 @@
 import { BaseService, ServiceOptions } from '../base-service';
-import { BaseSubdispatcher } from './subdispatchers/base-subdispatcher';
 import * as subdispatchers from './subdispatchers';
-import { JSONRPCRequest, JSONRPCResponse } from '../models/rpc-objects';
+import { BaseSubdispatcher } from './subdispatchers/base-subdispatcher';
 import { JSONRPC_ERRORS } from './errors';
+import { JSONRPCRequest, JSONRPCResponse } from '../models/rpc';
 
 export class JSONRPCService extends BaseService {
   subdispatchers: BaseSubdispatcher[] = [];
@@ -61,7 +61,7 @@ export class JSONRPCService extends BaseService {
    * @param params Parameters to be used as arguments to the method.
    * @returns the result of the function call.
    */
-  async handle(method: string, params: string[] = []): Promise<any> {
+  async handle(method: string, params: string[] = []): Promise<string | number | {}> {
     const fn = this.getMethod(method);
     return fn(...params);
   }

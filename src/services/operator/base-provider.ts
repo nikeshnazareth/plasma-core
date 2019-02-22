@@ -1,6 +1,6 @@
 import { BaseService } from '../base-service';
-import { Proof } from '../models/chain-objects';
-import { EthInfo } from '../models/operator-objects';
+import { Proof } from '../models/chain';
+import { EthInfo } from '../models/operator';
 
 export class BaseOperatorProvider extends BaseService {
   online = false;

@@ -1,5 +1,5 @@
 import BigNum from 'bn.js';
-import { EthereumEvent } from "../eth-objects";
+import { EthereumEvent } from '../eth';
 
 interface ExitStartedEventArgs {
   token: BigNum;
@@ -7,7 +7,7 @@ interface ExitStartedEventArgs {
   end: BigNum;
   id: BigNum;
   block: BigNum;
-  exiter: string;
+  owner: string;
 }
 
 export class ExitStartedEvent {
@@ -16,7 +16,7 @@ export class ExitStartedEvent {
   end: BigNum;
   id: BigNum;
   block: BigNum;
-  exiter: string;
+  owner: string;
 
   constructor(event: ExitStartedEventArgs) {
     this.token = event.token;
@@ -24,7 +24,7 @@ export class ExitStartedEvent {
     this.end = event.end;
     this.id = event.id;
     this.block = event.block;
-    this.exiter = event.exiter;
+    this.owner = event.owner;
   }
 
   /**
@@ -39,7 +39,7 @@ export class ExitStartedEvent {
       end: event.data.untypedEnd as BigNum,
       id: event.data.exitID as BigNum,
       block: event.data.eventBlockNumber as BigNum,
-      exiter: event.data.exiter as string
+      owner: event.data.exiter as string
     });
   }
 

@@ -1,7 +1,7 @@
 import BigNum from 'bn.js';
-import { Deposit } from '../../models/chain-objects';
 import { BaseService, ServiceOptions } from '../../base-service';
-import { EthereumEvent, EthereumTransactionReceipt } from '../../models/eth-objects';
+import { Deposit } from '../../models/chain';
+import { EthereumEvent, EthereumTransactionReceipt } from '../../models/eth';
 
 export interface UserContractOptions extends ServiceOptions {
   registryAddress: string;

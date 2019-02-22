@@ -1,8 +1,7 @@
 import BigNum from 'bn.js';
 import { BaseService, ServiceOptions } from '../base-service';
-import { EthereumAccount } from '../models/eth-objects';
-import { BaseContractProvider } from './contract';
-import { UserContractOptions } from './contract/base-provider';
+import { BaseContractProvider, UserContractOptions } from './contract/base-provider';
+import { EthereumAccount } from '../models/eth';
 
 export interface UserETHProviderOptions extends ServiceOptions, UserContractOptions {
   ethereumEndpoint?: string;

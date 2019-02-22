@@ -1,14 +1,14 @@
-import { BaseService } from '../../base-service';
-import { Block, Deposit, Exit, Range, Snapshot } from '../../models/chain-objects';
-import { BaseDBProvider } from '../backends';
-import { serialization } from 'plasma-utils';
 import BigNum from 'bn.js';
+import { serialization } from 'plasma-utils';
+import { BaseService } from '../../base-service';
+import { BaseDBProvider } from '../backends/base-provider';
+import { Block, Deposit, Exit, Snapshot, UntypedRange } from '../../models/chain';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
 
 export class ChainDB extends BaseService {
-  dependencies = ['contract', 'db'];
+  dependencies = ['eth', 'db'];
 
   /**
    * @returns the current db instance.
@@ -183,7 +183,7 @@ export class ChainDB extends BaseService {
    */
   async addExitableEnds(exitables: Array<{token: BigNum, end: BigNum}>): Promise<void> {
     const objects = exitables.map((exitable) => {
-      const key = this.getTypedValue(exitable.token, exitable.end)
+      const key = this.getTypedValue(exitable.token, exitable.end);
       return {
         key: `exitable:${key}`,
         value: exitable.end.toString('hex')
@@ -212,7 +212,7 @@ export class ChainDB extends BaseService {
    * Marks a range as exited.
    * @param range Range to mark.
    */
-  async markExited(range: Range): Promise<void> {
+  async markExited(range: UntypedRange): Promise<void> {
     await this.db.set(
       `exited:${range.token}:${range.start}:${range.end}`,
       true
@@ -224,7 +224,7 @@ export class ChainDB extends BaseService {
    * @param range Range to check.
    * @returns `true` if the range is exited, `false` otherwise.
    */
-  async checkExited(range: Range): Promise<boolean> {
+  async checkExited(range: UntypedRange): Promise<boolean> {
     return this.db.get(
       `exited:${range.token}:${range.start}:${range.end}`,
       false
@@ -259,14 +259,14 @@ export class ChainDB extends BaseService {
    * @returns a list of snapshots.
    */
   async getState(): Promise<Snapshot[]> {
-    return this.db.get(`state:latest`, [])
+    return this.db.get(`state:latest`, []);
   }
 
   /**
    * Sets the latest state.
    * @param state A list of snapshots.
    */
-  async setState(state: Snapshot): Promise<void> {
+  async setState(state: Snapshot[]): Promise<void> {
     await this.db.set('state:latest', state);
   }
 

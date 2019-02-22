@@ -1,5 +1,5 @@
 import { utils } from 'plasma-utils';
-import { EthereumEvent, isEventLog } from '../eth-objects';
+import { EthereumEvent, isEventLog } from '../eth';
 import { EventLog } from 'web3/types';
 
 const web3Utils = utils.web3Utils;

@@ -1,6 +1,9 @@
 import { BaseService } from '../base-service';
-import { DepositEvent, ExitFinalizedEvent, ExitStartedEvent, BlockSubmittedEvent } from '../models/events';
-import { EthereumEvent } from '../models/eth-objects';
+import { EthereumEvent } from '../models/eth';
+import {
+  DepositEvent, ExitFinalizedEvent,
+  ExitStartedEvent,BlockSubmittedEvent
+} from '../models/events';
 
 export class EventHandler extends BaseService {
   dependencies = ['eventWatcher'];
@@ -42,9 +45,7 @@ export class EventHandler extends BaseService {
    * @param events Deposit events.
    */
   private onDeposit(events: EthereumEvent[]): void {
-    const deposits = events.map((event) => {
-      return DepositEvent.from(event);
-    });
+    const deposits = events.map(DepositEvent.from);
     deposits.forEach((deposit) => {
       this.log(
         `Detected new deposit of ${deposit.amount} [${deposit.token}] for ${
@@ -60,9 +61,7 @@ export class EventHandler extends BaseService {
    * @param events BlockSubmitted events.
    */
   private onBlockSubmitted(events: EthereumEvent[]): void {
-    const blocks = events.map((event) => {
-      return BlockSubmittedEvent.from(event);
-    });
+    const blocks = events.map(BlockSubmittedEvent.from);
     blocks.forEach((block) => {
       this.log(`Detected block #${block.number}: ${block.hash}`);
     });
@@ -74,9 +73,7 @@ export class EventHandler extends BaseService {
    * @param events ExitStarted events.
    */
   private onExitStarted(events: EthereumEvent[]): void {
-    const exits = events.map((event) => {
-      return ExitStartedEvent.from(event);
-    });
+    const exits = events.map(ExitStartedEvent.from);
     exits.forEach((exit) => {
       this.log(`Detected new started exit: ${exit.id}`);
     });
@@ -88,9 +85,7 @@ export class EventHandler extends BaseService {
    * @param events ExitFinalized events.
    */
   private onExitFinalized(events: EthereumEvent[]): void {
-    const exits = events.map((event) => {
-      return ExitFinalizedEvent.from(event);
-    });
+    const exits = events.map(ExitFinalizedEvent.from);
     exits.forEach((exit) => {
       this.log(`Detected new finalized exit: ${exit.id}`);
     });

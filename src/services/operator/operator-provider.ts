@@ -1,12 +1,12 @@
-import { utils, serialization } from 'plasma-utils';
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import uuidv4 from 'uuid/v4';
 import BigNum from 'bn.js';
+import uuidv4 from 'uuid/v4';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { utils, serialization } from 'plasma-utils';
 import { ServiceOptions } from '../base-service';
-import { Proof, Deposit, ProofElement } from '../models/chain-objects';
-import { EthInfo, OperatorTransaction, OperatorProof } from '../models/operator-objects';
 import { BaseOperatorProvider } from './base-provider';
-import { JSONRPCResponse } from '../models/rpc-objects';
+import { EthInfo, OperatorTransaction, OperatorProof } from '../models/operator';
+import { JSONRPCResponse } from '../models/rpc';
+import { Deposit, Proof, ProofElement } from '../models/chain';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
@@ -29,7 +29,7 @@ const defaultOptions: DefaultOperatorOptions = {
 
 export class OperatorProvider extends BaseOperatorProvider {
   options!: OperatorOptions;
-  dependencies = ['contract'];
+  dependencies = ['eth'];
   pinging = false;
   endpoint?: string;
   http?: AxiosInstance;
@@ -64,7 +64,7 @@ export class OperatorProvider extends BaseOperatorProvider {
   }
 
   async getReceivedTransactions(address: string, startBlock: number, endBlock: number): Promise<string[]> {
-    const txs: any[] = await this.handle('getTransactions', [
+    const txs: Buffer[] = await this.handle('getTransactions', [
       address,
       startBlock,
       endBlock
@@ -177,8 +177,10 @@ export class OperatorProvider extends BaseOperatorProvider {
    * Initializes the connection to the operator.
    */
   private async initConnection(): Promise<void> {
-    this.endpoint = this.services.eth.contract.operatorEndpoint;
-    const baseURL = this.endpoint.startsWith('http') ? this.endpoint : `https://${this.endpoint}`;
+    const endpoint = this.services.eth.contract.operatorEndpoint;
+    const baseURL = endpoint.startsWith('http') ? endpoint : `https://${endpoint}`;
+
+    this.endpoint = endpoint;
     this.http = axios.create({
       baseURL
     });
@@ -190,7 +192,7 @@ export class OperatorProvider extends BaseOperatorProvider {
   private async pingInterval(): Promise<void> {
     try {
       if (this.endpoint !== undefined) {
-        await this.getEthInfo()
+        await this.getEthInfo();
         if (!this.online) {
           this.log('Successfully connected to operator.');
         }

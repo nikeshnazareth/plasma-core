@@ -2,6 +2,7 @@
 node_modules/
 .vscode/
 dist/
+build/
 
 # Testing
 .nyc_output/

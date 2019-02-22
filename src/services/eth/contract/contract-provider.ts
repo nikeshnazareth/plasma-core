@@ -1,20 +1,21 @@
 import BigNum from 'bn.js';
+import Web3 = require('web3');
+import Contract from 'web3/eth/contract';
+import { EventLog } from 'web3/types';
 import { utils } from 'plasma-utils';
 import { compiledContracts } from 'plasma-contracts';
-import Web3 from 'web3';
-import { EventLog, Contract } from 'web3/types';
-import { BaseContractProvider } from './base-provider';
-import { EthereumTransactionReceipt, EthereumEvent } from '../../models/eth-objects';
-import { Deposit } from '../../models/chain-objects';
-import { ChainCreatedEvent } from '../../models/events';
 import { ServiceOptions } from '../../base-service';
+import { BaseContractProvider } from './base-provider';
+import { EthereumTransactionReceipt, EthereumEvent } from '../../models/eth';
+import { Deposit } from '../../models/chain';
+import { ChainCreatedEvent } from '../../models/events';
+
+const web3Utils = utils.web3Utils;
 
 /* Compiled Contracts */
 const plasmaChainCompiled = compiledContracts.plasmaChainCompiled;
 const erc20Compiled = compiledContracts.erc20Compiled;
 const registryCompiled = compiledContracts.plasmaRegistryCompiled;
-
-const web3Utils = utils.web3Utils;
 
 export interface UserContractOptions extends ServiceOptions {
   registryAddress: string;
@@ -229,7 +230,7 @@ export class ContractProvider extends BaseContractProvider {
     const parsed = events.map(ChainCreatedEvent.from);
     
     // Find a matching event.
-    const event = parsed.find((event) => {
+    const event = parsed.find((event: ChainCreatedEvent) => {
       return event.plasmaChainName === plasmaChainName;
     });
 

@@ -1,10 +1,11 @@
 import BigNum from 'bn.js';
 import Web3 from 'web3';
-import { BaseETHProvider } from './base-provider';
-import { EthereumAccount, isAccount } from '../models/eth-objects';
-import { ContractProvider, BaseContractProvider } from './contract';
 import { ServiceOptions } from '../base-service';
+import { BaseETHProvider } from './base-provider';
+import { BaseContractProvider } from './contract/base-provider';
+import { ContractProvider } from './contract/contract-provider';
 import { UserContractOptions } from './contract/contract-provider';
+import { EthereumAccount, isAccount } from '../models/eth';
 
 interface UserETHProviderOptions extends ServiceOptions, UserContractOptions {
   ethereumEndpoint?: string;

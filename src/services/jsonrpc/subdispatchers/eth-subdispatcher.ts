@@ -5,7 +5,7 @@ import { BaseSubdispatcher } from './base-subdispatcher';
  */
 export class ETHSubdispatcher extends BaseSubdispatcher {
   prefix = 'pg_';
-  dependencies = ['contract', 'eth'];
+  dependencies = ['eth'];
 
   get methods(): { [key: string]: Function } {
     const contract = this.app.services.eth.contract;

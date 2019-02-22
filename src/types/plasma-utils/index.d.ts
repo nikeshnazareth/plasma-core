@@ -12,6 +12,19 @@ declare module 'plasma-utils' {
     var web3Utils: any;
   }
 
+  class PlasmaMerkleSumTree {
+    static getTransferProofBounds(
+      transaction: serialization.models.UnsignedTransaction,
+      transferProof: serialization.models.TransferProof
+    ): { implicitStart: BigNum, implicitEnd: BigNum };
+
+    static checkTransactionProof(
+      transaction: serialization.models.UnsignedTransaction,
+      proof: serialization.models.TransactionProof,
+      root: string
+    ): boolean;
+  }
+
   namespace serialization {
     namespace models {
       class BaseModel {
@@ -31,16 +44,24 @@ declare module 'plasma-utils' {
         token: BigNum;
         start: BigNum;
         end: BigNum;
+        block?: BigNum;
+        typedStart?: BigNum;
+        typedEnd?: BigNum;
+        implicitStart?: BigNum;
+        implicitEnd?: BigNum;
+        implicit?: boolean;
       }
 
       class UnsignedTransaction extends BaseModel {
         block: BigNum;
         hash: string;
         transfers: Transfer[];
+        isEmptyBlockTransaction: boolean;
       }
 
       class SignedTransaction extends UnsignedTransaction {
         signatures: Signature[];
+        checkSigs(): boolean;
       }
 
       class TransferProof extends BaseModel {

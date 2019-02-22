@@ -1,4 +1,5 @@
 import BigNum from 'bn.js';
+import _ from 'lodash';
 import { utils } from 'plasma-utils';
 import { EventLog } from 'web3/types';
 
@@ -19,7 +20,7 @@ interface EventData {
  * @returns the parsed event values.
  */
 const parseEventValues = (event: EventLog): EventData => {
-  const values: RawEventData = Object.assign({}, event.returnValues);
+  const values = _.cloneDeep(event.returnValues as RawEventData);
   const parsed: EventData = {};
   for (const key of Object.keys(values)) {
     const value = values[key];
@@ -30,29 +31,24 @@ const parseEventValues = (event: EventLog): EventData => {
   return parsed;
 };
 
+interface EventLogLike {
+  blockNumber?: number;
+  returnValues?: {};
+  transactionHash?: string;
+  logIndex: number;
+}
+
 /**
  * Checks whether an object is an EventLog.
  * @param data Object to check.
  * @returns `true` if it's an EventLog, `false` otherwise.
  */
-export const isEventLog = (data: any): boolean => {
+export const isEventLog = (data: EventLogLike): boolean => {
   return (
     data.blockNumber !== undefined &&
     data.returnValues !== undefined &&
     data.transactionHash !== undefined &&
     data.logIndex !== undefined
-  );
-};
-
-/**
- * Checks whether an object is an EthereumAccount.
- * @param data Object to check.
- * @returns `true` if it's an EthereumAccount, `false` otherwise.
- */
-export const isAccount = (data: any): boolean => {
-  return (
-    data.address !== undefined &&
-    data.privateKey !== undefined
   );
 };
 
@@ -87,7 +83,7 @@ export class EthereumEvent {
   static fromEventLog(event: EventLog): EthereumEvent {
     return new EthereumEvent({
       block: new BigNum(event.blockNumber, 10),
-      raw: Object.assign({}, event.returnValues),
+      raw: (event.returnValues as RawEventData),
       data: parseEventValues(event),
       hash: web3Utils.sha3(event.transactionHash + event.logIndex),
     });
@@ -105,13 +101,4 @@ export class EthereumEvent {
 
     throw new Error('Cannot cast to EthereumEvent.');
   }
-}
-
-export interface EthereumAccount {
-  address: string;
-  privateKey: string;
-}
-
-export interface EthereumTransactionReceipt {
-  transactionHash: string;
 }

@@ -1,4 +1,4 @@
-import { JSONRPCError } from "../models/rpc-objects";
+import { JSONRPCError } from '../models/rpc';
 
 export const JSONRPC_ERRORS: { [key: string]: JSONRPCError } = {
   PARSE_ERROR: {

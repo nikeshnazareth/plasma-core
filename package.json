@@ -15,7 +15,8 @@
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run check"
+    "posttest": "npm run check",
+    "postinstall": "rm -f node_modules/web3/index.d.ts"
   },
   "husky": {
     "hooks": {
@@ -79,6 +80,7 @@
   "dependencies": {
     "@types/async-lock": "^1.1.1",
     "@types/debug": "^4.1.2",
+    "@types/lodash": "^4.14.121",
     "@types/toposort": "^2.0.1",
     "@types/uuid": "^3.4.4",
     "@types/web3": "^1.0.18",

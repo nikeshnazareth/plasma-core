@@ -12,7 +12,7 @@ export interface JSONRPCRequest {
 
 export interface JSONRPCResponse {
   jsonrpc: string;
-  result?: any;
+  result?: string | number | {};
   error?: JSONRPCError;
   message?: string;
   id: string | null;

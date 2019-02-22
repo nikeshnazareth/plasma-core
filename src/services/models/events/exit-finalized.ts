@@ -1,5 +1,5 @@
 import BigNum from 'bn.js';
-import { EthereumEvent } from '../eth-objects';
+import { EthereumEvent } from '../eth';
 
 interface ExitFinalizedEventArgs {
   token: BigNum;

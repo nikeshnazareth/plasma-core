@@ -1,9 +1,9 @@
 import { BaseService } from '../../base-service';
-import { BaseDBProvider } from '../backends';
-import { EthereumEvent } from '../../models/eth-objects';
+import { BaseDBProvider } from '../backends/base-provider';
+import { EthereumEvent } from '../../models/eth';
 
 export class SyncDB extends BaseService {
-  dependencies = ['contract', 'db'];
+  dependencies = ['eth', 'db'];
 
   /**
    * @returns the current db instance.

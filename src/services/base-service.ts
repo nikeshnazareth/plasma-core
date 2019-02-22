@@ -68,7 +68,7 @@ export class BaseService extends EventEmitter {
   get services(): AppServices {
     return new Proxy(this.app.services, {
       get: (services: AppServices, name: string) => {
-        const service = (services as any)[name];
+        const service = services[name];
         if (!service.started) {
           throw new Error(`Service has not been started: ${name}`);
         }
@@ -86,7 +86,7 @@ export class BaseService extends EventEmitter {
       this.started &&
       this.dependencies.every((dependency: string) => {
         try {
-          const service = (this.services as any)[dependency];
+          const service = this.services[dependency];
           return service !== undefined && service.started;
         } catch {
           return false;

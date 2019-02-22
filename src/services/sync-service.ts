@@ -1,6 +1,7 @@
 import { utils, serialization, constants } from 'plasma-utils';
 import { BaseService, ServiceOptions } from './base-service';
 import { DepositEvent, BlockSubmittedEvent, ExitStartedEvent, ExitFinalizedEvent } from './models/events';
+import { Exit, Deposit } from './models/chain';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
@@ -24,7 +25,7 @@ const defaultOptions: DefaultSyncOptions = {
 export class SyncService extends BaseService {
   options!: SyncOptions;
   dependencies = [
-    'contract',
+    'eth',
     'chain',
     'eventHandler',
     'syncdb',
@@ -70,7 +71,7 @@ export class SyncService extends BaseService {
    * Attaches handlers to Ethereum events.
    */
   private attachHandlers(): void {
-    const handlers: { [key: string]: any } = {
+    const handlers: { [key: string]: Function } = {
       Deposit: this.onDeposit,
       BlockSubmitted: this.onBlockSubmitted,
       ExitStarted: this.onExitStarted,
@@ -166,9 +167,9 @@ export class SyncService extends BaseService {
 
     this.log(`Detected new transaction: ${tx.hash}`);
     this.log(`Attemping to pull information for transaction: ${tx.hash}`);
-    let transactionProof;
+    let txdata;
     try {
-      transactionProof = await this.services.operator.getTransactionProof(tx.encoded);
+      txdata = await this.services.operator.getTransactionProof(tx.encoded);
     } catch (err) {
       this.log(
         `ERROR: Operator failed to return information for transaction: ${
@@ -179,7 +180,7 @@ export class SyncService extends BaseService {
     }
 
     this.log(`Importing new transaction: ${tx.hash}`);
-    await this.services.chain.addTransaction(transactionProof);
+    await this.services.chain.addTransaction(txdata.transaction, txdata.deposits, txdata.proof);
     this.log(`Successfully imported transaction: ${tx.hash}`);
   }
 
@@ -188,7 +189,8 @@ export class SyncService extends BaseService {
    * @param deposits Deposit events.
    */
   async onDeposit(deposits: DepositEvent[]): Promise<void> {
-    await this.services.chain.addDeposits(deposits)
+    const parsed = deposits.map(Deposit.from);
+    await this.services.chain.addDeposits(parsed);
   }
 
   /**
@@ -196,7 +198,7 @@ export class SyncService extends BaseService {
    * @param blocks Block submission events.
    */
   async onBlockSubmitted(blocks: BlockSubmittedEvent[]): Promise<void> {
-    await this.services.chaindb.addBlockHeaders(blocks)
+    await this.services.chaindb.addBlockHeaders(blocks);
   }
 
   /**
@@ -205,7 +207,8 @@ export class SyncService extends BaseService {
    */
   async onExitStarted(exits: ExitStartedEvent[]): Promise<void> {
     for (const exit of exits) {
-      await this.services.chain.addExit(exit);
+      const parsed = Exit.from(exit);
+      await this.services.chain.addExit(parsed);
     }
   }
 

@@ -1,7 +1,7 @@
+import { Account } from 'eth-lib';
 import { BaseService } from '../../base-service';
 import { BaseDBProvider } from '../backends/base-provider';
-import { EthereumAccount } from '../../models/eth-objects';
-import { Account } from 'eth-lib';
+import { EthereumAccount } from '../../models/eth';
 
 export class WalletDB extends BaseService {
   dependencies = ['eth', 'db'];

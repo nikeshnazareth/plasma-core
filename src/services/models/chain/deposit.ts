@@ -1,26 +1,7 @@
 import BigNum from 'bn.js';
-import { OperatorTransfer, OperatorProof } from './operator-objects';
-import { serialization } from 'plasma-utils';
-import { DepositEvent } from './events';
-import { EthereumEvent } from './eth-objects';
-
-export class Exit {
-  owner: string;
-  id: BigNum;
-  token: BigNum;
-  start: BigNum;
-  end: BigNum;
-  block: BigNum;
-
-  constructor (args: Exit) {
-    this.owner = args.owner;
-    this.id = args.id;
-    this.token = args.token;
-    this.start = args.start;
-    this.end = args.end;
-    this.block = args.block;
-  }
-}
+import { OperatorTransfer } from '../operator';
+import { DepositEvent } from '../events';
+import { EthereumEvent } from '../eth';
 
 interface DepositArgs {
   owner: string;
@@ -43,6 +24,10 @@ export class Deposit {
     this.start = args.start;
     this.end = args.end;
     this.block = args.block;
+  }
+
+  get amount(): BigNum {
+    return this.end.sub(this.start);
   }
 
   equals(other: Deposit): boolean {
@@ -88,54 +73,4 @@ export class Deposit {
     }
     throw new Error('Cannot cast to Deposit.');
   }
-}
-
-export class ProofElement {
-  transaction: serialization.models.SignedTransaction;
-  transactionProof: serialization.models.TransactionProof;
-
-  constructor(args: ProofElement) {
-    this.transaction = args.transaction;
-    this.transactionProof = args.transactionProof;
-  }
-
-  static fromEmptyProof(block: number) {
-    return new ProofElement({
-      transaction: new serialization.models.SignedTransaction({
-        block: new BigNum(block, 10),
-        transfers: []
-      }),
-      transactionProof: new serialization.models.TransactionProof({
-        transferProofs: []
-      })
-    });
-  }
-
-  static fromOperatorProof(proof: OperatorProof) {
-    return new ProofElement({
-      transaction: new serialization.models.SignedTransaction(proof.transaction),
-      transactionProof: new serialization.models.TransactionProof(proof.transactionProof)
-    });
-  }
-}
-
-export interface Proof {
-  transaction: any;
-  proof: any;
-  deposits: any;
-}
-
-export interface Block {
-  number: number;
-  hash: string;
-}
-
-export interface Range {
-  token: BigNum;
-  start: BigNum;
-  end: BigNum;
-}
-
-export interface Snapshot {
-  test: string;
 }
