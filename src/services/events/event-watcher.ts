@@ -1,15 +1,6 @@
 import { BaseService, ServiceOptions } from '../base-service';
-import { BaseContractProvider } from '../contract/base-provider';
-import { BaseETHProvider } from '../eth/base-provider';
-import { SyncDB } from '../db/interfaces';
 import { utils } from 'plasma-utils';
 import { EthereumEvent } from '../models/eth-objects';
-
-interface EventWatcherExposedServices {
-  contract: BaseContractProvider;
-  eth: BaseETHProvider;
-  syncdb: SyncDB;
-}
 
 interface UserEventWatcherOptions extends ServiceOptions {
   finalityDepth?: number;
@@ -32,10 +23,8 @@ const defaultOptions: DefaultEventWatcherOptions = {
 };
 
 export class EventWatcher extends BaseService {
-  services!: EventWatcherExposedServices;
   options!: EventWatcherOptions;
   dependencies = ['contract', 'web3', 'syncdb'];
-  name = 'eventWatcher';
 
   watching = false;
   subscriptions: { [key: string]: Function[] } = {};

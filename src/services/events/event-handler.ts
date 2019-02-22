@@ -1,16 +1,9 @@
 import { BaseService } from '../base-service';
 import { DepositEvent, ExitFinalizedEvent, ExitStartedEvent, BlockSubmittedEvent } from '../models/events';
-import { EventWatcher } from './event-watcher';
 import { EthereumEvent } from '../models/eth-objects';
 
-interface EventHandlerExposedServices {
-  eventWatcher: EventWatcher;
-}
-
 export class EventHandler extends BaseService {
-  services!: EventHandlerExposedServices;
   dependencies = ['eventWatcher'];
-  name = 'eventHandler';
 
   async onStart(): Promise<void> {
     this.registerHandlers();

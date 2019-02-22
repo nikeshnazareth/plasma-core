@@ -1,6 +1,7 @@
 import BigNum from 'bn.js';
 import Web3 from 'web3';
 import { BaseETHProvider } from './base-provider';
+import { EthereumAccount, isAccount } from '../models/eth-objects';
 
 export class ETHProvider extends BaseETHProvider {
   private _web3?: Web3;
@@ -56,6 +57,18 @@ export class ETHProvider extends BaseETHProvider {
     return keys.filter((key) => {
       return this.web3.utils.isAddress(key);
     });
+  }
+
+  async getWalletAccount(address: string): Promise<EthereumAccount> {
+    const wallet: { [key: string]: any } = this.web3.eth.accounts.wallet;
+    for (const key of Object.keys(wallet)) {
+      const value = wallet[key];
+      if (key === address && isAccount(value)) {
+        return value as EthereumAccount;
+      }
+    }
+
+    throw new Error('Account not found.');
   }
 
   async hasWalletAccount(address: string): Promise<boolean> {

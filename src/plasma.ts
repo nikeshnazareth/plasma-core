@@ -1,36 +1,38 @@
 import toposort = require('toposort');
 import debug = require('debug');
-import { BaseService } from './services/base-service';
 import { EventEmitter } from 'events';
 import * as services from './services';
+import { AppServices, RequiredServiceTypes } from './services/service-interface';
 
-// TODONOW: Define these.
 interface UserPlasmaOptions {
   debug?: string;
-  web3Provider?: services.BaseWeb3Provider | typeof services.BaseWeb3Provider;
-  operatorProvider?: any;
-  walletProvider?: any;
-  contractProvider?: any;
+  ethProvider?: typeof services.BaseETHProvider;
+  operatorProvider?: typeof services.BaseOperatorProvider;
+  walletProvider?: typeof services.BaseWalletProvider;
+  contractProvider?: typeof services.BaseContractProvider;
 }
 
 interface PlasmaOptions {
   debug: string;
-  web3Provider: services.BaseWeb3Provider | typeof services.BaseWeb3Provider;
-  operatorProvider?: any;
-  walletProvider?: any;
-  contractProvider?: any;
+  ethProvider: typeof services.BaseETHProvider;
+  operatorProvider: typeof services.BaseOperatorProvider;
+  walletProvider: typeof services.BaseWalletProvider;
+  contractProvider: typeof services.BaseContractProvider;
 }
 
 const defaultOptions: PlasmaOptions = {
   debug: '',
-  web3Provider: services.Web3Provider
+  ethProvider: services.ETHProvider,
+  operatorProvider: services.OperatorProvider,
+  walletProvider: services.LocalWalletProvider,
+  contractProvider: services.ContractProvider
 };
 
 export class PlasmaApp extends EventEmitter {
   options: PlasmaOptions;
-  services: Map<string, BaseService> = new Map();
+  private _services: AppServices;
   private _loggers: Map<string, debug.Debugger> = new Map();
-  
+
   constructor(options: UserPlasmaOptions = {}) {
     super();
 
@@ -40,7 +42,23 @@ export class PlasmaApp extends EventEmitter {
     };
 
     debug.enable(this.options.debug);
-    this.registerServices();
+    this._services = this.buildRequiredServices();
+  }
+
+  /**
+   * Proxy object for services that throws if the accessed
+   * service is undefined
+   */
+  get services(): AppServices {
+    return new Proxy(this._services, {
+      get: (services: AppServices, key: string) => {
+        const service = services[key];
+        if (service === undefined) {
+          throw new Error(`ERROR: Service does not exist: ${key}`);
+        }
+        return service;
+      }
+    });
   }
 
   /**
@@ -64,13 +82,10 @@ export class PlasmaApp extends EventEmitter {
    * @param name Name of the service to start.
    */
   async startService(name: string): Promise<void> {
-    const service = this.services.get(name);
-    if (service === undefined) {
-      throw new Error(`ERROR: Service does not exist: ${name}`);
-    }
+    const service = this.services[name];
 
     for (const dependency of service.dependencies) {
-      const dep = this.services.get(dependency);
+      const dep = this.services[dependency];
       if (dep === undefined || !dep.started) {
         throw new Error(
           `ERROR: Service ${name} is dependent on service that has not been started: ${dependency}`
@@ -92,10 +107,7 @@ export class PlasmaApp extends EventEmitter {
    * @param name Name of the service to stop.
    */
   async stopService(name: string): Promise<void> {
-    const service = this.services.get(name);
-    if (service === undefined) {
-      throw new Error(`ERROR: Service does not exist: ${name}`);
-    }
+    const service = this.services[name];
 
     try {
       await service.stop();
@@ -130,69 +142,80 @@ export class PlasmaApp extends EventEmitter {
   /**
    * Registers a single service to the app.
    * @param service Class of the service to register.
+   * @param name Name of the service.
    * @param options Any additional options.
    */
-  registerService(service: BaseService | typeof BaseService, options = {}): void {
-    // Check if it's a class or an instance of the class.
-    if (typeof service === 'function') {
-      const appInject = { app: this };
-      service = new service({ ...options, ...appInject });
-    } else {
-      service.app = this;
-    }
+  registerService(service: typeof services.BaseService, name: string, options = {}): void {
+    const instance = this.buildService(service, name, options);
+    this.services[name] = instance;
+  }
+
+  /**
+   * Builds a single service into a service instance.
+   * @param service The service class to build.
+   * @param name Name of the service.
+   * @param options Any additional options to the service.
+   * @returns the built service.
+   */
+  private buildService(service: typeof services.BaseService, name: string, options = {}): services.BaseService {
+    const appInject = { app: this, name };
+    const instance = new service({ ...options, ...appInject });
 
     // Relay lifecycle events.
     const lifecycle = ['started', 'initialized', 'stopped'];
     for (const event of lifecycle) {
-      service.on(event, () => {
-        this.emit(`${service.name}:${event}`);
+      instance.on(event, () => {
+        this.emit(`${name}:${event}`);
       });
     }
 
-    this.services.set(service.name, service);
+    return instance;
   }
 
   /**
-   * Registers all services.
+   * Builds the required services into their instances.
+   * @returns an AppServices object.
    */
-  private registerServices(): void {
-    const available: BaseService[] | Array<typeof BaseService> = [
+  private buildRequiredServices(): AppServices {
+    const required: RequiredServiceTypes = {
       /* Providers */
-      this.options.web3Provider,
-      this.options.operatorProvider,
-      this.options.walletProvider,
-      this.options.contractProvider,
-
-      /* Database Interfaces */
-      services.dbInterfaces.WalletDB,
-      services.dbInterfaces.ChainDB,
-      services.dbInterfaces.SyncDB,
+      eth: this.options.ethProvider,
+      operator: this.options.operatorProvider,
+      wallet: this.options.walletProvider,
+      contract: this.options.contractProvider,
 
       /* Services */
-      services.DBService,
-      services.ETHService,
-      services.ProofService,
-      services.ChainService,
-      services.JSONRPCService,
-      services.SyncService,
-      services.EventWatcher,
-      services.EventHandler
-    ]
+      guard: services.GuardService,
+      sync: services.SyncService,
+      dbservice: services.DBService,
+      eventWatcher: services.EventWatcher,
+      eventHandler: services.EventHandler,
+      proof: services.ProofService,
+      chain: services.ChainService,
+      jsonrpc: services.JSONRPCService,
 
-    for (const service of available) {
-      this.registerService(service, this.options);
+      /* Database Interfaces */
+      walletdb: services.WalletDB,
+      chaindb: services.ChainDB,
+      syncdb: services.SyncDB
+    };
+
+    const built: { [key: string]: services.BaseService } = {};
+    for (const service of Object.keys(required)) {
+      built[service] = this.buildService(required[service], service, this.options);
     }
+
+    return built as AppServices;
   }
 
   /**
    * Returns the names of services ordered by their dependencies.
    * Automatically resolves dependencies.
-   * @returns List of service names ordered by dependencies.
+   * @returns a list of service names ordered by dependencies.
    */
   private getOrderedServices(): string[] {
     const dependencyGraph = Object.keys(this.services).reduce((graph: Array<[string, string]>, key) => {
-      const service = this.services.get(key);
-      if (service === undefined) return graph;
+      const service = this.services[key];
 
       for (const dependency of service.dependencies) {
         graph.push([service.name, dependency]);

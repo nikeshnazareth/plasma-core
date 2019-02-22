@@ -1,8 +1,6 @@
 import { BaseService } from '../base-service';
 
 export class BaseWalletProvider extends BaseService {
-  name = 'wallet';
-
   /**
    * Returns the addresses of all accounts in this wallet.
    * @returns the list of addresses in this wallet.
@@ -39,6 +37,17 @@ export class BaseWalletProvider extends BaseService {
    * @returns the account's address.
    */
   async createAccount(): Promise<string> {
+    throw new Error(
+      'Classes that extend BaseWalletProvider must implement this method'
+    );
+  }
+  
+  /**
+   * Adds an account to the web3 wallet so that it can send contract transactions directly.
+   * See https://bit.ly/2MPAbRd for more information.
+   * @param address Address of the account to add to wallet.
+   */
+  async addAccountToWallet(address: string): Promise<void> {
     throw new Error(
       'Classes that extend BaseWalletProvider must implement this method'
     );

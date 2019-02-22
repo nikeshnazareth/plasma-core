@@ -1,11 +1,6 @@
 import { utils, serialization, constants } from 'plasma-utils';
 import { BaseService, ServiceOptions } from './base-service';
-import { BaseContractProvider } from './contract/base-provider';
-import { BaseOperatorProvider } from './operator/base-provider';
-import { BaseWalletProvider } from './wallet/base-provider';
-import { DepositEvent, BlockSubmittedEvent, ExitStartedEvent, ExitFinalizedEvent } from './models/event-objects';
-import { SyncDB, ChainDB } from './db/interfaces';
-import { EventHandler } from './events/event-handler';
+import { DepositEvent, BlockSubmittedEvent, ExitStartedEvent, ExitFinalizedEvent } from './models/events';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
@@ -22,23 +17,12 @@ interface DefaultSyncOptions {
   transactionPollInterval: number;
 }
 
-interface SyncExposedServices {
-  contract: BaseContractProvider;
-  wallet: BaseWalletProvider;
-  operator: BaseOperatorProvider;
-  syncdb: SyncDB;
-  chaindb: ChainDB;
-  chain: ChainService;
-  eventHandler: EventHandler;
-}
-
 const defaultOptions: DefaultSyncOptions = {
   transactionPollInterval: 15000
 };
 
 export class SyncService extends BaseService {
   options!: SyncOptions;
-  services!: SyncExposedServices;
   dependencies = [
     'contract',
     'chain',
@@ -48,7 +32,6 @@ export class SyncService extends BaseService {
     'wallet',
     'operator'
   ];
-  name = 'sync';
   pending: string[] = [];
   polling = false;
 

@@ -1,20 +1,15 @@
-const BaseSubdispatcher = require('./base-subdispatcher')
+import { BaseSubdispatcher } from './base-subdispatcher';
 
 /**
  * Subdispatcher that handles chain-related requests.
  */
-class ChainSubdispatcher extends BaseSubdispatcher {
-  get prefix () {
-    return 'pg_'
-  }
+export class ChainSubdispatcher extends BaseSubdispatcher {
+  prefix = 'pg_';
+  dependencies = ['chain', 'chaindb'];
 
-  get dependencies () {
-    return ['chain', 'chaindb']
-  }
-
-  get methods () {
-    const chain = this.app.services.chain
-    const chaindb = this.app.services.chaindb
+  get methods(): { [key: string]: Function } {
+    const chain = this.app.services.chain;
+    const chaindb = this.app.services.chaindb;
     return {
       getBlockHeader: chaindb.getBlockHeader.bind(chaindb),
       getTransaction: chaindb.getTransaction.bind(chaindb),
@@ -25,8 +20,6 @@ class ChainSubdispatcher extends BaseSubdispatcher {
       finalizeExits: chain.finalizeExits.bind(chain),
       getExits: chain.getExitsWithStatus.bind(chain),
       getBalances: chain.getBalances.bind(chain)
-    }
+    };
   }
 }
-
-module.exports = ChainSubdispatcher

@@ -20,7 +20,6 @@ const defaultOptions: DefaultDBOptions = {
 
 export class DBService extends BaseService {
   options!: DBOptions;
-  name = 'dbservice';
   dbs: { [key: string]: BaseDBProvider } = {};
 
   constructor(options: UserDBOptions) {

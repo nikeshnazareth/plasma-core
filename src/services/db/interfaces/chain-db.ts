@@ -1,6 +1,4 @@
 import { BaseService } from '../../base-service';
-import { BaseContractProvider } from '../../contract/base-provider';
-import { DBService } from '../db-service';
 import { Block, Deposit, Exit, Range, Snapshot } from '../../models/chain-objects';
 import { BaseDBProvider } from '../backends';
 import { serialization } from 'plasma-utils';
@@ -9,15 +7,8 @@ import BigNum from 'bn.js';
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
 
-interface ChainDBExposedServices {
-  contract: BaseContractProvider;
-  dbservice: DBService;
-}
-
 export class ChainDB extends BaseService {
-  services!: ChainDBExposedServices;
   dependencies = ['contract', 'db'];
-  name = 'chaindb';
 
   /**
    * @returns the current db instance.

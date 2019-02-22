@@ -3,7 +3,6 @@ import { Proof } from '../models/chain-objects';
 import { EthInfo } from '../models/operator-objects';
 
 export class BaseOperatorProvider extends BaseService {
-  name = 'operator';
   online = false;
 
   /**

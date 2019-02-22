@@ -1,17 +1,10 @@
 import { BaseService } from '../../base-service';
-import { DBService } from '../db-service';
 import { BaseDBProvider } from '../backends/base-provider';
 import { EthereumAccount } from '../../models/eth-objects';
 import { Account } from 'eth-lib';
 
-interface WalletDBExposedServices {
-  dbservice: DBService;
-}
-
 export class WalletDB extends BaseService {
-  services!: WalletDBExposedServices;
   dependencies = ['eth', 'db'];
-  name = 'walletdb';
 
   /**
    * @returns the current DB instance.

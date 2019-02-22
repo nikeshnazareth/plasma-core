@@ -10,7 +10,6 @@ interface LocalWalletExposedServices {
 }
 
 export class LocalWalletProvider extends BaseWalletProvider {
-  services!: LocalWalletExposedServices;
   dependencies = ['eth', 'walletdb'];
 
   async getAccounts(): Promise<string[]> {
@@ -35,11 +34,6 @@ export class LocalWalletProvider extends BaseWalletProvider {
     return account.address;
   }
 
-  /**
-   * Adds an account to the web3 wallet so that it can send contract transactions directly.
-   * See https://bit.ly/2MPAbRd for more information.
-   * @param address Address of the account to add to wallet.
-   */
   async addAccountToWallet(address: string): Promise<void> {
     const hasAccount = await this.services.eth.hasWalletAccount(address);
     if (hasAccount) return;

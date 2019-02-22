@@ -1,5 +1,6 @@
 import BigNum from 'bn.js';
 import { BaseService, ServiceOptions } from '../base-service';
+import { EthereumAccount } from '../models/eth-objects';
 
 interface UserETHProviderOptions extends ServiceOptions {
   ethereumEndpoint?: string;
@@ -19,7 +20,6 @@ const defaultOptions: DefaultETHProviderOptions = {
 
 export class BaseETHProvider extends BaseService {
   options!: ETHProviderOptions;
-  name = 'eth';
 
   constructor(options: UserETHProviderOptions) {
     super(options, defaultOptions);
@@ -62,6 +62,15 @@ export class BaseETHProvider extends BaseService {
    */
   async getWalletAccounts(): Promise<string[]> {
     throw new Error('Classes that extend BaseETHProvider must implement this method.');
+  }
+
+  /**
+   * Returns the account object for a given account.
+   * @param address Address of the account.
+   * @returns the account object.
+   */
+  async getWalletAccount(address: string): Promise<EthereumAccount> {
+    throw new Error('Classes that extend BaseETHProvider must implement this method.'); 
   }
 
   /**

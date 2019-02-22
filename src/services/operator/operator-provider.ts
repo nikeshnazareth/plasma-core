@@ -1,7 +1,6 @@
 import { ServiceOptions } from '../base-service';
 import { Proof, Deposit, ProofElement } from '../models/chain-objects';
 import { EthInfo, OperatorTransaction, OperatorProof } from '../models/operator-objects';
-import { BaseContractProvider } from '../contract/base-provider';
 import { BaseOperatorProvider } from './base-provider';
 import { utils, serialization } from 'plasma-utils';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
@@ -23,10 +22,6 @@ interface DefaultOperatorOptions {
   operatorPingInterval: number;
 }
 
-interface OperatorExposedServices {
-  contract: BaseContractProvider;
-}
-
 interface JSONRPCResponse {
   id: string;
   error?: string;
@@ -39,7 +34,6 @@ const defaultOptions: DefaultOperatorOptions = {
 
 export class OperatorProvider extends BaseOperatorProvider {
   options!: OperatorOptions;
-  services!: OperatorExposedServices;
   dependencies = ['contract'];
   pinging = false;
   endpoint?: string;

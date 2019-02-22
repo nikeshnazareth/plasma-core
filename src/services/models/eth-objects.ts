@@ -35,12 +35,24 @@ const parseEventValues = (event: EventLog): EventData => {
  * @param data Object to check.
  * @returns `true` if it's an EventLog, `false` otherwise.
  */
-const isEventLog = (data: any): boolean => {
+export const isEventLog = (data: any): boolean => {
   return (
     data.blockNumber !== undefined &&
     data.returnValues !== undefined &&
     data.transactionHash !== undefined &&
     data.logIndex !== undefined
+  );
+};
+
+/**
+ * Checks whether an object is an EthereumAccount.
+ * @param data Object to check.
+ * @returns `true` if it's an EthereumAccount, `false` otherwise.
+ */
+export const isAccount = (data: any): boolean => {
+  return (
+    data.address !== undefined &&
+    data.privateKey !== undefined
   );
 };
 

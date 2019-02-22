@@ -1,9 +1,11 @@
 import debug = require('debug');
 import { EventEmitter } from 'events';
+import { AppServices } from './service-interface';
 import { PlasmaApp } from '../plasma';
 
 export interface ServiceOptions {
   app: PlasmaApp;
+  name: string;
 }
 
 /**
@@ -11,9 +13,9 @@ export interface ServiceOptions {
  */
 export class BaseService extends EventEmitter {
   started = false;
+  name: string;
   options: ServiceOptions;
   app: PlasmaApp;
-  services: {};
 
   constructor(options: ServiceOptions, defaultOptions = {}) {
     super();
@@ -23,40 +25,12 @@ export class BaseService extends EventEmitter {
       ...options
     };
     this.app = this.options.app;
-
-    // Create a proxy object here so we can
-    // override the child's definition of `services`
-    // but keep the same interface.
-    this.services = new Proxy({}, {
-      get: (_, name: string) => {
-        const service = this.app.services.get(name);
-
-        if (!service) {
-          throw new Error(`Service does not exist: ${name}`);
-        }
-
-        if (!service.started) {
-          throw new Error(`Service has not been started: ${name}`);
-        }
-
-        return service;
-      }
-    });
-  }
-
-  /**
-   * Returns the name of this service.
-   * @returns Name of the service.
-   */
-  get name(): string {
-    throw new Error(
-      'Classes that extend BaseService must implement this method.'
-    );
+    this.name = this.options.name;
   }
 
   /**
    * List of services this service depends on, identified by name.
-   * @returns List of dependencies.
+   * @returns a list of dependencies.
    */
   get dependencies(): string[] {
     return [];
@@ -87,6 +61,23 @@ export class BaseService extends EventEmitter {
   }
 
   /**
+   * Proxy that blocks services from accessing
+   * services that haven't been started.
+   * @returns app services.
+   */
+  get services(): AppServices {
+    return new Proxy(this.app.services, {
+      get: (services: AppServices, name: string) => {
+        const service = (services as any)[name];
+        if (!service.started) {
+          throw new Error(`Service has not been started: ${name}`);
+        }
+        return service;
+      }
+    });
+  }
+
+  /**
    * Checks whether the service and all of its dependencies are started.
    * @returns `true` if all started, `false` otherwise.
    */
@@ -94,8 +85,12 @@ export class BaseService extends EventEmitter {
     return (
       this.started &&
       this.dependencies.every((dependency: string) => {
-        const service = this.app.services.get(dependency);
-        return service !== undefined && service.started;
+        try {
+          const service = (this.services as any)[dependency];
+          return service !== undefined && service.started;
+        } catch {
+          return false;
+        }
       })
     );
   }

@@ -5,8 +5,6 @@ import { TransactionReceipt } from 'web3/types';
 import { EthereumEvent } from '../models/eth-objects';
 
 export class BaseContractProvider extends BaseService {
-  name = 'contract';
-
   /**
    * @returns Address of the connected contract.
    */
