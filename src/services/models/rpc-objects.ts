@@ -12,13 +12,8 @@ export interface JSONRPCRequest {
 
 export interface JSONRPCResponse {
   jsonrpc: string;
-  result: any;
-  id: string;
-}
-
-export interface JSONRPCErrorResponse {
-  jsonrpc: string;
-  error: JSONRPCError;
+  result?: any;
+  error?: JSONRPCError;
   message?: string;
   id: string | null;
 }

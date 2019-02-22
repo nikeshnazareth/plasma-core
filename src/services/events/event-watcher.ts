@@ -138,7 +138,7 @@ export class EventWatcher extends BaseService {
    * @param {number} lastFinalBlock Number of the latest block known to be final.
    */
   private async checkEvent(eventName: string, lastFinalBlock: number): Promise<void> {
-    if (!this.events[eventName] || !this.services.contract.hasAddress) {
+    if (!this.events[eventName] || !this.services.eth.contract.hasAddress) {
       return;
     }
 
@@ -152,7 +152,7 @@ export class EventWatcher extends BaseService {
     this.log(`Checking for new ${eventName} events between Ethereum blocks ${firstUnsyncedBlock} and ${lastFinalBlock}`);
 
     // Pull new events from the contract
-    let events = await this.services.contract.getPastEvents(
+    let events = await this.services.eth.contract.getPastEvents(
       eventName,
       {
         fromBlock: firstUnsyncedBlock,

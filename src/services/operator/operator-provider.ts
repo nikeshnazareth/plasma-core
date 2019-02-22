@@ -1,11 +1,12 @@
-import { ServiceOptions } from '../base-service';
-import { Proof, Deposit, ProofElement } from '../models/chain-objects';
-import { EthInfo, OperatorTransaction, OperatorProof } from '../models/operator-objects';
-import { BaseOperatorProvider } from './base-provider';
 import { utils, serialization } from 'plasma-utils';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import uuidv4 from 'uuid/v4';
 import BigNum from 'bn.js';
+import { ServiceOptions } from '../base-service';
+import { Proof, Deposit, ProofElement } from '../models/chain-objects';
+import { EthInfo, OperatorTransaction, OperatorProof } from '../models/operator-objects';
+import { BaseOperatorProvider } from './base-provider';
+import { JSONRPCResponse } from '../models/rpc-objects';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
@@ -20,12 +21,6 @@ interface OperatorOptions extends ServiceOptions {
 
 interface DefaultOperatorOptions {
   operatorPingInterval: number;
-}
-
-interface JSONRPCResponse {
-  id: string;
-  error?: string;
-  result?: string | {};
 }
 
 const defaultOptions: DefaultOperatorOptions = {
@@ -182,7 +177,7 @@ export class OperatorProvider extends BaseOperatorProvider {
    * Initializes the connection to the operator.
    */
   private async initConnection(): Promise<void> {
-    this.endpoint = this.services.contract.operatorEndpoint;
+    this.endpoint = this.services.eth.contract.operatorEndpoint;
     const baseURL = this.endpoint.startsWith('http') ? this.endpoint : `https://${this.endpoint}`;
     this.http = axios.create({
       baseURL

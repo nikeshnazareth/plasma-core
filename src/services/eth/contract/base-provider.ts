@@ -1,14 +1,26 @@
 import BigNum from 'bn.js';
-import { Deposit } from '../models/chain-objects';
-import { BaseService } from '../base-service';
-import { TransactionReceipt } from 'web3/types';
-import { EthereumEvent } from '../models/eth-objects';
+import { Deposit } from '../../models/chain-objects';
+import { BaseService, ServiceOptions } from '../../base-service';
+import { EthereumEvent, EthereumTransactionReceipt } from '../../models/eth-objects';
+
+export interface UserContractOptions extends ServiceOptions {
+  registryAddress: string;
+  plasmaChainName: string;
+}
+
+interface ContractOptions extends UserContractOptions {}
 
 export class BaseContractProvider extends BaseService {
+  options!: ContractOptions;
+
+  constructor(options: UserContractOptions) {
+    super(options);
+  }
+
   /**
    * @returns Address of the connected contract.
    */
-  get address(): string {
+  get address(): string | null {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     );
@@ -56,7 +68,7 @@ export class BaseContractProvider extends BaseService {
    * @param filter The filter object.
    * @returns past events with the given filter.
    */
-  async getPastEvents(event: string, filter: any): Promise<EthereumEvent[]> {
+  async getPastEvents(event: string, filter: {} = {}): Promise<EthereumEvent[]> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     );
@@ -118,7 +130,7 @@ export class BaseContractProvider extends BaseService {
    * @param sender Address of the account sending the listToken transaction.
    * @returns The Ethereum transaction result.
    */
-  async listToken(tokenAddress: string, sender: string): Promise<TransactionReceipt> {
+  async listToken(tokenAddress: string, sender: string): Promise<EthereumTransactionReceipt> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     );
@@ -168,7 +180,7 @@ export class BaseContractProvider extends BaseService {
    * @param owner Address of the user to deposit for.
    * @returns Deposit transaction receipt.
    */
-  async deposit(token: BigNum, amount: BigNum, owner: string): Promise<TransactionReceipt> {
+  async deposit(token: BigNum, amount: BigNum, owner: string): Promise<EthereumTransactionReceipt> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     );
@@ -186,7 +198,7 @@ export class BaseContractProvider extends BaseService {
    * @param owner Adress to exit from.
    * @returns Exit transaction receipt.
    */
-  async startExit(block: BigNum, token: BigNum, start: BigNum, end: BigNum, owner: string): Promise<TransactionReceipt> {
+  async startExit(block: BigNum, token: BigNum, start: BigNum, end: BigNum, owner: string): Promise<EthereumTransactionReceipt> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     );
@@ -199,7 +211,7 @@ export class BaseContractProvider extends BaseService {
    * @param owner Address that owns this exit.
    * @returns Finalization transaction receipt.
    */
-  async finalizeExit(exitId: string, exitableEnd: BigNum, owner: string): Promise<TransactionReceipt> {
+  async finalizeExit(exitId: string, exitableEnd: BigNum, owner: string): Promise<EthereumTransactionReceipt> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     );
@@ -212,7 +224,7 @@ export class BaseContractProvider extends BaseService {
    * @param hash Hash of the block to submit.
    * @returns Block submission transaction receipt.
    */
-  async submitBlock(hash: string): Promise<TransactionReceipt> {
+  async submitBlock(hash: string): Promise<EthereumTransactionReceipt> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     );

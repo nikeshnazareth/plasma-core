@@ -1,8 +1,10 @@
 import BigNum from 'bn.js';
 import { BaseService, ServiceOptions } from '../base-service';
 import { EthereumAccount } from '../models/eth-objects';
+import { BaseContractProvider } from './contract';
+import { UserContractOptions } from './contract/base-provider';
 
-interface UserETHProviderOptions extends ServiceOptions {
+export interface UserETHProviderOptions extends ServiceOptions, UserContractOptions {
   ethereumEndpoint?: string;
 }
 
@@ -23,6 +25,13 @@ export class BaseETHProvider extends BaseService {
 
   constructor(options: UserETHProviderOptions) {
     super(options, defaultOptions);
+  }
+
+  /**
+   * @returns the current contract provider.
+   */
+  get contract(): BaseContractProvider {
+    throw new Error('Classes that extend BaseETHProvider must implement this method.');
   }
 
   /**

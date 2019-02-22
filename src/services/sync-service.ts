@@ -86,7 +86,7 @@ export class SyncService extends BaseService {
    * Checks for any available pending transactions and emits an event for each.
    */
   private async checkPendingTransactions () {
-    if (!this.services.operator.online || !this.services.contract.hasAddress) {
+    if (!this.services.operator.online || !this.services.eth.contract.hasAddress) {
       return;
     }
 
@@ -205,7 +205,7 @@ export class SyncService extends BaseService {
    */
   async onExitStarted(exits: ExitStartedEvent[]): Promise<void> {
     for (const exit of exits) {
-      await this.services.chain.addExit(exit)
+      await this.services.chain.addExit(exit);
     }
   }
 
@@ -215,8 +215,8 @@ export class SyncService extends BaseService {
    */
   async onExitFinalized(exits: ExitFinalizedEvent[]): Promise<void> {
     for (const exit of exits) {
-      await this.services.chaindb.markFinalized(exit)
-      await this.services.chaindb.addExitableEnd(exit.token, exit.start)
+      await this.services.chaindb.markFinalized(exit);
+      await this.services.chaindb.addExitableEnd(exit.token, exit.start);
     }
   }
 }

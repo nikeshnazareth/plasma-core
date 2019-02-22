@@ -1,5 +1,6 @@
 import { utils } from 'plasma-utils';
-import { EthereumEvent } from '../eth-objects';
+import { EthereumEvent, isEventLog } from '../eth-objects';
+import { EventLog } from 'web3/types';
 
 const web3Utils = utils.web3Utils;
 
@@ -40,13 +41,25 @@ export class ChainCreatedEvent {
   }
 
   /**
+   * Creates a ChainCreatedEvent from an EventLog.
+   * @param event The EventLog to cast.
+   * @returns the ChainCreatedEvent object.
+   */
+  static fromEventLog(event: EventLog): ChainCreatedEvent {
+    const ethereumEvent = EthereumEvent.from(event);
+    return ChainCreatedEvent.from(ethereumEvent);
+  }
+
+  /**
    * Creates a ChainCreatedEvent from some arguments.
    * @param args The arguments to cast.
    * @returns the ChainCreatedEvent object.
    */
-  static from(args: EthereumEvent): ChainCreatedEvent {
+  static from(args: EthereumEvent | EventLog): ChainCreatedEvent {
     if (args instanceof EthereumEvent) {
       return ChainCreatedEvent.fromEthereumEvent(args);
+    } else if (isEventLog(args)) {
+      return ChainCreatedEvent.fromEventLog(args);
     }
 
     throw new Error('Cannot cast to ChainCreatedEvent.');

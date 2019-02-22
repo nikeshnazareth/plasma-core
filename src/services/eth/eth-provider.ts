@@ -2,11 +2,25 @@ import BigNum from 'bn.js';
 import Web3 from 'web3';
 import { BaseETHProvider } from './base-provider';
 import { EthereumAccount, isAccount } from '../models/eth-objects';
+import { ContractProvider, BaseContractProvider } from './contract';
+import { ServiceOptions } from '../base-service';
+import { UserContractOptions } from './contract/contract-provider';
+
+interface UserETHProviderOptions extends ServiceOptions, UserContractOptions {
+  ethereumEndpoint?: string;
+}
 
 export class ETHProvider extends BaseETHProvider {
+  contract: BaseContractProvider;
   private _web3?: Web3;
 
+  constructor(options: UserETHProviderOptions) {
+    super(options);
+    this.contract = new ContractProvider(options);
+  }
+
   async onStart(): Promise<void> {
+    await this.contract.start();
     this._web3 = new Web3(
       new Web3.providers.HttpProvider(this.options.ethereumEndpoint)
     );

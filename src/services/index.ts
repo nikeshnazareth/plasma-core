@@ -2,14 +2,12 @@
 export { BaseService } from './base-service';
 export { BaseWalletProvider } from './wallet';
 export { BaseOperatorProvider } from './operator';
-export { BaseContractProvider } from './contract';
 export { BaseETHProvider } from './eth';
 
 /* Providers */
 export { OperatorProvider } from './operator';
 export { ETHProvider } from './eth';
 export { LocalWalletProvider } from './wallet';
-export { ContractProvider } from './contract';
 
 /* Services */
 export { GuardService } from './guard-service';

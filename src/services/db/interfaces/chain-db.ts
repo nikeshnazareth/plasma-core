@@ -22,7 +22,7 @@ export class ChainDB extends BaseService {
   }
 
   async onStart(): Promise<void> {
-    if (this.services.contract.hasAddress) {
+    if (this.services.eth.contract.hasAddress) {
       await this.open();
     } else {
       await new Promise((resolve) => {
@@ -38,7 +38,7 @@ export class ChainDB extends BaseService {
    * Opens the database connection.
    */
   async open(): Promise<void> {
-    const address = this.services.contract.address;
+    const address = this.services.eth.contract.address;
     await this.services.dbservice.open('chain', { id: address });
   }
 
@@ -235,7 +235,7 @@ export class ChainDB extends BaseService {
    * Marks an exit as finalized.
    * @param exit Exit to mark.
    */
-  async markFinalized(exit: Exit): Promise<void> {
+  async markFinalized(exit: { token: BigNum, start: BigNum, end: BigNum }): Promise<void> {
     await this.db.set(
       `finalized:${exit.token}:${exit.start}:${exit.end}`,
       true

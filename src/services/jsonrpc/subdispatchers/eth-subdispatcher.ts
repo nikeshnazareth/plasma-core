@@ -8,7 +8,7 @@ export class ETHSubdispatcher extends BaseSubdispatcher {
   dependencies = ['contract', 'eth'];
 
   get methods(): { [key: string]: Function } {
-    const contract = this.app.services.contract;
+    const contract = this.app.services.eth.contract;
     const eth = this.app.services.eth;
     return {
       listToken: contract.listToken.bind(contract),

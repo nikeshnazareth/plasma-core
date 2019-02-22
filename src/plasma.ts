@@ -9,7 +9,6 @@ interface UserPlasmaOptions {
   ethProvider?: typeof services.BaseETHProvider;
   operatorProvider?: typeof services.BaseOperatorProvider;
   walletProvider?: typeof services.BaseWalletProvider;
-  contractProvider?: typeof services.BaseContractProvider;
 }
 
 interface PlasmaOptions {
@@ -17,15 +16,13 @@ interface PlasmaOptions {
   ethProvider: typeof services.BaseETHProvider;
   operatorProvider: typeof services.BaseOperatorProvider;
   walletProvider: typeof services.BaseWalletProvider;
-  contractProvider: typeof services.BaseContractProvider;
 }
 
 const defaultOptions: PlasmaOptions = {
   debug: '',
   ethProvider: services.ETHProvider,
   operatorProvider: services.OperatorProvider,
-  walletProvider: services.LocalWalletProvider,
-  contractProvider: services.ContractProvider
+  walletProvider: services.LocalWalletProvider
 };
 
 export class PlasmaApp extends EventEmitter {
@@ -182,7 +179,6 @@ export class PlasmaApp extends EventEmitter {
       eth: this.options.ethProvider,
       operator: this.options.operatorProvider,
       wallet: this.options.walletProvider,
-      contract: this.options.contractProvider,
 
       /* Services */
       guard: services.GuardService,

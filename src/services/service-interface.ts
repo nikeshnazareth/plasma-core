@@ -7,7 +7,6 @@ export interface AppServices {
   operator: services.BaseOperatorProvider;
   eth: services.BaseETHProvider;
   wallet: services.BaseWalletProvider;
-  contract: services.BaseContractProvider;
 
   /* Services */
   guard: services.GuardService;
@@ -35,7 +34,6 @@ export interface RequiredServiceTypes {
   operator: typeof services.BaseOperatorProvider;
   eth: typeof services.BaseETHProvider;
   wallet: typeof services.BaseWalletProvider;
-  contract: typeof services.BaseContractProvider;
 
   /* Services */
   guard: typeof services.GuardService;

@@ -1,7 +1,7 @@
 import { BaseService, ServiceOptions } from '../base-service';
 import { BaseSubdispatcher } from './subdispatchers/base-subdispatcher';
 import * as subdispatchers from './subdispatchers';
-import { JSONRPCRequest, JSONRPCErrorResponse, JSONRPCResponse } from '../models/rpc-objects';
+import { JSONRPCRequest, JSONRPCResponse } from '../models/rpc-objects';
 import { JSONRPC_ERRORS } from './errors';
 
 export class JSONRPCService extends BaseService {
@@ -16,6 +16,11 @@ export class JSONRPCService extends BaseService {
     }
   }
 
+  /**
+   * Returns all dependencies by combining
+   * the dependencies of all subdispatchers.
+   * @returns all dependencies.
+   */
   get dependencies(): string[] {
     return this.subdispatchers.reduce((dependencies: string[], subdispatcher) => {
       return dependencies.concat(subdispatcher.dependencies);
@@ -102,7 +107,7 @@ export class JSONRPCService extends BaseService {
    * @returns a stringified JSON-RPC error response.
    */
   private buildError (type: string, id: string | null, message?: string): {} {
-    const error: JSONRPCErrorResponse = {
+    const error: JSONRPCResponse = {
       jsonrpc: '2.0',
       error: JSONRPC_ERRORS[type],
       message,

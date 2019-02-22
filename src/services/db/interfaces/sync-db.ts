@@ -17,7 +17,7 @@ export class SyncDB extends BaseService {
   }
 
   async onStart(): Promise<void> {
-    if (this.services.contract.hasAddress) {
+    if (this.services.eth.contract.hasAddress) {
       await this.open();
     } else {
       await new Promise((resolve) => {
@@ -33,7 +33,7 @@ export class SyncDB extends BaseService {
    * Opens the database connection.
    */
   async open(): Promise<void> {
-    const address = this.services.contract.address;
+    const address = this.services.eth.contract.address;
     await this.services.dbservice.open('sync', { id: address });
   }
 
