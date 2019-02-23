@@ -1,6 +1,6 @@
-import { BaseService, ServiceOptions } from '../base-service';
-import { BaseDBProvider } from './backends/base-provider';
-import { EphemDBProvider } from './backends/ephem-provider';
+import {BaseService, ServiceOptions} from '../base-service';
+import {BaseDBProvider} from './backends/base-provider';
+import {EphemDBProvider} from './backends/ephem-provider';
 
 interface UserDBOptions extends ServiceOptions {
   dbProvider?: typeof BaseDBProvider;
@@ -20,7 +20,7 @@ const defaultOptions: DefaultDBOptions = {
 
 export class DBService extends BaseService {
   options!: DBOptions;
-  dbs: { [key: string]: BaseDBProvider } = {};
+  dbs: {[key: string]: BaseDBProvider} = {};
 
   constructor(options: UserDBOptions) {
     super(options, defaultOptions);
@@ -32,13 +32,12 @@ export class DBService extends BaseService {
    * @param options Any additional options to the provider.
    * @param provider The database provider.
    */
-  async open(name: string, options: {} = {}, provider = this.options.dbProvider): Promise<void> {
+  async open(
+      name: string, options: {} = {},
+      provider = this.options.dbProvider): Promise<void> {
     if (name in this) return;
 
-    const db = new provider({
-      ...{ name },
-      ...options
-    });
+    const db = new provider({...{name}, ...options});
     await db.start();
     this.dbs[name] = db;
   }

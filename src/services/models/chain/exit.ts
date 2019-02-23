@@ -1,7 +1,7 @@
 import BigNum from 'bn.js';
-import { ExitStartedEvent } from '../events';
+import {ExitStartedEvent} from '../events';
 
-interface ExitArgs {
+export interface ExitArgs {
   owner: string;
   id: BigNum;
   token: BigNum;
@@ -20,7 +20,7 @@ export class Exit {
   completed?: boolean;
   finalized?: boolean;
 
-  constructor (args: ExitArgs) {
+  constructor(args: ExitArgs) {
     this.owner = args.owner;
     this.id = args.id;
     this.token = args.token;

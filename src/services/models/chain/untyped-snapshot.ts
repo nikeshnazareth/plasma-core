@@ -1,6 +1,6 @@
 import BigNum from 'bn.js';
-import { PrettyPrint } from './pretty-print';
-import { Snapshot, TypedSnapshot } from './snapshot';
+import {PrettyPrint} from './pretty-print';
+import {Snapshot, TypedSnapshot} from './snapshot';
 
 /**
  * Pulls out the token from a typed value.
@@ -34,7 +34,7 @@ export class UntypedSnapshot extends PrettyPrint {
   block: BigNum;
   owner: string;
 
-  constructor(snapshot: TypedSnapshot & { token: BigNum }) {
+  constructor(snapshot: TypedSnapshot&{token: BigNum}) {
     super();
 
     this.token = new BigNum(snapshot.token, 'hex');
@@ -54,8 +54,8 @@ export class UntypedSnapshot extends PrettyPrint {
       ...snapshot,
       ...{
         token: getTokenFromTyped(snapshot.start),
-        start: getValueFromTyped(snapshot.start),
-        end: getValueFromTyped(snapshot.end)
+            start: getValueFromTyped(snapshot.start),
+            end: getValueFromTyped(snapshot.end)
       }
     });
   }

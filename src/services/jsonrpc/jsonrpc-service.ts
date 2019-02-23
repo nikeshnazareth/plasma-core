@@ -1,8 +1,9 @@
-import { BaseService, ServiceOptions } from '../base-service';
+import {BaseService, ServiceOptions} from '../base-service';
+import {JSONRPCParam, JSONRPCRequest, JSONRPCResponse} from '../models/rpc';
+
+import {JSONRPC_ERRORS} from './errors';
 import * as subdispatchers from './subdispatchers';
-import { BaseSubdispatcher } from './subdispatchers/base-subdispatcher';
-import { JSONRPC_ERRORS } from './errors';
-import { JSONRPCRequest, JSONRPCResponse } from '../models/rpc';
+import {BaseSubdispatcher} from './subdispatchers/base-subdispatcher';
 
 export class JSONRPCService extends BaseService {
   subdispatchers: BaseSubdispatcher[] = [];
@@ -11,7 +12,8 @@ export class JSONRPCService extends BaseService {
     super(options);
 
     for (const name of Object.keys(subdispatchers)) {
-      const subdispatcher = (subdispatchers as any)[name];
+      const subdispatcher =
+          (subdispatchers as {[key: string]: typeof BaseSubdispatcher})[name];
       this.registerSubdispatcher(subdispatcher);
     }
   }
@@ -22,23 +24,25 @@ export class JSONRPCService extends BaseService {
    * @returns all dependencies.
    */
   get dependencies(): string[] {
-    return this.subdispatchers.reduce((dependencies: string[], subdispatcher) => {
-      return dependencies.concat(subdispatcher.dependencies);
-    }, []);
+    return this.subdispatchers.reduce(
+        (dependencies: string[], subdispatcher) => {
+          return dependencies.concat(subdispatcher.dependencies);
+        },
+        []);
   }
 
   /**
    * Returns all methods of all subdispatchers.
    * @returns all subdispatcher methods as a single object.
    */
-  getAllMethods(): { [key: string]: Function } {
+  getAllMethods(): {[key: string]: Function} {
     return this.subdispatchers
-      .map((subdispatcher) => {
-        return subdispatcher.getAllMethods();
-      })
-      .reduce((pre, cur) => {
-        return { ...pre, ...cur };
-      });
+        .map((subdispatcher) => {
+          return subdispatcher.getAllMethods();
+        })
+        .reduce((pre, cur) => {
+          return {...pre, ...cur};
+        });
   }
 
   /**
@@ -61,7 +65,8 @@ export class JSONRPCService extends BaseService {
    * @param params Parameters to be used as arguments to the method.
    * @returns the result of the function call.
    */
-  async handle(method: string, params: string[] = []): Promise<string | number | {}> {
+  async handle(method: string, params: JSONRPCParam[] = []):
+      Promise<string|number|{}> {
     const fn = this.getMethod(method);
     return fn(...params);
   }
@@ -71,7 +76,7 @@ export class JSONRPCService extends BaseService {
    * @param request A JSON-RPC request object.
    * @return the result of the JSON-RPC call.
    */
-  async handleRawRequest (request: JSONRPCRequest) {
+  async handleRawRequest(request: JSONRPCRequest) {
     if (!('method' in request && 'id' in request)) {
       return this.buildError('INVALID_REQUEST', null);
     }
@@ -91,11 +96,7 @@ export class JSONRPCService extends BaseService {
       return this.buildError('INTERNAL_ERROR', request.id, err);
     }
 
-    const response: JSONRPCResponse = {
-      jsonrpc: '2.0',
-      result,
-      id: request.id
-    };
+    const response: JSONRPCResponse = {jsonrpc: '2.0', result, id: request.id};
     return JSON.stringify(response);
   }
 
@@ -106,13 +107,9 @@ export class JSONRPCService extends BaseService {
    * @param err An error message.
    * @returns a stringified JSON-RPC error response.
    */
-  private buildError (type: string, id: string | null, message?: string): {} {
-    const error: JSONRPCResponse = {
-      jsonrpc: '2.0',
-      error: JSONRPC_ERRORS[type],
-      message,
-      id
-    };
+  private buildError(type: string, id: string|null, message?: string): {} {
+    const error: JSONRPCResponse =
+        {jsonrpc: '2.0', error: JSONRPC_ERRORS[type], message, id};
     return JSON.stringify(error);
   }
 

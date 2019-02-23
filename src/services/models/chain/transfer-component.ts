@@ -1,6 +1,6 @@
 import BigNum from 'bn.js';
-import { serialization } from 'plasma-utils';
-import { PrettyPrint } from './pretty-print';
+import {serialization} from 'plasma-utils';
+import {PrettyPrint} from './pretty-print';
 
 interface TransferComponentArgs {
   start: BigNum;
@@ -33,7 +33,8 @@ export class TransferComponent extends PrettyPrint {
     this.implicit = component.implicit;
   }
 
-  static fromTransfer(transfer: serialization.models.Transfer): TransferComponent {
+  static fromTransfer(transfer: serialization.models.Transfer):
+      TransferComponent {
     if (transfer.block === undefined) {
       throw new Error('Cannot cast to TransferComponent.');
     }

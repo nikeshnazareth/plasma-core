@@ -30,3 +30,8 @@ export interface OperatorProof {
   transaction: OperatorTransaction;
   transactionProof: OperatorTransactionProof;
 }
+
+export interface RawOperatorProof {
+  deposits: OperatorTransaction[];
+  transactionHistory: {[key: number]: OperatorProof[]};
+}

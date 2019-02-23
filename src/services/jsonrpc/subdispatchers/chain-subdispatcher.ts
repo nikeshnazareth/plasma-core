@@ -1,4 +1,4 @@
-import { BaseSubdispatcher } from './base-subdispatcher';
+import {BaseSubdispatcher} from './base-subdispatcher';
 
 /**
  * Subdispatcher that handles chain-related requests.
@@ -7,7 +7,7 @@ export class ChainSubdispatcher extends BaseSubdispatcher {
   prefix = 'pg_';
   dependencies = ['chain', 'chaindb'];
 
-  get methods(): { [key: string]: Function } {
+  get methods(): {[key: string]: Function} {
     const chain = this.app.services.chain;
     const chaindb = this.app.services.chaindb;
     return {

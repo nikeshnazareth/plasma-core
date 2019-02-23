@@ -1,16 +1,16 @@
 import BigNum from 'bn.js';
 import _ from 'lodash';
-import { utils } from 'plasma-utils';
-import { EventLog } from 'web3/types';
+import {utils} from 'plasma-utils';
+import {EventLog} from 'web3/types';
 
 const web3Utils = utils.web3Utils;
 
 interface RawEventData {
-  [key: string]: string | number;
+  [key: string]: string|number;
 }
 
 interface EventData {
-  [key: string]: string | BigNum;
+  [key: string]: string|BigNum;
 }
 
 /**
@@ -45,11 +45,8 @@ interface EventLogLike {
  */
 export const isEventLog = (data: EventLogLike): boolean => {
   return (
-    data.blockNumber !== undefined &&
-    data.returnValues !== undefined &&
-    data.transactionHash !== undefined &&
-    data.logIndex !== undefined
-  );
+      data.blockNumber !== undefined && data.returnValues !== undefined &&
+      data.transactionHash !== undefined && data.logIndex !== undefined);
 };
 
 interface EthereumEventArgs {

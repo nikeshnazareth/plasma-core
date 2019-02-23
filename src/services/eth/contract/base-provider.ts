@@ -1,7 +1,7 @@
 import BigNum from 'bn.js';
-import { BaseService, ServiceOptions } from '../../base-service';
-import { Deposit } from '../../models/chain';
-import { EthereumEvent, EthereumTransactionReceipt } from '../../models/eth';
+import {BaseService, ServiceOptions} from '../../base-service';
+import {Deposit} from '../../models/chain';
+import {EthereumEvent, EthereumTransactionReceipt} from '../../models/eth';
 
 export interface UserContractOptions extends ServiceOptions {
   registryAddress: string;
@@ -20,10 +20,9 @@ export class BaseContractProvider extends BaseService {
   /**
    * @returns Address of the connected contract.
    */
-  get address(): string | null {
+  get address(): string|null {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -31,8 +30,7 @@ export class BaseContractProvider extends BaseService {
    */
   get hasAddress(): boolean {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -40,8 +38,7 @@ export class BaseContractProvider extends BaseService {
    */
   get ready(): boolean {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -49,8 +46,7 @@ export class BaseContractProvider extends BaseService {
    */
   get operatorEndpoint(): string {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -58,8 +54,7 @@ export class BaseContractProvider extends BaseService {
    */
   get plasmaChainName(): string {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -68,10 +63,10 @@ export class BaseContractProvider extends BaseService {
    * @param filter The filter object.
    * @returns past events with the given filter.
    */
-  async getPastEvents(event: string, filter: {} = {}): Promise<EthereumEvent[]> {
+  async getPastEvents(event: string, filter: {} = {}):
+      Promise<EthereumEvent[]> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -81,8 +76,7 @@ export class BaseContractProvider extends BaseService {
    */
   async getBlock(block: number): Promise<string> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -90,8 +84,7 @@ export class BaseContractProvider extends BaseService {
    */
   async getNextBlock(): Promise<number> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -99,8 +92,7 @@ export class BaseContractProvider extends BaseService {
    */
   async getCurrentBlock(): Promise<number> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -108,8 +100,7 @@ export class BaseContractProvider extends BaseService {
    */
   async getOperator(): Promise<string> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -119,8 +110,7 @@ export class BaseContractProvider extends BaseService {
    */
   async getTokenAddress(token: string): Promise<string> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -130,10 +120,10 @@ export class BaseContractProvider extends BaseService {
    * @param sender Address of the account sending the listToken transaction.
    * @returns The Ethereum transaction result.
    */
-  async listToken(tokenAddress: string, sender: string): Promise<EthereumTransactionReceipt> {
+  async listToken(tokenAddress: string, sender: string):
+      Promise<EthereumTransactionReceipt> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -143,8 +133,7 @@ export class BaseContractProvider extends BaseService {
    */
   async getChallengePeriod(): Promise<number> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -156,8 +145,7 @@ export class BaseContractProvider extends BaseService {
    */
   async getTokenId(tokenAddress: string): Promise<string> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -167,8 +155,7 @@ export class BaseContractProvider extends BaseService {
    */
   async depositValid(deposit: Deposit): Promise<boolean> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -180,10 +167,10 @@ export class BaseContractProvider extends BaseService {
    * @param owner Address of the user to deposit for.
    * @returns Deposit transaction receipt.
    */
-  async deposit(token: BigNum, amount: BigNum, owner: string): Promise<EthereumTransactionReceipt> {
+  async deposit(token: BigNum, amount: BigNum, owner: string):
+      Promise<EthereumTransactionReceipt> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -198,23 +185,26 @@ export class BaseContractProvider extends BaseService {
    * @param owner Adress to exit from.
    * @returns Exit transaction receipt.
    */
-  async startExit(block: BigNum, token: BigNum, start: BigNum, end: BigNum, owner: string): Promise<EthereumTransactionReceipt> {
+  async startExit(
+      block: BigNum, token: BigNum, start: BigNum, end: BigNum,
+      owner: string): Promise<EthereumTransactionReceipt> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
    * Finalizes an exit for a user.
    * @param exitId ID of the exit to finalize.
-   * @param exitableEnd Weird quirk in how we handle exits. For more information, see: https://github.com/plasma-group/plasma-contracts/issues/44.
+   * @param exitableEnd Weird quirk in how we handle exits. For more
+   * information, see:
+   * https://github.com/plasma-group/plasma-contracts/issues/44.
    * @param owner Address that owns this exit.
    * @returns Finalization transaction receipt.
    */
-  async finalizeExit(exitId: string, exitableEnd: BigNum, owner: string): Promise<EthereumTransactionReceipt> {
+  async finalizeExit(exitId: string, exitableEnd: BigNum, owner: string):
+      Promise<EthereumTransactionReceipt> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 
   /**
@@ -226,7 +216,6 @@ export class BaseContractProvider extends BaseService {
    */
   async submitBlock(hash: string): Promise<EthereumTransactionReceipt> {
     throw new Error(
-      'Classes that extend BaseContractProvider must implement this method.'
-    );
+        'Classes that extend BaseContractProvider must implement this method.');
   }
 }

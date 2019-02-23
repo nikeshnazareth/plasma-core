@@ -1,8 +1,8 @@
 import toposort = require('toposort');
 import debug = require('debug');
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import * as services from './services';
-import { AppServices, RequiredServiceTypes } from './services/service-interface';
+import {AppServices, RequiredServiceTypes} from './services/service-interface';
 
 interface UserPlasmaOptions {
   debug?: string;
@@ -33,10 +33,7 @@ export class PlasmaApp extends EventEmitter {
   constructor(options: UserPlasmaOptions = {}) {
     super();
 
-    this.options = {
-      ...defaultOptions,
-      ...options
-    };
+    this.options = {...defaultOptions, ...options};
 
     debug.enable(this.options.debug);
     this._services = this.buildRequiredServices();
@@ -84,9 +81,9 @@ export class PlasmaApp extends EventEmitter {
     for (const dependency of service.dependencies) {
       const dep = this.services[dependency];
       if (dep === undefined || !dep.started) {
-        throw new Error(
-          `ERROR: Service ${name} is dependent on service that has not been started: ${dependency}`
-        );
+        throw new Error(`ERROR: Service ${
+            name} is dependent on service that has not been started: ${
+            dependency}`);
       }
     }
 
@@ -142,7 +139,8 @@ export class PlasmaApp extends EventEmitter {
    * @param name Name of the service.
    * @param options Any additional options.
    */
-  registerService(service: typeof services.BaseService, name: string, options = {}): void {
+  registerService(
+      service: typeof services.BaseService, name: string, options = {}): void {
     const instance = this.buildService(service, name, options);
     this.services[name] = instance;
   }
@@ -154,9 +152,11 @@ export class PlasmaApp extends EventEmitter {
    * @param options Any additional options to the service.
    * @returns the built service.
    */
-  private buildService(service: typeof services.BaseService, name: string, options = {}): services.BaseService {
-    const appInject = { app: this, name };
-    const instance = new service({ ...options, ...appInject });
+  private buildService(
+      service: typeof services.BaseService, name: string,
+      options = {}): services.BaseService {
+    const appInject = {app: this, name};
+    const instance = new service({...options, ...appInject});
 
     // Relay lifecycle events.
     const lifecycle = ['started', 'initialized', 'stopped'];
@@ -196,9 +196,10 @@ export class PlasmaApp extends EventEmitter {
       syncdb: services.SyncDB
     };
 
-    const built: { [key: string]: services.BaseService } = {};
+    const built: {[key: string]: services.BaseService} = {};
     for (const service of Object.keys(required)) {
-      built[service] = this.buildService(required[service], service, this.options);
+      built[service] =
+          this.buildService(required[service], service, this.options);
     }
 
     return built as AppServices;
@@ -210,15 +211,17 @@ export class PlasmaApp extends EventEmitter {
    * @returns a list of service names ordered by dependencies.
    */
   private getOrderedServices(): string[] {
-    const dependencyGraph = Object.keys(this.services).reduce((graph: Array<[string, string]>, key) => {
-      const service = this.services[key];
+    const dependencyGraph =
+        Object.keys(this.services)
+            .reduce((graph: Array<[string, string]>, key) => {
+              const service = this.services[key];
 
-      for (const dependency of service.dependencies) {
-        graph.push([service.name, dependency]);
-      }
+              for (const dependency of service.dependencies) {
+                graph.push([service.name, dependency]);
+              }
 
-      return graph;
-    }, []);
+              return graph;
+            }, []);
 
     const sorted = toposort(dependencyGraph) as string[];
     return sorted.reverse();

@@ -1,4 +1,4 @@
-import { BaseService } from '../base-service';
+import {BaseService} from '../base-service';
 
 export class BaseWalletProvider extends BaseService {
   /**
@@ -7,17 +7,15 @@ export class BaseWalletProvider extends BaseService {
    */
   async getAccounts(): Promise<string[]> {
     throw new Error(
-      'Classes that extend BaseWalletProvider must implement this method'
-    );
+        'Classes that extend BaseWalletProvider must implement this method');
   }
 
   /**
    * @returns the keystore file for a given account.
    */
-  async getAccount(address: string): Promise<any> {
+  async getAccount(address: string): Promise<{}> {
     throw new Error(
-      'Classes that extend BaseWalletProvider must implement this method'
-    );
+        'Classes that extend BaseWalletProvider must implement this method');
   }
 
   /**
@@ -28,8 +26,7 @@ export class BaseWalletProvider extends BaseService {
    */
   async sign(address: string, data: string): Promise<string> {
     throw new Error(
-      'Classes that extend BaseWalletProvider must implement this method'
-    );
+        'Classes that extend BaseWalletProvider must implement this method');
   }
 
   /**
@@ -38,18 +35,16 @@ export class BaseWalletProvider extends BaseService {
    */
   async createAccount(): Promise<string> {
     throw new Error(
-      'Classes that extend BaseWalletProvider must implement this method'
-    );
+        'Classes that extend BaseWalletProvider must implement this method');
   }
-  
+
   /**
-   * Adds an account to the web3 wallet so that it can send contract transactions directly.
-   * See https://bit.ly/2MPAbRd for more information.
+   * Adds an account to the web3 wallet so that it can send contract
+   * transactions directly. See https://bit.ly/2MPAbRd for more information.
    * @param address Address of the account to add to wallet.
    */
   async addAccountToWallet(address: string): Promise<void> {
     throw new Error(
-      'Classes that extend BaseWalletProvider must implement this method'
-    );
+        'Classes that extend BaseWalletProvider must implement this method');
   }
 }

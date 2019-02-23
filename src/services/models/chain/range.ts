@@ -1,7 +1,8 @@
 import BigNum from 'bn.js';
-import { PrettyPrint } from './pretty-print';
-import { UntypedSnapshot } from './untyped-snapshot';
-import { Snapshot } from './snapshot';
+
+import {PrettyPrint} from './pretty-print';
+import {Snapshot} from './snapshot';
+import {UntypedSnapshot} from './untyped-snapshot';
 
 export interface TypedRange {
   start: BigNum;

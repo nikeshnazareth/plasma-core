@@ -1,4 +1,4 @@
-import { EthereumEvent } from '../eth';
+import {EthereumEvent} from '../eth';
 
 interface BlockSubmittedEventArgs {
   number: number;

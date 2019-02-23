@@ -1,9 +1,11 @@
-import BigNum from 'bn.js';
 import AsyncLock from 'async-lock';
-import { serialization } from 'plasma-utils';
-import { BaseService, ServiceOptions } from '../base-service';
-import { Deposit, Exit, Range, ProofElement, UntypedSnapshot } from '../models/chain';
-import { SnapshotManager } from './snapshot-manager/snapshot-manager';
+import BigNum from 'bn.js';
+import {serialization} from 'plasma-utils';
+
+import {BaseService, ServiceOptions} from '../base-service';
+import {Deposit, Exit, ProofElement, Range, UntypedSnapshot} from '../models/chain';
+
+import {SnapshotManager} from './snapshot-manager/snapshot-manager';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
@@ -39,9 +41,7 @@ export class ChainService extends BaseService {
       }
 
       // Add the size of this range.
-      balances[token] = balances[token].add(
-        range.end.sub(range.start)
-      );
+      balances[token] = balances[token].add(range.end.sub(range.start));
     }
 
     return balances;
@@ -53,11 +53,9 @@ export class ChainService extends BaseService {
    */
   async addDeposits(deposits: Deposit[]): Promise<void> {
     // Filter out any ranges that have already been exited.
-    const isNotExited = await Promise.all(
-      deposits.map(async (deposit) => {
-        return !(await this.services.chaindb.checkExited(deposit));
-      })
-    );
+    const isNotExited = await Promise.all(deposits.map(async (deposit) => {
+      return !(await this.services.chaindb.checkExited(deposit));
+    }));
     deposits = deposits.filter((_, i) => isNotExited[i]);
 
     // Add the deposit to the head state.
@@ -72,11 +70,8 @@ export class ChainService extends BaseService {
     await this.services.chaindb.addExitableEnds(deposits);
 
     for (const deposit of deposits) {
-      this.log(
-        `Added deposit to database: ${deposit.owner}, ${deposit.amount}, [${
-          deposit.token
-        }]`
-      );
+      this.log(`Added deposit to database: ${deposit.owner}, ${
+          deposit.amount}, [${deposit.token}]`);
     }
   }
 
@@ -123,7 +118,8 @@ export class ChainService extends BaseService {
    * @param amount Amount of the token being sent.
    * @returns the best ranges for the transaction.
    */
-  async pickRanges(address: string, token: BigNum, amount: BigNum): Promise<Range[]> {
+  async pickRanges(address: string, token: BigNum, amount: BigNum):
+      Promise<Range[]> {
     const stateManager = await this.loadState();
     return stateManager.pickRanges(address, token, amount);
   }
@@ -135,7 +131,8 @@ export class ChainService extends BaseService {
    * @param amount Amount of the token being exited.
    * @returns the best transfers for the exit.
    */
-  async pickTransfers(address: string, token: BigNum, amount: BigNum): Promise<UntypedSnapshot[]> {
+  async pickTransfers(address: string, token: BigNum, amount: BigNum):
+      Promise<UntypedSnapshot[]> {
     const stateManager = await this.loadState();
     return stateManager.pickSnapshots(address, token, amount);
   }
@@ -147,7 +144,8 @@ export class ChainService extends BaseService {
    * @param {BigNum} amount Amount of the token being exited.
    * @returns the transaction hashes for each exit.
    */
-  async startExit(address: string, token: BigNum, amount: BigNum): Promise<string[]> {
+  async startExit(address: string, token: BigNum, amount: BigNum):
+      Promise<string[]> {
     const transfers = await this.pickTransfers(address, token, amount);
 
     const exited = [];
@@ -155,12 +153,8 @@ export class ChainService extends BaseService {
     for (const transfer of transfers) {
       try {
         const exitTx = await this.services.eth.contract.startExit(
-          transfer.block,
-          transfer.token,
-          transfer.start,
-          transfer.end,
-          address
-        );
+            transfer.block, transfer.token, transfer.start, transfer.end,
+            address);
         exitTxHashes.push(exitTx.transactionHash);
         exited.push(transfer);
       } catch (err) {
@@ -186,15 +180,10 @@ export class ChainService extends BaseService {
     const finalizedTxHashes = [];
     for (const exit of completed) {
       try {
-        const exitableEnd = await this.services.chaindb.getExitableEnd(
-          exit.token,
-          exit.end
-        );
+        const exitableEnd =
+            await this.services.chaindb.getExitableEnd(exit.token, exit.end);
         const finalizeTx = await this.services.eth.contract.finalizeExit(
-          exit.id.toString(10),
-          exitableEnd,
-          address
-        );
+            exit.id.toString(10), exitableEnd, address);
         finalizedTxHashes.push(finalizeTx.transactionHash);
         finalized.push(exit);
       } catch (err) {
@@ -211,7 +200,9 @@ export class ChainService extends BaseService {
    * @param deposits A list of deposits for the transaction.
    * @param proof A Proof object.
    */
-  async addTransaction(transaction: serialization.models.SignedTransaction, deposits: Deposit[], proof: ProofElement[]): Promise<void> {
+  async addTransaction(
+      transaction: serialization.models.SignedTransaction, deposits: Deposit[],
+      proof: ProofElement[]): Promise<void> {
     const tx = new SignedTransaction(transaction);
 
     this.log(`Verifying transaction proof for: ${tx.hash}`);
@@ -247,10 +238,12 @@ export class ChainService extends BaseService {
    * @param transaction A signed transaction.
    * @returns the transaction receipt.
    */
-  async sendTransaction(transaction: serialization.models.SignedTransaction): Promise<string> {
+  async sendTransaction(transaction: serialization.models.SignedTransaction):
+      Promise<string> {
     // TODO: Check that the transaction receipt is valid.
     this.log(`Sending transaction to operator: ${transaction.hash}.`);
-    const receipt = await this.services.operator.sendTransaction(transaction.encoded);
+    const receipt =
+        await this.services.operator.sendTransaction(transaction.encoded);
     this.log(`Sent transaction to operator: ${transaction.hash}.`);
 
     // TODO: Remove this once the operator has an API for send transactions.

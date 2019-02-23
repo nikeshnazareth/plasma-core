@@ -1,11 +1,14 @@
 import BigNum from 'bn.js';
+import {isString} from 'util';
 import Web3 from 'web3';
-import { ServiceOptions } from '../base-service';
-import { BaseETHProvider } from './base-provider';
-import { BaseContractProvider } from './contract/base-provider';
-import { ContractProvider } from './contract/contract-provider';
-import { UserContractOptions } from './contract/contract-provider';
-import { EthereumAccount, isAccount } from '../models/eth';
+
+import {ServiceOptions} from '../base-service';
+import {EthereumAccount, isAccount} from '../models/eth';
+
+import {BaseETHProvider} from './base-provider';
+import {BaseContractProvider} from './contract/base-provider';
+import {ContractProvider} from './contract/contract-provider';
+import {UserContractOptions} from './contract/contract-provider';
 
 interface UserETHProviderOptions extends ServiceOptions, UserContractOptions {
   ethereumEndpoint?: string;
@@ -23,8 +26,7 @@ export class ETHProvider extends BaseETHProvider {
   async onStart(): Promise<void> {
     await this.contract.start();
     this._web3 = new Web3(
-      new Web3.providers.HttpProvider(this.options.ethereumEndpoint)
-    );
+        new Web3.providers.HttpProvider(this.options.ethereumEndpoint));
   }
 
   /**
@@ -75,11 +77,11 @@ export class ETHProvider extends BaseETHProvider {
   }
 
   async getWalletAccount(address: string): Promise<EthereumAccount> {
-    const wallet: { [key: string]: any } = this.web3.eth.accounts.wallet;
+    const wallet: {[key: string]: string|{}} = this.web3.eth.accounts.wallet;
     for (const key of Object.keys(wallet)) {
       const value = wallet[key];
-      if (key === address && isAccount(value)) {
-        return value as EthereumAccount;
+      if (key === address && !isString(value) && isAccount(value)) {
+        return (value as EthereumAccount);
       }
     }
 

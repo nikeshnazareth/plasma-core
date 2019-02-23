@@ -1,5 +1,5 @@
 import BigNum from 'bn.js';
-import { EthereumEvent } from '../eth';
+import {EthereumEvent} from '../eth';
 
 interface DepositEventArgs {
   owner: string;
@@ -16,7 +16,7 @@ export class DepositEvent {
   token: BigNum;
   block: BigNum;
 
-  constructor (event: DepositEventArgs) {
+  constructor(event: DepositEventArgs) {
     this.owner = event.owner;
     this.start = event.start;
     this.end = event.end;

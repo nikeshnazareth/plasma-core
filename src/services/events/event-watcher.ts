@@ -1,6 +1,6 @@
-import { utils } from 'plasma-utils';
-import { BaseService, ServiceOptions } from '../base-service';
-import { EthereumEvent } from '../models/eth';
+import {utils} from 'plasma-utils';
+import {BaseService, ServiceOptions} from '../base-service';
+import {EthereumEvent} from '../models/eth';
 
 interface UserEventWatcherOptions extends ServiceOptions {
   finalityDepth?: number;
@@ -27,8 +27,8 @@ export class EventWatcher extends BaseService {
   dependencies = ['eth', 'syncdb'];
 
   watching = false;
-  subscriptions: { [key: string]: Function[] } = {};
-  events: { [key: string]: boolean } = {};
+  subscriptions: {[key: string]: Function[]} = {};
+  events: {[key: string]: boolean} = {};
 
   constructor(options: UserEventWatcherOptions) {
     super(options, defaultOptions);
@@ -126,10 +126,8 @@ export class EventWatcher extends BaseService {
     const lastFinalBlock = Math.max(0, block - this.options.finalityDepth);
 
     await Promise.all(
-      Object.keys(this.events).map((eventName) =>
-        this.checkEvent(eventName, lastFinalBlock)
-      )
-    );
+        Object.keys(this.events)
+            .map((eventName) => this.checkEvent(eventName, lastFinalBlock)));
   }
 
   /**
@@ -137,28 +135,26 @@ export class EventWatcher extends BaseService {
    * @param {string} eventName Name of the event.
    * @param {number} lastFinalBlock Number of the latest block known to be final.
    */
-  private async checkEvent(eventName: string, lastFinalBlock: number): Promise<void> {
+  private async checkEvent(eventName: string, lastFinalBlock: number):
+      Promise<void> {
     if (!this.events[eventName] || !this.services.eth.contract.hasAddress) {
       return;
     }
 
     // Figure out the last block we've seen.
-    const lastLoggedBLock = await this.services.syncdb.getLastLoggedEventBlock(eventName);
+    const lastLoggedBLock =
+        await this.services.syncdb.getLastLoggedEventBlock(eventName);
     const firstUnsyncedBlock = lastLoggedBLock + 1;
 
     // Don't do anything if we've already seen the latest final block
     if (firstUnsyncedBlock > lastFinalBlock) return;
 
-    this.log(`Checking for new ${eventName} events between Ethereum blocks ${firstUnsyncedBlock} and ${lastFinalBlock}`);
+    this.log(`Checking for new ${eventName} events between Ethereum blocks ${
+        firstUnsyncedBlock} and ${lastFinalBlock}`);
 
     // Pull new events from the contract
     let events = await this.services.eth.contract.getPastEvents(
-      eventName,
-      {
-        fromBlock: firstUnsyncedBlock,
-        toBlock: lastFinalBlock
-      }
-    );
+        eventName, {fromBlock: firstUnsyncedBlock, toBlock: lastFinalBlock});
 
     // Filter out events that we've already seen.
     events = await this.getUniqueEvents(events);
@@ -167,7 +163,8 @@ export class EventWatcher extends BaseService {
     await this.emitEvents(eventName, events);
 
     // Update the last block that we've seen based on what we just queried.
-    await this.services.syncdb.setLastLoggedEventBlock(eventName, lastFinalBlock);
+    await this.services.syncdb.setLastLoggedEventBlock(
+        eventName, lastFinalBlock);
   }
 
   /**
@@ -175,12 +172,11 @@ export class EventWatcher extends BaseService {
    * @param events A series of Ethereum events.
    * @returns any events we haven't seen already.
    */
-  private async getUniqueEvents(events: EthereumEvent[]): Promise<EthereumEvent[]> {
-    const isUnique = await Promise.all(
-      events.map(async (event) => {
-        return !(await this.services.syncdb.hasEvent(event));
-      })
-    );
+  private async getUniqueEvents(events: EthereumEvent[]):
+      Promise<EthereumEvent[]> {
+    const isUnique = await Promise.all(events.map(async (event) => {
+      return !(await this.services.syncdb.hasEvent(event));
+    }));
     return events.filter((_, i) => isUnique[i]);
   }
 
@@ -189,7 +185,8 @@ export class EventWatcher extends BaseService {
    * @param eventName Name of the event to handle.
    * @param events Event objects for that event.
    */
-  private async emitEvents(eventName: string, events: EthereumEvent[]): Promise<void> {
+  private async emitEvents(eventName: string, events: EthereumEvent[]):
+      Promise<void> {
     if (events.length === 0) return;
 
     // Mark these events as seen.
@@ -200,7 +197,7 @@ export class EventWatcher extends BaseService {
       try {
         listener(events);
       } catch (err) {
-        console.log(err); // TODO: Handle this.
+        console.log(err);  // TODO: Handle this.
       }
     }
   }

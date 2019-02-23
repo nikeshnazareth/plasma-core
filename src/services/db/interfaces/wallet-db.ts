@@ -1,7 +1,8 @@
-import { Account } from 'eth-lib';
-import { BaseService } from '../../base-service';
-import { BaseDBProvider } from '../backends/base-provider';
-import { EthereumAccount } from '../../models/eth';
+import {Account} from 'eth-lib';
+
+import {BaseService} from '../../base-service';
+import {EthereumAccount} from '../../models/eth';
+import {BaseDBProvider} from '../backends/base-provider';
 
 export class WalletDB extends BaseService {
   dependencies = ['eth', 'db'];
@@ -26,7 +27,7 @@ export class WalletDB extends BaseService {
    * @returns a list of account addresses.
    */
   async getAccounts(): Promise<string[]> {
-    return this.db.get('accounts', []);
+    return (await this.db.get('accounts', []) as string[]);
   }
 
   /**
@@ -35,7 +36,9 @@ export class WalletDB extends BaseService {
    * @returns an Ethereum account object.
    */
   async getAccount(address: string): Promise<EthereumAccount> {
-    const keystore = await this.db.get(`keystore:${address}`, undefined);
+    const keystore =
+        (await this.db.get(`keystore:${address}`, undefined) as
+         EthereumAccount);
     if (keystore === undefined) {
       throw new Error('Account not found.');
     }

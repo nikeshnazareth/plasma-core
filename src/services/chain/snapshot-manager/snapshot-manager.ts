@@ -1,11 +1,9 @@
 import BigNum from 'bn.js';
-import debug, { Debugger } from 'debug';
+import debug, {Debugger} from 'debug';
 import _ from 'lodash';
-import { serialization } from 'plasma-utils';
-import {
-  Deposit, Exit, Snapshot, Range,
-  UntypedSnapshot, TransferComponent, UntypedRange
-} from '../../models/chain';
+import {serialization} from 'plasma-utils';
+
+import {Deposit, Exit, Range, Snapshot, TransferComponent, UntypedRange, UntypedSnapshot} from '../../models/chain';
 
 const models = serialization.models;
 const Transfer = models.Transfer;
@@ -37,7 +35,7 @@ export class SnapshotManager {
   snapshots: Snapshot[];
   debug: Debugger = debug('debug:snapshots');
 
-  constructor (snapshots: Snapshot[] = []) {
+  constructor(snapshots: Snapshot[] = []) {
     this.snapshots = snapshots.map((snapshot) => {
       return new Snapshot(snapshot);
     });
@@ -92,11 +90,9 @@ export class SnapshotManager {
    * @return a list of owned snapshots.
    */
   getOwnedSnapshots(address: string): UntypedSnapshot[] {
-    return this.snapshots
-      .map(UntypedSnapshot.from)
-      .filter((snapshot) => {
-        return snapshot.owner === address;
-      });
+    return this.snapshots.map(UntypedSnapshot.from).filter((snapshot) => {
+      return snapshot.owner === address;
+    });
   }
 
   /**
@@ -106,7 +102,8 @@ export class SnapshotManager {
    * @param amount Number of tokens being sent.
    * @returns a list of snapshots.
    */
-  pickSnapshots(address: string, token: BigNum, amount: BigNum): UntypedSnapshot[] {
+  pickSnapshots(address: string, token: BigNum, amount: BigNum):
+      UntypedSnapshot[] {
     const ownedSnapshots = this.getOwnedSnapshots(address);
     return this.pickElements(ownedSnapshots, token, amount);
   }
@@ -128,11 +125,14 @@ export class SnapshotManager {
    * @param transaction A Transaction object.
    * @returns `true` if the transaction is valid, `false` otherwise.
    */
-  validateTransaction(transaction: serialization.models.UnsignedTransaction): boolean {
+  validateTransaction(transaction: serialization.models.UnsignedTransaction):
+      boolean {
     return transaction.transfers.every((transfer) => {
       const snapshot = Snapshot.from({
         ...transfer,
-        ...{ block: transaction.block }
+        ...{
+          block: transaction.block
+        }
       });
       return this.hasSnapshot(snapshot) && snapshot.valid;
     });
@@ -162,7 +162,8 @@ export class SnapshotManager {
    * if the state transition is valid when sending transactions.
    * @param transaction Transaction to apply.
    */
-  applySentTransaction(transaction: serialization.models.UnsignedTransaction): void {
+  applySentTransaction(transaction: serialization.models.UnsignedTransaction):
+      void {
     const snapshots = transaction.transfers.map((transfer) => {
       return Snapshot.from({
         ...transfer,
@@ -194,16 +195,19 @@ export class SnapshotManager {
    * Applies a Transaction to the local state.
    * @param transaction Transaction to apply.
    */
-  applyTransaction(transaction: serialization.models.UnsignedTransaction): void {
+  applyTransaction(transaction: serialization.models.UnsignedTransaction):
+      void {
     // Pull out all of the transfer components (implicit and explicit).
-    const components = transaction.transfers.reduce((components: TransferComponent[], transfer) => {
-      return components.concat(
-        this.getTransferComponents({
-          ...transfer,
-          ...{ block: transaction.block }
-        })
-      );
-    }, []);
+    const components = transaction.transfers.reduce(
+        (components: TransferComponent[], transfer) => {
+          return components.concat(this.getTransferComponents({
+            ...transfer,
+            ...{
+              block: transaction.block
+            }
+          }));
+        },
+        []);
 
     for (const component of components) {
       this.applyTransferComponent(component);
@@ -219,9 +223,8 @@ export class SnapshotManager {
 
     // Determine which snapshots overlap with this component.
     const overlapping = this.snapshots.filter((snapshot) => {
-      return bnMax(snapshot.start, component.start).lt(
-        bnMin(snapshot.end, component.end)
-      );
+      return bnMax(snapshot.start, component.start)
+          .lt(bnMin(snapshot.end, component.end));
     });
 
     // Apply this component to each snapshot that it overlaps.
@@ -235,29 +238,27 @@ export class SnapshotManager {
 
       // Insert any newly created snapshots.
       if (snapshot.start.lt(component.start)) {
-        this.addSnapshot(
-          new Snapshot({
-            ...snapshot,
-            ...{ end: component.start }
-          })
-        );
+        this.addSnapshot(new Snapshot({
+          ...snapshot,
+          ...{
+            end: component.start
+          }
+        }));
       }
       if (snapshot.end.gt(component.end)) {
-        this.addSnapshot(
-          new Snapshot({
-            ...snapshot,
-            ...{ start: component.end }
-          })
-        );
+        this.addSnapshot(new Snapshot({
+          ...snapshot,
+          ...{
+            start: component.end
+          }
+        }));
       }
-      this.addSnapshot(
-        new Snapshot({
-          start: bnMax(snapshot.start, component.start),
-          end: bnMin(snapshot.end, component.end),
-          block: component.block,
-          owner: component.implicit ? snapshot.owner : component.recipient
-        })
-      );
+      this.addSnapshot(new Snapshot({
+        start: bnMax(snapshot.start, component.start),
+        end: bnMin(snapshot.end, component.end),
+        block: component.block,
+        owner: component.implicit ? snapshot.owner : component.recipient
+      }));
     }
   }
 
@@ -329,7 +330,8 @@ export class SnapshotManager {
   }
 
   /**
-   * Removes any overlapping snapshots by giving preference to the later snapshot.
+   * Removes any overlapping snapshots by giving preference to the later
+   * snapshot.
    * @param snapshots A list of snapshots.
    * @returns the list with overlapping snapshots resolved.
    */
@@ -369,36 +371,36 @@ export class SnapshotManager {
           // Add back any of the left or right
           // portions of the old snapshot that didn't
           // overlap with the new snapshot.
-          // For visual intuition: 
+          // For visual intuition:
           //
           // [-----------]   old snapshot
           //     [---]       new snapshot
           // |xxx|           left remainder
           //         |xxx|   right remainder
           if (snapshotB.start.lt(snapshotA.start)) {
-            reduced.push(
-              new Snapshot({
-                ...snapshotB,
-                ...{ end: snapshotA.start }
-              })
-            );
+            reduced.push(new Snapshot({
+              ...snapshotB,
+              ...{
+                end: snapshotA.start
+              }
+            }));
           }
           if (snapshotB.end.gt(snapshotA.end)) {
-            reduced.push(
-              new Snapshot({
-                ...snapshotB,
-                ...{ start: snapshotA.end }
-              })
-            );
+            reduced.push(new Snapshot({
+              ...snapshotB,
+              ...{
+                start: snapshotA.end
+              }
+            }));
           }
 
           // Add the new overlapping part.
-          reduced.push(
-            new Snapshot({
-              ...snapshotA,
-              ...{ end: bnMin(snapshotA.end, snapshotB.end) }
-            })
-          );
+          reduced.push(new Snapshot({
+            ...snapshotA,
+            ...{
+              end: bnMin(snapshotA.end, snapshotB.end)
+            }
+          }));
         }
 
         // Check if the new snapshot went beyond the end of the old one.
@@ -406,7 +408,9 @@ export class SnapshotManager {
         if (snapshotA.end.gt(snapshotB.end)) {
           snapshotA = new Snapshot({
             ...snapshotA,
-            ...{ start: snapshotB.end }
+            ...{
+              start: snapshotB.end
+            }
           });
         } else {
           remainder = false;
@@ -473,12 +477,14 @@ export class SnapshotManager {
   }
 
   /**
-   * Checks whether a transfer is a valid state transition from an existing snapshot.
+   * Checks whether a transfer is a valid state transition from an existing
+   * snapshot.
    * @param snapshot Existing snapshot object.
    * @param transfer Transfer from one user to another.
    * @returns `true` if the transition is valid, `false` otherwise.
    */
-  private validStateTransition(snapshot: Snapshot, transfer: TransferComponent): boolean {
+  private validStateTransition(snapshot: Snapshot, transfer: TransferComponent):
+      boolean {
     const validSender = transfer.implicit || snapshot.owner === transfer.sender;
     const validBlock = snapshot.block.addn(1).eq(transfer.block);
     return validSender && validBlock;
@@ -489,7 +495,8 @@ export class SnapshotManager {
    * @param transfer A Transfer object.
    * @returns a list of TransferComponents.
    */
-  private getTransferComponents(transfer: serialization.models.Transfer): TransferComponent[] {
+  private getTransferComponents(transfer: serialization.models.Transfer):
+      TransferComponent[] {
     const serialized = new Transfer(transfer);
     serialized.block = transfer.block;
     serialized.implicitStart = transfer.implicitStart;
@@ -513,38 +520,31 @@ export class SnapshotManager {
 
     // Left implicit component.
     if (!serialized.typedStart.eq(serialized.implicitStart)) {
-      components.push(
-        TransferComponent.from({
-          ...serialized,
-          ...{
-            start: serialized.implicitStart,
-            end: serialized.typedStart,
-            implicit: true
-          }
-        })
-      );
+      components.push(TransferComponent.from({
+        ...serialized,
+        ...{
+          start: serialized.implicitStart, end: serialized.typedStart,
+              implicit: true
+        }
+      }));
     }
 
     // Right implicit component.
     if (!serialized.typedEnd.eq(serialized.implicitEnd)) {
-      components.push(
-        TransferComponent.from({
-          ...serialized,
-          ...{
-            start: serialized.typedEnd,
-            end: serialized.implicitEnd,
-            implicit: true
-          }
-        })
-      );
+      components.push(TransferComponent.from({
+        ...serialized,
+        ...{
+          start: serialized.typedEnd, end: serialized.implicitEnd,
+              implicit: true
+        }
+      }));
     }
 
     // Transfer (non-implicit) component.
     components.push(TransferComponent.from({
       ...serialized,
       ...{
-        start: serialized.typedStart,
-        end: serialized.typedEnd
+        start: serialized.typedStart, end: serialized.typedEnd
       }
     }));
 
@@ -558,22 +558,22 @@ export class SnapshotManager {
    * @param amount Number of tokens being sent.
    * @returns a list of items that cover the amount.
    */
-  private pickElements<T extends UntypedRange>(arr: T[], token: BigNum, amount: BigNum): T[] {
-    const available = arr
-      .filter((item) => {
-        return item.token.eq(token);
-      })
-      .sort((a, b) => {
-        return b.end.sub(b.start).sub(a.end.sub(a.start)).toNumber();
-      });
+  private pickElements<T extends UntypedRange>(
+      arr: T[], token: BigNum, amount: BigNum): T[] {
+    const available =
+        arr.filter((item) => {
+             return item.token.eq(token);
+           })
+            .sort((a, b) => {
+              return b.end.sub(b.start).sub(a.end.sub(a.start)).toNumber();
+            });
     const picked: T[] = [];
 
     while (amount.gtn(0)) {
       const smallest = available.pop();
       if (smallest === undefined) {
         throw new Error(
-          'Address does not have enough balance to cover the amount.'
-        );
+            'Address does not have enough balance to cover the amount.');
       }
 
       const smallestAmount = smallest.end.sub(smallest.start);
@@ -584,7 +584,9 @@ export class SnapshotManager {
       } else {
         picked.push({
           ...smallest,
-          ...{ end: smallest.start.add(amount) }
+          ...{
+            end: smallest.start.add(amount)
+          }
         });
         break;
       }

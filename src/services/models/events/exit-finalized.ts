@@ -1,5 +1,5 @@
 import BigNum from 'bn.js';
-import { EthereumEvent } from '../eth';
+import {EthereumEvent} from '../eth';
 
 interface ExitFinalizedEventArgs {
   token: BigNum;
@@ -14,7 +14,7 @@ export class ExitFinalizedEvent {
   end: BigNum;
   id: BigNum;
 
-  constructor (event: ExitFinalizedEventArgs) {
+  constructor(event: ExitFinalizedEventArgs) {
     this.token = event.token;
     this.start = event.start;
     this.end = event.end;

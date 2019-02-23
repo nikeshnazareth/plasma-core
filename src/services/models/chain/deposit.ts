@@ -1,9 +1,10 @@
 import BigNum from 'bn.js';
-import { OperatorTransfer } from '../operator';
-import { DepositEvent } from '../events';
-import { EthereumEvent } from '../eth';
 
-interface DepositArgs {
+import {EthereumEvent} from '../eth';
+import {DepositEvent} from '../events';
+import {OperatorTransfer} from '../operator';
+
+export interface DepositArgs {
   owner: string;
   token: BigNum;
   start: BigNum;
@@ -32,15 +33,13 @@ export class Deposit {
 
   equals(other: Deposit): boolean {
     return (
-      this.owner === other.owner &&
-      this.token.eq(other.token) &&
-      this.start.eq(other.token) &&
-      this.end.eq(other.end) &&
-      this.block.eq(other.block)
-    );
+        this.owner === other.owner && this.token.eq(other.token) &&
+        this.start.eq(other.token) && this.end.eq(other.end) &&
+        this.block.eq(other.block));
   }
 
-  static fromOperatorTransfer(transfer: OperatorTransfer, block: string): Deposit {
+  static fromOperatorTransfer(transfer: OperatorTransfer, block: string):
+      Deposit {
     return new Deposit({
       owner: transfer.recipient,
       token: new BigNum(transfer.token, 'hex'),
@@ -65,7 +64,7 @@ export class Deposit {
     return Deposit.from(depositEvent);
   }
 
-  static from(args: DepositEvent | EthereumEvent): Deposit {
+  static from(args: DepositEvent|EthereumEvent): Deposit {
     if (args instanceof DepositEvent) {
       return Deposit.fromDepositEvent(args);
     } else if (args instanceof EthereumEvent) {

@@ -1,9 +1,6 @@
-import { BaseService } from '../base-service';
-import { EthereumEvent } from '../models/eth';
-import {
-  DepositEvent, ExitFinalizedEvent,
-  ExitStartedEvent,BlockSubmittedEvent
-} from '../models/events';
+import {BaseService} from '../base-service';
+import {EthereumEvent} from '../models/eth';
+import {BlockSubmittedEvent, DepositEvent, ExitFinalizedEvent, ExitStartedEvent} from '../models/events';
 
 export class EventHandler extends BaseService {
   dependencies = ['eventWatcher'];
@@ -21,7 +18,7 @@ export class EventHandler extends BaseService {
    * @param name Name of the event.
    * @param event Event object.
    */
-  private emitContractEvent(name: string, event: any): void {
+  private emitContractEvent(name: string, event: {}): void {
     this.emit(`event:${name}`, event);
   }
 
@@ -29,7 +26,7 @@ export class EventHandler extends BaseService {
    * Registers event handlers.
    */
   private registerHandlers(): void {
-    const handlers: { [key: string]: Function } = {
+    const handlers: {[key: string]: Function} = {
       DepositEvent: this.onDeposit,
       SubmitBlockEvent: this.onBlockSubmitted,
       BeginExitEvent: this.onExitStarted,
@@ -47,11 +44,8 @@ export class EventHandler extends BaseService {
   private onDeposit(events: EthereumEvent[]): void {
     const deposits = events.map(DepositEvent.from);
     deposits.forEach((deposit) => {
-      this.log(
-        `Detected new deposit of ${deposit.amount} [${deposit.token}] for ${
-          deposit.owner
-        }`
-      );
+      this.log(`Detected new deposit of ${deposit.amount} [${
+          deposit.token}] for ${deposit.owner}`);
     });
     this.emitContractEvent('Deposit', deposits);
   }

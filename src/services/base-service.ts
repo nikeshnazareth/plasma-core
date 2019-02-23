@@ -1,7 +1,7 @@
 import debug = require('debug');
-import { EventEmitter } from 'events';
-import { AppServices } from './service-interface';
-import { PlasmaApp } from '../plasma';
+import {EventEmitter} from 'events';
+import {AppServices} from './service-interface';
+import {PlasmaApp} from '../plasma';
 
 export interface ServiceOptions {
   app: PlasmaApp;
@@ -20,10 +20,7 @@ export class BaseService extends EventEmitter {
   constructor(options: ServiceOptions, defaultOptions = {}) {
     super();
 
-    this.options = {
-      ...defaultOptions,
-      ...options
-    };
+    this.options = {...defaultOptions, ...options};
     this.app = this.options.app;
     this.name = this.options.name;
   }
@@ -82,17 +79,14 @@ export class BaseService extends EventEmitter {
    * @returns `true` if all started, `false` otherwise.
    */
   get healthy(): boolean {
-    return (
-      this.started &&
-      this.dependencies.every((dependency: string) => {
-        try {
-          const service = this.services[dependency];
-          return service !== undefined && service.started;
-        } catch {
-          return false;
-        }
-      })
-    );
+    return (this.started && this.dependencies.every((dependency: string) => {
+      try {
+        const service = this.services[dependency];
+        return service !== undefined && service.started;
+      } catch {
+        return false;
+      }
+    }));
   }
 
   /**

@@ -1,4 +1,4 @@
-import { BaseDBProvider } from './base-provider';
+import {BaseDBProvider, DBObject, DBResult, DBValue} from './base-provider';
 
 export class EphemDBProvider extends BaseDBProvider {
   db = new Map<string, string>();
@@ -7,10 +7,10 @@ export class EphemDBProvider extends BaseDBProvider {
     return;
   }
 
-  async get(key: string, fallback: any): Promise<any> {
+  async get<T>(key: string, fallback?: T): Promise<T|DBResult> {
     const result = this.db.get(key);
     if (!result) {
-      if (arguments.length === 2) {
+      if (fallback !== undefined) {
         return fallback;
       } else {
         throw new Error('Key not found in database');
@@ -20,9 +20,9 @@ export class EphemDBProvider extends BaseDBProvider {
     return this.jsonify(result);
   }
 
-  async set(key: string, value: any): Promise<void> {
-    value = this.stringify(value);
-    this.db.set(key, value);
+  async set(key: string, value: DBValue): Promise<void> {
+    const stringified = this.stringify(value);
+    this.db.set(key, stringified);
   }
 
   async delete(key: string): Promise<void> {
@@ -34,14 +34,16 @@ export class EphemDBProvider extends BaseDBProvider {
   }
 
   async findNextKey(key: string): Promise<string> {
-    const prefix = key.split(':')[0]
+    const prefix = key.split(':')[0];
     const keys = [...this.db.keys()];
 
     const nextKey = keys.filter((k) => {
-      return k.startsWith(prefix);
-    }).sort().find((k) => {
-      return k > key;
-    });
+                          return k.startsWith(prefix);
+                        })
+                        .sort()
+                        .find((k) => {
+                          return k > key;
+                        });
 
     if (!nextKey) {
       throw new Error('Could not find next key in database.');
@@ -49,14 +51,14 @@ export class EphemDBProvider extends BaseDBProvider {
     return nextKey;
   }
 
-  async bulkPut(objects: Array<{key: string, value: any}>): Promise<void> {
+  async bulkPut(objects: DBObject[]): Promise<void> {
     for (const object of objects) {
       await this.set(object.key, object.value);
     }
   }
 
-  async push(key: string, value: any): Promise<void> {
-    const current = await this.get(key, []);
+  async push<T>(key: string, value: T): Promise<void> {
+    const current = (await this.get(key, []) as T[]);
     current.push(value);
     await this.set(key, current);
   }

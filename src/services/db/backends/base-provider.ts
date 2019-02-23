@@ -1,4 +1,11 @@
-import { utils } from 'plasma-utils';
+import {utils} from 'plasma-utils';
+
+export type DBResult = string|string[]|object|object[]|number|number[]|boolean;
+export type DBValue = string|{};
+export interface DBObject {
+  key: string;
+  value: DBValue;
+}
 
 /**
  * Class that DB interfaces must implement.
@@ -23,7 +30,7 @@ export class BaseDBProvider {
    * @param fallback A fallback value if the key doesn't exist.
    * @returns the stored value or the fallback.
    */
-  async get(key: string, fallback?: any): Promise<any> {
+  async get<T>(key: string, fallback?: T): Promise<T|DBResult> {
     throw new Error('Classes that extend BaseDB must implement this method.');
   }
 
@@ -32,7 +39,7 @@ export class BaseDBProvider {
    * @param key Key to set.
    * @param value Value to store.
    */
-  async set(key: string, value: any): Promise<void> {
+  async set(key: string, value: DBValue): Promise<void> {
     throw new Error('Classes that extend BaseDB must implement this method.');
   }
 
@@ -67,7 +74,7 @@ export class BaseDBProvider {
    * Should be more efficient than simply calling `set` repeatedly.
    * @param objects A series of objects to put into the database.
    */
-  async bulkPut(objects: Array<{key: string, value: any}>): Promise<void> {
+  async bulkPut(objects: DBObject[]): Promise<void> {
     throw new Error('Classes that extend BaseDB must implement this method.');
   }
 
@@ -76,7 +83,7 @@ export class BaseDBProvider {
    * @param key The key at which the array is stored.
    * @param value Value to add to the array.
    */
-  async push(key: string, value: any): Promise<void> {
+  async push<T>(key: string, value: T): Promise<void> {
     throw new Error('Classes that extend BaseDB must implement this method.');
   }
 
@@ -85,11 +92,11 @@ export class BaseDBProvider {
    * @param value Value to convert.
    * @returns the stringified value.
    */
-  stringify(value: any): string {
+  stringify(value: DBValue): string {
     if (!utils.isString(value)) {
       value = JSON.stringify(value);
     }
-    return value;
+    return value as string;
   }
 
   /**
@@ -97,7 +104,7 @@ export class BaseDBProvider {
    * @param value Value to convert.
    * @returns the JSON-ified value.
    */
-  jsonify(value: any): any {
+  jsonify(value: string): {} {
     return this.isJson(value) ? JSON.parse(value) : value;
   }
 
@@ -106,9 +113,9 @@ export class BaseDBProvider {
    * @param value Thing to check.
    * @returns `true` if it's a JSON string, `false` otherwise.
    */
-  isJson(value: any): boolean {
+  isJson(value: string): boolean {
     try {
-      JSON.parse(value)
+      JSON.parse(value);
     } catch (err) {
       return false;
     }

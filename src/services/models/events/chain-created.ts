@@ -1,6 +1,7 @@
-import { utils } from 'plasma-utils';
-import { EthereumEvent, isEventLog } from '../eth';
-import { EventLog } from 'web3/types';
+import {utils} from 'plasma-utils';
+import {EventLog} from 'web3/types';
+
+import {EthereumEvent, isEventLog} from '../eth';
 
 const web3Utils = utils.web3Utils;
 
@@ -33,9 +34,8 @@ export class ChainCreatedEvent {
     return new ChainCreatedEvent({
       plasmaChainAddress: event.raw.PlasmaChainAddress as string,
       plasmaChainName: web3Utils.hexToAscii(event.raw.PlasmaChainName),
-      operatorEndpoint: encodeURI(
-        web3Utils.hexToAscii(event.raw.PlasmaChainIP)
-      ).replace(/%00/gi, ''),
+      operatorEndpoint: encodeURI(web3Utils.hexToAscii(event.raw.PlasmaChainIP))
+                            .replace(/%00/gi, ''),
       operatorAddress: event.raw.OperatorAddress as string
     });
   }
@@ -55,7 +55,7 @@ export class ChainCreatedEvent {
    * @param args The arguments to cast.
    * @returns the ChainCreatedEvent object.
    */
-  static from(args: EthereumEvent | EventLog): ChainCreatedEvent {
+  static from(args: EthereumEvent|EventLog): ChainCreatedEvent {
     if (args instanceof EthereumEvent) {
       return ChainCreatedEvent.fromEthereumEvent(args);
     } else if (isEventLog(args)) {

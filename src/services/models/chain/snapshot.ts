@@ -1,9 +1,10 @@
 import BigNum from 'bn.js';
-import { serialization, constants } from 'plasma-utils';
-import { PrettyPrint } from './pretty-print';
-import { Deposit } from './deposit';
-import { Exit } from './exit';
-import { TypedRange } from './range';
+import {constants, serialization} from 'plasma-utils';
+
+import {Deposit} from './deposit';
+import {Exit} from './exit';
+import {PrettyPrint} from './pretty-print';
+import {TypedRange} from './range';
 
 const models = serialization.models;
 const Transfer = models.Transfer;
@@ -21,7 +22,7 @@ export class Snapshot extends PrettyPrint {
   block: BigNum;
   owner: string;
 
-  constructor (snapshot: TypedSnapshot) {
+  constructor(snapshot: TypedSnapshot) {
     super();
 
     this.start = new BigNum(snapshot.start, 'hex');
@@ -45,11 +46,8 @@ export class Snapshot extends PrettyPrint {
    */
   equals(other: Snapshot): boolean {
     return (
-      this.start.eq(other.start) &&
-      this.end.eq(other.end) &&
-      this.block.eq(other.block) &&
-      this.owner === other.owner
-    );
+        this.start.eq(other.start) && this.end.eq(other.end) &&
+        this.block.eq(other.block) && this.owner === other.owner);
   }
 
   /**
@@ -59,11 +57,8 @@ export class Snapshot extends PrettyPrint {
    */
   contains(other: Snapshot): boolean {
     return (
-      this.start.lte(other.start) &&
-      this.end.gte(other.end) &&
-      this.block.eq(other.block) &&
-      this.owner === other.owner
-    );
+        this.start.lte(other.start) && this.end.gte(other.end) &&
+        this.block.eq(other.block) && this.owner === other.owner);
   }
 
   /**
@@ -75,8 +70,7 @@ export class Snapshot extends PrettyPrint {
     const serialized = new Transfer(transfer);
 
     if (serialized.typedStart === undefined ||
-        serialized.typedEnd === undefined ||
-        transfer.block === undefined) {
+        serialized.typedEnd === undefined || transfer.block === undefined) {
       throw new Error('Could not create Snapshot from Transfer.');
     }
 
@@ -97,8 +91,7 @@ export class Snapshot extends PrettyPrint {
     return new Snapshot({
       ...deposit,
       ...{
-        sender: constants.NULL_ADDRESS,
-        recipient: deposit.owner
+        sender: constants.NULL_ADDRESS, recipient: deposit.owner
       }
     });
   }
@@ -112,13 +105,12 @@ export class Snapshot extends PrettyPrint {
     return new Snapshot({
       ...exit,
       ...{
-        sender: exit.owner,
-        recipient: constants.NULL_ADDRESS
+        sender: exit.owner, recipient: constants.NULL_ADDRESS
       }
     });
   }
 
-  static from(args: serialization.models.Transfer | Deposit | Exit): Snapshot {
+  static from(args: serialization.models.Transfer|Deposit|Exit): Snapshot {
     if (args instanceof Transfer) {
       return Snapshot.fromTransfer(args);
     } else if (args instanceof Deposit) {

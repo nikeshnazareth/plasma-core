@@ -1,7 +1,8 @@
-import { utils, serialization, constants } from 'plasma-utils';
-import { BaseService, ServiceOptions } from './base-service';
-import { DepositEvent, BlockSubmittedEvent, ExitStartedEvent, ExitFinalizedEvent } from './models/events';
-import { Exit, Deposit } from './models/chain';
+import {constants, serialization, utils} from 'plasma-utils';
+
+import {BaseService, ServiceOptions} from './base-service';
+import {Deposit, Exit} from './models/chain';
+import {BlockSubmittedEvent, DepositEvent, ExitFinalizedEvent, ExitStartedEvent} from './models/events';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
@@ -25,13 +26,7 @@ const defaultOptions: DefaultSyncOptions = {
 export class SyncService extends BaseService {
   options!: SyncOptions;
   dependencies = [
-    'eth',
-    'chain',
-    'eventHandler',
-    'syncdb',
-    'chaindb',
-    'wallet',
-    'operator'
+    'eth', 'chain', 'eventHandler', 'syncdb', 'chaindb', 'wallet', 'operator'
   ];
   pending: string[] = [];
   polling = false;
@@ -71,7 +66,7 @@ export class SyncService extends BaseService {
    * Attaches handlers to Ethereum events.
    */
   private attachHandlers(): void {
-    const handlers: { [key: string]: Function } = {
+    const handlers: {[key: string]: Function} = {
       Deposit: this.onDeposit,
       BlockSubmitted: this.onBlockSubmitted,
       ExitStarted: this.onExitStarted,
@@ -79,15 +74,17 @@ export class SyncService extends BaseService {
     };
 
     for (const event of Object.keys(handlers)) {
-      this.services.eventHandler.on(`event:${event}`, handlers[event].bind(this));
+      this.services.eventHandler.on(
+          `event:${event}`, handlers[event].bind(this));
     }
   }
 
   /**
    * Checks for any available pending transactions and emits an event for each.
    */
-  private async checkPendingTransactions () {
-    if (!this.services.operator.online || !this.services.eth.contract.hasAddress) {
+  private async checkPendingTransactions() {
+    if (!this.services.operator.online ||
+        !this.services.eth.contract.hasAddress) {
       return;
     }
 
@@ -97,9 +94,8 @@ export class SyncService extends BaseService {
     const prevFailed = await this.services.syncdb.getFailedTransactions();
 
     if (firstUnsyncedBlock <= currentBlock) {
-      this.log(
-        `Checking for new transactions between plasma blocks ${firstUnsyncedBlock} and ${currentBlock}.`
-      );
+      this.log(`Checking for new transactions between plasma blocks ${
+          firstUnsyncedBlock} and ${currentBlock}.`);
     } else if (prevFailed.length > 0) {
       this.log(`Attempting to apply failed transactions.`);
     } else {
@@ -110,10 +106,7 @@ export class SyncService extends BaseService {
     const addresses = await this.services.wallet.getAccounts();
     for (const address of addresses) {
       const received = await this.services.operator.getReceivedTransactions(
-        address,
-        firstUnsyncedBlock,
-        currentBlock
-      );
+          address, firstUnsyncedBlock, currentBlock);
       this.pending = this.pending.concat(received);
     }
 
@@ -140,11 +133,8 @@ export class SyncService extends BaseService {
       } catch (err) {
         failed.push(encoded);
         this.log(`ERROR: ${err}`);
-        this.log(
-          `Ran into an error while importing transaction: ${
-            tx.hash
-          }, trying again in a few seconds...`
-        );
+        this.log(`Ran into an error while importing transaction: ${
+            tx.hash}, trying again in a few seconds...`);
       }
     }
 
@@ -156,12 +146,10 @@ export class SyncService extends BaseService {
    * Tries to add any newly received transactions.
    * @param tx A signed transaction.
    */
-  async addTransaction (tx: serialization.models.SignedTransaction) {
+  async addTransaction(tx: serialization.models.SignedTransaction) {
     // TODO: The operator should really be avoiding this.
-    if (
-      tx.transfers[0].sender === constants.NULL_ADDRESS ||
-      (await this.services.chaindb.hasTransaction(tx.hash))
-    ) {
+    if (tx.transfers[0].sender === constants.NULL_ADDRESS ||
+        (await this.services.chaindb.hasTransaction(tx.hash))) {
       return;
     }
 
@@ -171,16 +159,14 @@ export class SyncService extends BaseService {
     try {
       txdata = await this.services.operator.getTransactionProof(tx.encoded);
     } catch (err) {
-      this.log(
-        `ERROR: Operator failed to return information for transaction: ${
-          tx.hash
-        }`
-      );
+      this.log(`ERROR: Operator failed to return information for transaction: ${
+          tx.hash}`);
       throw err;
     }
 
     this.log(`Importing new transaction: ${tx.hash}`);
-    await this.services.chain.addTransaction(txdata.transaction, txdata.deposits, txdata.proof);
+    await this.services.chain.addTransaction(
+        txdata.transaction, txdata.deposits, txdata.proof);
     this.log(`Successfully imported transaction: ${tx.hash}`);
   }
 

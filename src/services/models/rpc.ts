@@ -1,3 +1,6 @@
+export type JSONRPCParam = string|number;
+export type JSONRPCResult = string|number|{};
+
 export interface JSONRPCError {
   code: number;
   message: string;
@@ -7,13 +10,13 @@ export interface JSONRPCRequest {
   jsonrpc: string;
   method: string;
   id: string;
-  params: string[];
+  params: JSONRPCParam[];
 }
 
 export interface JSONRPCResponse {
   jsonrpc: string;
-  result?: string | number | {};
+  result?: JSONRPCResult;
   error?: JSONRPCError;
   message?: string;
-  id: string | null;
+  id: string|null;
 }

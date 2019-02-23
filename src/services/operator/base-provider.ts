@@ -1,6 +1,6 @@
-import { BaseService } from '../base-service';
-import { Proof } from '../models/chain';
-import { EthInfo } from '../models/operator';
+import {BaseService} from '../base-service';
+import {Proof} from '../models/chain';
+import {EthInfo} from '../models/operator';
 
 export class BaseOperatorProvider extends BaseService {
   online = false;
@@ -11,8 +11,7 @@ export class BaseOperatorProvider extends BaseService {
    */
   async getNextBlock(): Promise<number> {
     throw new Error(
-      'Classes that extend BaseOperatorProvider must implement this method.'
-    );
+        'Classes that extend BaseOperatorProvider must implement this method.');
   }
 
   /**
@@ -21,8 +20,7 @@ export class BaseOperatorProvider extends BaseService {
    */
   async getEthInfo(): Promise<EthInfo> {
     throw new Error(
-      'Classes that extend BaseOperatorProvider must implement this method.'
-    );
+        'Classes that extend BaseOperatorProvider must implement this method.');
   }
 
   /**
@@ -33,10 +31,11 @@ export class BaseOperatorProvider extends BaseService {
    * @param endBlock Block to query to.
    * @return List of encoded transactions.
    */
-  async getReceivedTransactions(address: string, startBlock: number, endBlock: number): Promise<string[]> {
+  async getReceivedTransactions(
+      address: string, startBlock: number,
+      endBlock: number): Promise<string[]> {
     throw new Error(
-      'Classes that extend BaseOperatorProvider must implement this method.'
-    );
+        'Classes that extend BaseOperatorProvider must implement this method.');
   }
 
   /**
@@ -46,8 +45,7 @@ export class BaseOperatorProvider extends BaseService {
    */
   async getTransactionProof(encoded: string): Promise<Proof> {
     throw new Error(
-      'Classes that extend BaseOperatorProvider must implement this method.'
-    );
+        'Classes that extend BaseOperatorProvider must implement this method.');
   }
 
   /**
@@ -57,8 +55,7 @@ export class BaseOperatorProvider extends BaseService {
    */
   async sendTransaction(transaction: string): Promise<string> {
     throw new Error(
-      'Classes that extend BaseOperatorProvider must implement this method.'
-    );
+        'Classes that extend BaseOperatorProvider must implement this method.');
   }
 
   /**
@@ -69,7 +66,6 @@ export class BaseOperatorProvider extends BaseService {
    */
   async submitBlock(): Promise<void> {
     throw new Error(
-      'Classes that extend BaseOperatorProvider must implement this method.'
-    );
+        'Classes that extend BaseOperatorProvider must implement this method.');
   }
 }

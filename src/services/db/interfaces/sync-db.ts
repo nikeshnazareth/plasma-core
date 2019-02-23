@@ -1,6 +1,6 @@
-import { BaseService } from '../../base-service';
-import { BaseDBProvider } from '../backends/base-provider';
-import { EthereumEvent } from '../../models/eth';
+import {BaseService} from '../../base-service';
+import {EthereumEvent} from '../../models/eth';
+import {BaseDBProvider} from '../backends/base-provider';
 
 export class SyncDB extends BaseService {
   dependencies = ['eth', 'db'];
@@ -34,7 +34,7 @@ export class SyncDB extends BaseService {
    */
   async open(): Promise<void> {
     const address = this.services.eth.contract.address;
-    await this.services.dbservice.open('sync', { id: address });
+    await this.services.dbservice.open('sync', {id: address});
   }
 
   /**
@@ -42,8 +42,8 @@ export class SyncDB extends BaseService {
    * @param eventName Name of the event.
    * @returns Last synced block number.
    */
-  async getLastLoggedEventBlock (eventName: string): Promise<number> {
-    return this.db.get(`lastlogged:${eventName}`, -1);
+  async getLastLoggedEventBlock(eventName: string): Promise<number> {
+    return (await this.db.get(`lastlogged:${eventName}`, -1) as number);
   }
 
   /**
@@ -51,7 +51,8 @@ export class SyncDB extends BaseService {
    * @param eventName Name of the event.
    * @param block Last synced block number.
    */
-  async setLastLoggedEventBlock (eventName: string, block: number): Promise<void> {
+  async setLastLoggedEventBlock(eventName: string, block: number):
+      Promise<void> {
     await this.db.set(`lastlogged:${eventName}`, block);
   }
 
@@ -60,7 +61,7 @@ export class SyncDB extends BaseService {
    * @returns Last synced block number.
    */
   async getLastSyncedBlock(): Promise<number> {
-    return this.db.get('sync:block', -1);
+    return (await this.db.get('sync:block', -1) as number);
   }
 
   /**
@@ -76,7 +77,7 @@ export class SyncDB extends BaseService {
    * @returns An array of encoded transactions.
    */
   async getFailedTransactions(): Promise<string[]> {
-    return this.db.get('sync:failed', []);
+    return (await this.db.get('sync:failed', []) as string[]);
   }
 
   /**
@@ -93,10 +94,7 @@ export class SyncDB extends BaseService {
    */
   async addEvents(events: EthereumEvent[]): Promise<void> {
     const objects = events.map((event) => {
-      return {
-        key: `event:${event.hash}`,
-        value: true
-      };
+      return {key: `event:${event.hash}`, value: true};
     });
     await this.db.bulkPut(objects);
   }
