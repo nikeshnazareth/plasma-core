@@ -1,6 +1,6 @@
 import BigNum from 'bn.js';
 
-type PrettyPrintable = string|number|BigNum|Function;
+type PrettyPrintable = string|number|BigNum|Function|boolean;
 
 /**
  * Base class that allows for printing objects in a prettified manner.
@@ -14,12 +14,12 @@ export class PrettyPrint {
    * @returns the JSON string.
    */
   prettify(): string {
-    const parsed: {[key: string]: string|number} = {};
+    const parsed: {[key: string]: PrettyPrintable} = {};
     Object.keys(this).forEach((key) => {
       const value = this[key];
       if (BigNum.isBN(value)) {
         parsed[key] = value.toString(10);
-      } else if (!(value instanceof Function)) {
+      } else {
         parsed[key] = value;
       }
     });
