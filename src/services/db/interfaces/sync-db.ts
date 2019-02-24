@@ -3,7 +3,9 @@ import {EthereumEvent} from '../../models/eth';
 import {BaseDBProvider} from '../backends/base-provider';
 
 export class SyncDB extends BaseService {
-  dependencies = ['eth', 'db'];
+  get dependencies(): string[] {
+    return ['eth', 'dbservice'];
+  }
 
   /**
    * @returns the current db instance.
@@ -21,7 +23,7 @@ export class SyncDB extends BaseService {
       await this.open();
     } else {
       await new Promise((resolve) => {
-        this.services.contract.on('initialized', async () => {
+        this.services.eth.contract.on('initialized', async () => {
           await this.open();
           resolve();
         });

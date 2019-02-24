@@ -3,7 +3,9 @@ import {EthereumEvent} from '../models/eth';
 import {BlockSubmittedEvent, DepositEvent, ExitFinalizedEvent, ExitStartedEvent} from '../models/events';
 
 export class EventHandler extends BaseService {
-  dependencies = ['eventWatcher'];
+  get dependencies(): string[] {
+    return ['eventWatcher'];    
+  }
 
   async onStart(): Promise<void> {
     this.registerHandlers();

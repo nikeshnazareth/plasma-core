@@ -2,7 +2,7 @@ import {utils} from 'plasma-utils';
 import {BaseService, ServiceOptions} from '../base-service';
 import {EthereumEvent} from '../models/eth';
 
-interface UserEventWatcherOptions extends ServiceOptions {
+export interface UserEventWatcherOptions {
   finalityDepth?: number;
   eventPollInterval?: number;
 }
@@ -24,14 +24,16 @@ const defaultOptions: DefaultEventWatcherOptions = {
 
 export class EventWatcher extends BaseService {
   options!: EventWatcherOptions;
-  dependencies = ['eth', 'syncdb'];
-
   watching = false;
   subscriptions: {[key: string]: Function[]} = {};
   events: {[key: string]: boolean} = {};
 
-  constructor(options: UserEventWatcherOptions) {
+  constructor(options: UserEventWatcherOptions & ServiceOptions) {
     super(options, defaultOptions);
+  }
+
+  get dependencies(): string[] {
+    return ['eth', 'syncdb'];
   }
 
   async onStart(): Promise<void> {

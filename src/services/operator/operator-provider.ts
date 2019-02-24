@@ -13,7 +13,7 @@ import {BaseOperatorProvider} from './base-provider';
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
 
-interface UserOperatorOptions extends ServiceOptions {
+export interface UserOperatorOptions {
   operatorPingInterval?: number;
 }
 
@@ -31,17 +31,20 @@ const defaultOptions: DefaultOperatorOptions = {
 
 export class OperatorProvider extends BaseOperatorProvider {
   options!: OperatorOptions;
-  dependencies = ['eth'];
   pinging = false;
   endpoint?: string;
   http?: AxiosInstance;
 
-  constructor(options: UserOperatorOptions) {
+  constructor(options: UserOperatorOptions & ServiceOptions) {
     super(options, defaultOptions);
   }
 
+  get dependencies(): string[] {
+    return ['eth'];
+  }
+
   async onStart(): Promise<void> {
-    this.services.contract.on('initialized', () => {
+    this.services.eth.contract.on('initialized', () => {
       this.initConnection();
     });
     this.startPingInterval();

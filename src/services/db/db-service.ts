@@ -2,7 +2,7 @@ import {BaseService, ServiceOptions} from '../base-service';
 import {BaseDBProvider} from './backends/base-provider';
 import {EphemDBProvider} from './backends/ephem-provider';
 
-interface UserDBOptions extends ServiceOptions {
+export interface UserDBOptions {
   dbProvider?: typeof BaseDBProvider;
 }
 
@@ -22,7 +22,7 @@ export class DBService extends BaseService {
   options!: DBOptions;
   dbs: {[key: string]: BaseDBProvider} = {};
 
-  constructor(options: UserDBOptions) {
+  constructor(options: UserDBOptions & ServiceOptions) {
     super(options, defaultOptions);
   }
 

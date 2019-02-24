@@ -3,17 +3,17 @@ import {BaseService, ServiceOptions} from '../../base-service';
 import {Deposit} from '../../models/chain';
 import {EthereumEvent, EthereumTransactionReceipt} from '../../models/eth';
 
-export interface UserContractOptions extends ServiceOptions {
+export interface UserContractOptions {
   registryAddress: string;
   plasmaChainName: string;
 }
 
-interface ContractOptions extends UserContractOptions {}
+type ContractOptions = UserContractOptions & ServiceOptions;
 
 export class BaseContractProvider extends BaseService {
   options!: ContractOptions;
 
-  constructor(options: UserContractOptions) {
+  constructor(options: UserContractOptions & ServiceOptions) {
     super(options);
   }
 

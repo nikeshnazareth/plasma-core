@@ -3,12 +3,12 @@ import Web3 = require('web3');
 import Contract from 'web3/eth/contract';
 import {EventLog} from 'web3/types';
 import {utils} from 'plasma-utils';
-import {compiledContracts} from 'plasma-contracts';
+import * as compiledContracts from 'plasma-contracts';
 import {ServiceOptions} from '../../base-service';
 import {BaseContractProvider} from './base-provider';
 import {EthereumTransactionReceipt, EthereumEvent} from '../../models/eth';
 import {Deposit} from '../../models/chain';
-import {ChainCreatedEvent, DepositEvent} from '../../models/events';
+import {ChainCreatedEvent} from '../../models/events';
 
 const web3Utils = utils.web3Utils;
 
@@ -17,13 +17,13 @@ const plasmaChainCompiled = compiledContracts.plasmaChainCompiled;
 const erc20Compiled = compiledContracts.erc20Compiled;
 const registryCompiled = compiledContracts.plasmaRegistryCompiled;
 
-export interface UserContractOptions extends ServiceOptions {
+export interface UserContractOptions {
   registryAddress: string;
   plasmaChainName: string;
   web3: Web3;
 }
 
-interface ContractOptions extends UserContractOptions {}
+type ContractOptions = UserContractOptions & ServiceOptions;
 
 export class ContractProvider extends BaseContractProvider {
   options!: ContractOptions;
@@ -32,7 +32,7 @@ export class ContractProvider extends BaseContractProvider {
   registry: Contract;
   endpoint?: string;
 
-  constructor(options: UserContractOptions) {
+  constructor(options: UserContractOptions & ServiceOptions) {
     super(options);
 
     this.web3 = options.web3;

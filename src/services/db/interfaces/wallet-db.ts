@@ -5,7 +5,9 @@ import {EthereumAccount} from '../../models/eth';
 import {BaseDBProvider} from '../backends/base-provider';
 
 export class WalletDB extends BaseService {
-  dependencies = ['eth', 'db'];
+  get dependencies(): string[] {
+    return ['eth', 'dbservice'];
+  }
 
   /**
    * @returns the current DB instance.

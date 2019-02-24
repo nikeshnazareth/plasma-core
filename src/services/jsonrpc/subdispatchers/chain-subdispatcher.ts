@@ -4,8 +4,13 @@ import {BaseSubdispatcher} from './base-subdispatcher';
  * Subdispatcher that handles chain-related requests.
  */
 export class ChainSubdispatcher extends BaseSubdispatcher {
-  prefix = 'pg_';
-  dependencies = ['chain', 'chaindb'];
+  get prefix(): string {
+    return 'pg_';
+  }
+
+  get dependencies(): string[] {
+    return ['chain', 'chaindb'];
+  }
 
   get methods(): {[key: string]: Function} {
     const chain = this.app.services.chain;

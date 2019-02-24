@@ -1,13 +1,12 @@
 import {constants, serialization, utils} from 'plasma-utils';
 
 import {BaseService, ServiceOptions} from './base-service';
-import {Deposit, Exit} from './models/chain';
 import {BlockSubmittedEvent, DepositEvent, ExitFinalizedEvent, ExitStartedEvent} from './models/events';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
 
-interface UserSyncOptions extends ServiceOptions {
+export interface UserSyncOptions {
   transactionPollInterval?: number;
 }
 
@@ -25,14 +24,15 @@ const defaultOptions: DefaultSyncOptions = {
 
 export class SyncService extends BaseService {
   options!: SyncOptions;
-  dependencies = [
-    'eth', 'chain', 'eventHandler', 'syncdb', 'chaindb', 'wallet', 'operator'
-  ];
   pending: string[] = [];
   polling = false;
 
-  constructor(options: UserSyncOptions) {
+  constructor(options: UserSyncOptions & ServiceOptions) {
     super(options, defaultOptions);
+  }
+
+  get dependencies(): string[] {
+    return ['eth', 'chain', 'eventHandler', 'syncdb', 'chaindb', 'wallet', 'operator'];
   }
 
   async onStart(): Promise<void> {
@@ -146,7 +146,7 @@ export class SyncService extends BaseService {
    * Tries to add any newly received transactions.
    * @param tx A signed transaction.
    */
-  async addTransaction(tx: serialization.models.SignedTransaction) {
+  private async addTransaction(tx: serialization.models.SignedTransaction) {
     // TODO: The operator should really be avoiding this.
     if (tx.transfers[0].sender === constants.NULL_ADDRESS ||
         (await this.services.chaindb.hasTransaction(tx.hash))) {
@@ -174,7 +174,7 @@ export class SyncService extends BaseService {
    * Handles new deposit events.
    * @param deposits Deposit events.
    */
-  async onDeposit(events: DepositEvent[]): Promise<void> {
+  private async onDeposit(events: DepositEvent[]): Promise<void> {
     const deposits = events.map((event) => {
       return event.toDeposit();
     });
@@ -185,7 +185,7 @@ export class SyncService extends BaseService {
    * Handles new block events.
    * @param blocks Block submission events.
    */
-  async onBlockSubmitted(events: BlockSubmittedEvent[]): Promise<void> {
+  private async onBlockSubmitted(events: BlockSubmittedEvent[]): Promise<void> {
     const blocks = events.map((event) => {
       return event.toBlock();
     });
@@ -196,7 +196,7 @@ export class SyncService extends BaseService {
    * Handles new exit started events.
    * @param exits Exit started events.
    */
-  async onExitStarted(events: ExitStartedEvent[]): Promise<void> {
+  private async onExitStarted(events: ExitStartedEvent[]): Promise<void> {
     const exits = events.map((event) => {
       return event.toExit();
     });
@@ -209,7 +209,7 @@ export class SyncService extends BaseService {
    * Handles new exit finalized events.
    * @param exits Exit finalized events.
    */
-  async onExitFinalized(exits: ExitFinalizedEvent[]): Promise<void> {
+  private async onExitFinalized(exits: ExitFinalizedEvent[]): Promise<void> {
     for (const exit of exits) {
       await this.services.chaindb.markFinalized(exit);
       await this.services.chaindb.addExitableEnd(exit.token, exit.start);

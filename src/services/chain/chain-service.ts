@@ -15,11 +15,14 @@ interface Balances {
 }
 
 export class ChainService extends BaseService {
-  dependencies = ['eth', 'operator', 'chaindb', 'proof'];
   lock = new AsyncLock();
 
   constructor(options: ServiceOptions) {
     super(options);
+  }
+
+  get dependencies(): string[] {
+    return ['eth', 'operator', 'chaindb', 'proof'];
   }
 
   /**
@@ -86,7 +89,7 @@ export class ChainService extends BaseService {
     const exits = await this.services.chaindb.getExits(address);
 
     const currentBlock = await this.services.eth.getCurrentBlock();
-    // const challengePeriod = await this.services.contract.getChallengePeriod()
+    // const challengePeriod = await this.services.eth.contract.getChallengePeriod()
     const challengePeriod = 20;
 
     for (const exit of exits) {

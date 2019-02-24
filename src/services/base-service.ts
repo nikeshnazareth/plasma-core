@@ -1,7 +1,7 @@
 import debug = require('debug');
 import {EventEmitter} from 'events';
 import {AppServices} from './service-interface';
-import {PlasmaApp} from '../plasma';
+import {PlasmaApp, DebugMap} from '../plasma';
 
 export interface ServiceOptions {
   app: PlasmaApp;
@@ -37,7 +37,7 @@ export class BaseService extends EventEmitter {
    * Convenience method for accessing debug loggers.
    * @returns A mapping from logger names to loggers.
    */
-  get loggers(): Map<string, debug.Debugger> {
+  get loggers(): DebugMap{
     return this.app.loggers;
   }
 
@@ -46,7 +46,7 @@ export class BaseService extends EventEmitter {
    * @returns A logger instance.
    */
   get log(): debug.Debugger {
-    return this.loggers.get(`service:${this.name}`)!;
+    return this.loggers[`service:${this.name}`];
   }
 
   /**
@@ -54,7 +54,7 @@ export class BaseService extends EventEmitter {
    * @returns A logger instance.
    */
   get debug(): debug.Debugger {
-    return this.loggers.get(`debug:service:${this.name}`)!;
+    return this.loggers[`debug:service:${this.name}`];
   }
 
   /**

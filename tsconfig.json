@@ -3,7 +3,14 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "build",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "*",
+        "src/types/*"
+      ]
+    }
   },
   "include": [
     "src/*.ts",

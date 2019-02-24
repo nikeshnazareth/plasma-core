@@ -4,11 +4,10 @@
   "description": "Core PG plasma node",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test.unit && npm run test.integration",
-    "test.unit": "./node_modules/.bin/mocha --recursive test/unit",
-    "test.integration": "./node_modules/.bin/mocha --recursive test/integration --timeout 10000",
+    "test": "npm run test.unit",
+    "test.unit": "mocha --require ts-node/register test/unit/**/*.ts",
     "test.coverage": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
-    "lint": "./node_modules/.bin/eslint src/ test/",
+    "lint": "eslint src/ test/",
     "check": "gts check",
     "clean": "gts clean",
     "compile": "tsc -p .",
@@ -51,7 +50,9 @@
   },
   "homepage": "https://github.com/plasma-group/plasma-core#readme",
   "devDependencies": {
+    "@types/chai": "^4.1.7",
     "@types/lodash": "^4.14.121",
+    "@types/mocha": "^5.2.6",
     "@types/toposort": "^2.0.1",
     "@types/uuid": "^3.4.4",
     "app-root-path": "^2.1.0",
@@ -75,6 +76,9 @@
     "prettier": "^1.15.3",
     "sinon": "^7.2.3",
     "sinon-chai": "^3.3.0",
+    "ts-mockito": "^2.3.1",
+    "ts-node": "^8.0.2",
+    "tslint-no-unused-expression-chai": "^0.1.4",
     "typescript": "^3.4.0-dev.20190222"
   },
   "dependencies": {

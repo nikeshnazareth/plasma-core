@@ -9,7 +9,9 @@ const EMPTY_BLOCK_HASH =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 export class ProofService extends BaseService {
-  dependencies = ['eth', 'chaindb'];
+  get dependencies(): string[] {
+    return ['eth', 'chaindb'];
+  }
 
   /**
    * Checks a transaction proof.

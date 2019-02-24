@@ -5,8 +5,7 @@ import {EthereumAccount} from '../models/eth';
 
 import {BaseContractProvider, UserContractOptions} from './contract/base-provider';
 
-export interface UserETHProviderOptions extends ServiceOptions,
-                                                UserContractOptions {
+export interface UserETHProviderOptions extends UserContractOptions {
   ethereumEndpoint?: string;
 }
 
@@ -24,17 +23,11 @@ const defaultOptions: DefaultETHProviderOptions = {
 
 export class BaseETHProvider extends BaseService {
   options!: ETHProviderOptions;
+  contract: BaseContractProvider;
 
-  constructor(options: UserETHProviderOptions) {
+  constructor(options: UserETHProviderOptions & ServiceOptions) {
     super(options, defaultOptions);
-  }
-
-  /**
-   * @returns the current contract provider.
-   */
-  get contract(): BaseContractProvider {
-    throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+    this.contract = new BaseContractProvider(options);
   }
 
   /**

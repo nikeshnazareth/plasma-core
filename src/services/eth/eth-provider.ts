@@ -8,36 +8,27 @@ import {EthereumAccount, isAccount} from '../models/eth';
 import {BaseETHProvider} from './base-provider';
 import {BaseContractProvider} from './contract/base-provider';
 import {ContractProvider} from './contract/contract-provider';
-import {UserContractOptions} from './contract/contract-provider';
+import {UserContractOptions} from './contract/base-provider';
 
-interface UserETHProviderOptions extends ServiceOptions, UserContractOptions {
+export interface UserETHProviderOptions extends UserContractOptions {
   ethereumEndpoint?: string;
 }
 
 export class ETHProvider extends BaseETHProvider {
   contract: BaseContractProvider;
-  private _web3?: Web3;
+  web3: Web3;
 
-  constructor(options: UserETHProviderOptions) {
+  constructor(options: UserETHProviderOptions & ServiceOptions) {
     super(options);
-    this.contract = new ContractProvider(options);
+    this.web3 = new Web3(new Web3.providers.HttpProvider(this.options.ethereumEndpoint));
+    this.contract = new ContractProvider({
+      ...options,
+      web3: this.web3
+    });
   }
 
   async onStart(): Promise<void> {
     await this.contract.start();
-    this._web3 = new Web3(
-        new Web3.providers.HttpProvider(this.options.ethereumEndpoint));
-  }
-
-  /**
-   * @returns the current Web3 instance.
-   */
-  get web3(): Web3 {
-    if (this._web3 === undefined) {
-      throw new Error('Web3 is undefined.');
-    }
-
-    return this._web3;
   }
 
   async connected(): Promise<boolean> {

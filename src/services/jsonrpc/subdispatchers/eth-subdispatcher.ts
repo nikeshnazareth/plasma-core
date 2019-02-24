@@ -4,8 +4,13 @@ import {BaseSubdispatcher} from './base-subdispatcher';
  * Subdispatcher that handles Ethereum-related requests.
  */
 export class ETHSubdispatcher extends BaseSubdispatcher {
-  prefix = 'pg_';
-  dependencies = ['eth'];
+  get prefix(): string {
+    return 'pg_';
+  }
+
+  get dependencies(): string[] {
+    return ['eth'];
+  }
 
   get methods(): {[key: string]: Function} {
     const contract = this.app.services.eth.contract;

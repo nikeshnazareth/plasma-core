@@ -9,7 +9,9 @@ const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;
 
 export class ChainDB extends BaseService {
-  dependencies = ['eth', 'db'];
+  get dependencies(): string[] {
+    return ['eth', 'dbservice'];
+  }
 
   /**
    * @returns the current db instance.
@@ -27,7 +29,7 @@ export class ChainDB extends BaseService {
       await this.open();
     } else {
       await new Promise((resolve) => {
-        this.services.contract.on('initialized', async () => {
+        this.services.eth.contract.on('initialized', async () => {
           await this.open();
           resolve();
         });

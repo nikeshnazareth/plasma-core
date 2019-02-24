@@ -3,8 +3,13 @@ import debug = require('debug');
 import {EventEmitter} from 'events';
 import * as services from './services';
 import {AppServices, RequiredServiceTypes} from './services/service-interface';
+import { UserSyncOptions } from './services/sync-service';
+import { UserOperatorOptions } from './services/operator/operator-provider';
+import { UserEventWatcherOptions } from './services/events/event-watcher';
+import { UserETHProviderOptions } from './services/eth/base-provider';
+import { UserDBOptions } from './services/db/db-service';
 
-interface UserPlasmaOptions {
+export interface UserPlasmaOptions extends UserSyncOptions, UserOperatorOptions, UserEventWatcherOptions, UserETHProviderOptions, UserDBOptions {
   debug?: string;
   ethProvider?: typeof services.BaseETHProvider;
   operatorProvider?: typeof services.BaseOperatorProvider;
@@ -25,12 +30,14 @@ const defaultOptions: PlasmaOptions = {
   walletProvider: services.LocalWalletProvider
 };
 
+export type DebugMap = { [key: string]: debug.Debugger };
+
 export class PlasmaApp extends EventEmitter {
   options: PlasmaOptions;
   private _services: AppServices;
-  private _loggers: Map<string, debug.Debugger> = new Map();
+  private _loggers: DebugMap = {};
 
-  constructor(options: UserPlasmaOptions = {}) {
+  constructor(options: UserPlasmaOptions) {
     super();
 
     this.options = {...defaultOptions, ...options};
@@ -48,7 +55,7 @@ export class PlasmaApp extends EventEmitter {
       get: (services: AppServices, key: string) => {
         const service = services[key];
         if (service === undefined) {
-          throw new Error(`ERROR: Service does not exist: ${key}`);
+          throw new Error(`Service does not exist: ${key}`);
         }
         return service;
       }
@@ -60,13 +67,13 @@ export class PlasmaApp extends EventEmitter {
    * trying to access a logger that doesn't exist yet.
    * @returns Mapping of available loggers.
    */
-  get loggers(): Map<string, debug.Debugger> {
+  get loggers(): DebugMap {
     return new Proxy(this._loggers, {
-      get: (obj: Map<string, debug.Debugger>, prop: string): debug.Debugger => {
+      get: (obj: DebugMap, prop: string): debug.Debugger => {
         if (!(prop in obj)) {
-          obj.set(prop, debug(prop));
+          obj[prop] = debug(prop);
         }
-        return obj.get(prop)!;
+        return obj[prop];
       }
     });
   }
@@ -89,7 +96,7 @@ export class PlasmaApp extends EventEmitter {
 
     try {
       await service.start();
-      const logger = this.loggers.get('core:bootstrap')!;
+      const logger = this.loggers['core:bootstrap'];
       logger(`${service.name}: STARTED`);
     } catch (err) {
       console.log(err);
@@ -105,7 +112,7 @@ export class PlasmaApp extends EventEmitter {
 
     try {
       await service.stop();
-      const logger = this.loggers.get('core:bootstrap')!;
+      const logger = this.loggers['core:bootstrap'];
       logger(`${service.name}: STOPPED`);
     } catch (err) {
       console.log(err);
@@ -173,7 +180,7 @@ export class PlasmaApp extends EventEmitter {
    * Builds the required services into their instances.
    * @returns an AppServices object.
    */
-  private buildRequiredServices(): AppServices {
+  buildRequiredServices(): AppServices {
     const required: RequiredServiceTypes = {
       /* Providers */
       eth: this.options.ethProvider,

@@ -5,7 +5,9 @@ import {EthereumAccount} from '../models/eth';
 import {BaseWalletProvider} from './base-provider';
 
 export class LocalWalletProvider extends BaseWalletProvider {
-  dependencies = ['eth', 'walletdb'];
+  get dependencies(): string[] {
+    return ['eth', 'walletdb'];
+  }
 
   async getAccounts(): Promise<string[]> {
     return this.services.walletdb.getAccounts();
