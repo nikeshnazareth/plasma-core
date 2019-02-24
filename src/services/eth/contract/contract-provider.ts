@@ -8,7 +8,7 @@ import {ServiceOptions} from '../../base-service';
 import {BaseContractProvider} from './base-provider';
 import {EthereumTransactionReceipt, EthereumEvent} from '../../models/eth';
 import {Deposit} from '../../models/chain';
-import {ChainCreatedEvent} from '../../models/events';
+import {ChainCreatedEvent, DepositEvent} from '../../models/events';
 
 const web3Utils = utils.web3Utils;
 

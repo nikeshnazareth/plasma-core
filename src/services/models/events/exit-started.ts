@@ -1,4 +1,6 @@
 import BigNum from 'bn.js';
+
+import {Exit} from '../chain';
 import {EthereumEvent} from '../eth';
 
 interface ExitStartedEventArgs {
@@ -25,6 +27,21 @@ export class ExitStartedEvent {
     this.id = event.id;
     this.block = event.block;
     this.owner = event.owner;
+  }
+
+  /**
+   * Converts the event to an exit object.
+   * @returns the exit object.
+   */
+  toExit(): Exit {
+    return new Exit({
+      owner: this.owner,
+      id: this.id,
+      token: this.token,
+      start: this.start,
+      end: this.end,
+      block: this.block
+    });
   }
 
   /**

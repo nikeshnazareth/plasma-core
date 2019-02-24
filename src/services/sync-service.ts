@@ -174,16 +174,21 @@ export class SyncService extends BaseService {
    * Handles new deposit events.
    * @param deposits Deposit events.
    */
-  async onDeposit(deposits: DepositEvent[]): Promise<void> {
-    const parsed = deposits.map(Deposit.from);
-    await this.services.chain.addDeposits(parsed);
+  async onDeposit(events: DepositEvent[]): Promise<void> {
+    const deposits = events.map((event) => {
+      return event.toDeposit();
+    });
+    await this.services.chain.addDeposits(deposits);
   }
 
   /**
    * Handles new block events.
    * @param blocks Block submission events.
    */
-  async onBlockSubmitted(blocks: BlockSubmittedEvent[]): Promise<void> {
+  async onBlockSubmitted(events: BlockSubmittedEvent[]): Promise<void> {
+    const blocks = events.map((event) => {
+      return event.toBlock();
+    });
     await this.services.chaindb.addBlockHeaders(blocks);
   }
 
@@ -191,10 +196,12 @@ export class SyncService extends BaseService {
    * Handles new exit started events.
    * @param exits Exit started events.
    */
-  async onExitStarted(exits: ExitStartedEvent[]): Promise<void> {
+  async onExitStarted(events: ExitStartedEvent[]): Promise<void> {
+    const exits = events.map((event) => {
+      return event.toExit();
+    });
     for (const exit of exits) {
-      const parsed = Exit.from(exit);
-      await this.services.chain.addExit(parsed);
+      await this.services.chain.addExit(exit);
     }
   }
 

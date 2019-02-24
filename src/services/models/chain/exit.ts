@@ -28,23 +28,4 @@ export class Exit {
     this.end = args.end;
     this.block = args.block;
   }
-
-  static fromExitStarted(event: ExitStartedEvent): Exit {
-    return new Exit({
-      owner: event.owner,
-      id: event.id,
-      token: event.token,
-      start: event.start,
-      end: event.end,
-      block: event.block
-    });
-  }
-
-  static from(args: ExitStartedEvent): Exit {
-    if (args instanceof ExitStartedEvent) {
-      return Exit.fromExitStarted(args);
-    }
-
-    throw new Error('Cannot cast to Exit.');
-  }
 }

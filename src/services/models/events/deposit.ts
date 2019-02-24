@@ -1,4 +1,6 @@
 import BigNum from 'bn.js';
+
+import {Deposit} from '../chain';
 import {EthereumEvent} from '../eth';
 
 interface DepositEventArgs {
@@ -29,6 +31,20 @@ export class DepositEvent {
    */
   get amount(): BigNum {
     return this.end.sub(this.start);
+  }
+
+  /**
+   * Converts the deposit event to a deposit object.
+   * @returns the deposit object.
+   */
+  toDeposit(): Deposit {
+    return new Deposit({
+      owner: this.owner,
+      token: this.token,
+      start: this.start,
+      end: this.end,
+      block: this.block
+    });
   }
 
   /**

@@ -1,3 +1,4 @@
+import {Block} from '../chain';
 import {EthereumEvent} from '../eth';
 
 interface BlockSubmittedEventArgs {
@@ -12,6 +13,10 @@ export class BlockSubmittedEvent {
   constructor(event: BlockSubmittedEventArgs) {
     this.number = event.number;
     this.hash = event.hash;
+  }
+
+  toBlock(): Block {
+    return {number: this.number, hash: this.hash};
   }
 
   /**
