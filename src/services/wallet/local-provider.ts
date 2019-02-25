@@ -1,5 +1,5 @@
-import {utils} from 'plasma-utils';
 import {account as Account} from 'eth-lib';
+import {utils} from 'plasma-utils';
 
 import {EthereumAccount} from '../models/eth';
 

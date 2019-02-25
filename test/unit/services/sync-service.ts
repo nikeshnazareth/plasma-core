@@ -1,25 +1,17 @@
-import chai from 'chai';
+import '../../setup';
+
 import BigNum from 'bn.js';
-import { capture } from 'ts-mockito';
+import {capture} from 'ts-mockito';
 
+import {BlockSubmittedEvent, DepositEvent, ExitStartedEvent} from '../../../src/services/models/events';
 import {SyncService} from '../../../src/services/sync-service';
-import { DepositEvent, BlockSubmittedEvent, ExitStartedEvent } from '../../../src/services/models/events';
-import { chain, chaindb, eventHandler, mockChainDB, mockChainService, createApp } from '../../mock';
-
-chai.should();
+import {chain, chaindb, createApp, eventHandler, mockChainDB, mockChainService} from '../../mock';
 
 describe('SyncService', () => {
-  const { app } = createApp({
-    eventHandler,
-    chaindb,
-    chain
-  });
+  const {app} = createApp({eventHandler, chaindb, chain});
 
-  const sync = new SyncService({
-    app,
-    name: 'sync',
-    transactionPollInterval: 100
-  });
+  const sync =
+      new SyncService({app, name: 'sync', transactionPollInterval: 100});
 
   beforeEach(async () => {
     await sync.start();
@@ -30,13 +22,15 @@ describe('SyncService', () => {
   });
 
   it('should have dependencies', () => {
-    const dependencies = ['eth', 'chain', 'eventHandler', 'syncdb', 'chaindb', 'wallet', 'operator'];
+    const dependencies = [
+      'eth', 'chain', 'eventHandler', 'syncdb', 'chaindb', 'wallet', 'operator'
+    ];
     sync.dependencies.should.deep.equal(dependencies);
   });
 
   it('should have a name', () => {
     sync.name.should.equal('sync');
-  })
+  });
 
   it('should start correctly', () => {
     sync.started.should.be.true;
@@ -58,10 +52,8 @@ describe('SyncService', () => {
   });
 
   it('should react to new blocks', () => {
-    const blockSubmittedEvent = new BlockSubmittedEvent({
-      number: 0,
-      hash: '0x0'
-    });
+    const blockSubmittedEvent =
+        new BlockSubmittedEvent({number: 0, hash: '0x0'});
     const block = blockSubmittedEvent.toBlock();
     eventHandler.emit('event:BlockSubmitted', [blockSubmittedEvent]);
 

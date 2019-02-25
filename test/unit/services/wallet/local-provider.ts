@@ -1,22 +1,17 @@
-import chai from 'chai';
-import { LocalWalletProvider } from '../../../../src/services';
-import { walletdb, eth, createApp } from '../../../mock';
-import { utils } from 'plasma-utils';
-import { account as accountlib } from 'eth-lib';
+import '../../../setup';
 
-chai.should();
+import {account as accountlib} from 'eth-lib';
+import {utils} from 'plasma-utils';
+
+import {LocalWalletProvider} from '../../../../src/services';
+import {createApp, eth, walletdb} from '../../../mock';
+
 const web3Utils = utils.web3Utils;
 
 describe('LocalWalletProvider', () => {
-  const { app } = createApp({
-    walletdb,
-    eth
-  });
+  const {app} = createApp({walletdb, eth});
 
-  const wallet = new LocalWalletProvider({
-    app,
-    name: 'wallet'
-  });
+  const wallet = new LocalWalletProvider({app, name: 'wallet'});
 
   let address: string;
 

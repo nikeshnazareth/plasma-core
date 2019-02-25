@@ -25,7 +25,7 @@ export class BaseETHProvider extends BaseService {
   options!: ETHProviderOptions;
   contract: BaseContractProvider;
 
-  constructor(options: UserETHProviderOptions & ServiceOptions) {
+  constructor(options: UserETHProviderOptions&ServiceOptions) {
     super(options, defaultOptions);
     this.contract = new BaseContractProvider(options);
   }

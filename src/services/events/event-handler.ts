@@ -4,7 +4,7 @@ import {BlockSubmittedEvent, DepositEvent, ExitFinalizedEvent, ExitStartedEvent}
 
 export class EventHandler extends BaseService {
   get dependencies(): string[] {
-    return ['eventWatcher'];    
+    return ['eventWatcher'];
   }
 
   async onStart(): Promise<void> {

@@ -7,8 +7,8 @@ import {EthereumAccount, isAccount} from '../models/eth';
 
 import {BaseETHProvider} from './base-provider';
 import {BaseContractProvider} from './contract/base-provider';
-import {ContractProvider} from './contract/contract-provider';
 import {UserContractOptions} from './contract/base-provider';
+import {ContractProvider} from './contract/contract-provider';
 
 export interface UserETHProviderOptions extends UserContractOptions {
   ethereumEndpoint?: string;
@@ -18,13 +18,11 @@ export class ETHProvider extends BaseETHProvider {
   contract: BaseContractProvider;
   web3: Web3;
 
-  constructor(options: UserETHProviderOptions & ServiceOptions) {
+  constructor(options: UserETHProviderOptions&ServiceOptions) {
     super(options);
-    this.web3 = new Web3(new Web3.providers.HttpProvider(this.options.ethereumEndpoint));
-    this.contract = new ContractProvider({
-      ...options,
-      web3: this.web3
-    });
+    this.web3 = new Web3(
+        new Web3.providers.HttpProvider(this.options.ethereumEndpoint));
+    this.contract = new ContractProvider({...options, web3: this.web3});
   }
 
   async onStart(): Promise<void> {

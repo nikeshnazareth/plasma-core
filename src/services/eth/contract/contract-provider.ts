@@ -23,7 +23,7 @@ export interface UserContractOptions {
   web3: Web3;
 }
 
-type ContractOptions = UserContractOptions & ServiceOptions;
+type ContractOptions = UserContractOptions&ServiceOptions;
 
 export class ContractProvider extends BaseContractProvider {
   options!: ContractOptions;
@@ -32,7 +32,7 @@ export class ContractProvider extends BaseContractProvider {
   registry: Contract;
   endpoint?: string;
 
-  constructor(options: UserContractOptions & ServiceOptions) {
+  constructor(options: UserContractOptions&ServiceOptions) {
     super(options);
 
     this.web3 = options.web3;

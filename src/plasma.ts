@@ -3,13 +3,16 @@ import debug = require('debug');
 import {EventEmitter} from 'events';
 import * as services from './services';
 import {AppServices, RequiredServiceTypes} from './services/service-interface';
-import { UserSyncOptions } from './services/sync-service';
-import { UserOperatorOptions } from './services/operator/operator-provider';
-import { UserEventWatcherOptions } from './services/events/event-watcher';
-import { UserETHProviderOptions } from './services/eth/base-provider';
-import { UserDBOptions } from './services/db/db-service';
+import {UserSyncOptions} from './services/sync-service';
+import {UserOperatorOptions} from './services/operator/operator-provider';
+import {UserEventWatcherOptions} from './services/events/event-watcher';
+import {UserETHProviderOptions} from './services/eth/base-provider';
+import {UserDBOptions} from './services/db/db-service';
 
-export interface UserPlasmaOptions extends UserSyncOptions, UserOperatorOptions, UserEventWatcherOptions, UserETHProviderOptions, UserDBOptions {
+export interface UserPlasmaOptions extends UserSyncOptions, UserOperatorOptions,
+                                           UserEventWatcherOptions,
+                                           UserETHProviderOptions,
+                                           UserDBOptions {
   debug?: string;
   ethProvider?: typeof services.BaseETHProvider;
   operatorProvider?: typeof services.BaseOperatorProvider;
@@ -30,7 +33,9 @@ const defaultOptions: PlasmaOptions = {
   walletProvider: services.LocalWalletProvider
 };
 
-export type DebugMap = { [key: string]: debug.Debugger };
+export type DebugMap = {
+  [key: string]: debug.Debugger
+};
 
 export class PlasmaApp extends EventEmitter {
   options: PlasmaOptions;

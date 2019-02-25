@@ -22,7 +22,7 @@ export class DBService extends BaseService {
   options!: DBOptions;
   dbs: {[key: string]: BaseDBProvider} = {};
 
-  constructor(options: UserDBOptions & ServiceOptions) {
+  constructor(options: UserDBOptions&ServiceOptions) {
     super(options, defaultOptions);
   }
 

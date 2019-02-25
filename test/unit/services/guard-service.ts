@@ -1,13 +1,10 @@
-import chai from 'chai';
-import { GuardService } from '../../../src/services';
-import { createApp } from '../../mock';
+import '../../setup';
+import {GuardService} from '../../../src/services';
+import {createApp} from '../../mock';
 
 describe('GuardService', () => {
-  const { app } = createApp();
-  const guard = new GuardService({
-    app,
-    name: 'guard'
-  });
+  const {app} = createApp();
+  const guard = new GuardService({app, name: 'guard'});
 
   beforeEach(async () => {
     await guard.start();
@@ -30,5 +27,3 @@ describe('GuardService', () => {
     guard.started.should.be.true;
   });
 });
-
-chai.should();

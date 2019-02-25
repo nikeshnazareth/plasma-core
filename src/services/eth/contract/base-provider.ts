@@ -8,12 +8,12 @@ export interface UserContractOptions {
   plasmaChainName: string;
 }
 
-type ContractOptions = UserContractOptions & ServiceOptions;
+type ContractOptions = UserContractOptions&ServiceOptions;
 
 export class BaseContractProvider extends BaseService {
   options!: ContractOptions;
 
-  constructor(options: UserContractOptions & ServiceOptions) {
+  constructor(options: UserContractOptions&ServiceOptions) {
     super(options);
   }
 

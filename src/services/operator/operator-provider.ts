@@ -35,7 +35,7 @@ export class OperatorProvider extends BaseOperatorProvider {
   endpoint?: string;
   http?: AxiosInstance;
 
-  constructor(options: UserOperatorOptions & ServiceOptions) {
+  constructor(options: UserOperatorOptions&ServiceOptions) {
     super(options, defaultOptions);
   }
 

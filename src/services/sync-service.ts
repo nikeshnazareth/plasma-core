@@ -27,12 +27,14 @@ export class SyncService extends BaseService {
   pending: string[] = [];
   polling = false;
 
-  constructor(options: UserSyncOptions & ServiceOptions) {
+  constructor(options: UserSyncOptions&ServiceOptions) {
     super(options, defaultOptions);
   }
 
   get dependencies(): string[] {
-    return ['eth', 'chain', 'eventHandler', 'syncdb', 'chaindb', 'wallet', 'operator'];
+    return [
+      'eth', 'chain', 'eventHandler', 'syncdb', 'chaindb', 'wallet', 'operator'
+    ];
   }
 
   async onStart(): Promise<void> {

@@ -1,13 +1,11 @@
 import ganache from 'ganache-cli';
-import { Http2Server } from 'http2';
+import {Http2Server} from 'http2';
 
 class Ethereum {
   ethereum: Http2Server;
 
   constructor() {
-    this.ethereum = ganache.server({
-      gasLimit: '0x7A1200'
-    });
+    this.ethereum = ganache.server({gasLimit: '0x7A1200'});
   }
 
   async startEth(): Promise<void> {

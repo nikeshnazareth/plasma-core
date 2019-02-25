@@ -28,7 +28,7 @@ export class EventWatcher extends BaseService {
   subscriptions: {[key: string]: Function[]} = {};
   events: {[key: string]: boolean} = {};
 
-  constructor(options: UserEventWatcherOptions & ServiceOptions) {
+  constructor(options: UserEventWatcherOptions&ServiceOptions) {
     super(options, defaultOptions);
   }
 

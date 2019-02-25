@@ -37,7 +37,7 @@ export class BaseService extends EventEmitter {
    * Convenience method for accessing debug loggers.
    * @returns A mapping from logger names to loggers.
    */
-  get loggers(): DebugMap{
+  get loggers(): DebugMap {
     return this.app.loggers;
   }
 

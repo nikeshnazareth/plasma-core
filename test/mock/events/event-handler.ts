@@ -1,8 +1,9 @@
-import { mock, when, instance, anyString, anyFunction, anything } from 'ts-mockito';
-import { EventHandler } from '../../../src/services';
+import {anyFunction, anyString, anything, instance, mock, when} from 'ts-mockito';
+
+import {EventHandler} from '../../../src/services';
 
 const mockEventHandler = mock(EventHandler);
-const listeners: { [key: string]: Function } = {};
+const listeners: {[key: string]: Function} = {};
 const mockEmitterOn = (event: string, listener: Function) => {
   listeners[event] = listener;
   return mockEventHandler;
@@ -17,4 +18,4 @@ when(mockEventHandler.started).thenReturn(true);
 
 const eventHandler = instance(mockEventHandler);
 
-export { mockEventHandler, eventHandler };
+export {mockEventHandler, eventHandler};

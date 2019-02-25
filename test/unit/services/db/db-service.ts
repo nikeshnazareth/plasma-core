@@ -1,21 +1,17 @@
-import chai from 'chai';
-import { createApp } from '../../../mock';
-import { DBService } from '../../../../src/services';
+import '../../../setup';
 
-const should = chai.should();
+import {DBService} from '../../../../src/services';
+import {createApp} from '../../../mock';
 
 describe('DBService', () => {
-  const { app } = createApp();
+  const {app} = createApp();
 
-  const dbservice = new DBService({
-    app,
-    name: 'dbservice'
-  });
+  const dbservice = new DBService({app, name: 'dbservice'});
 
   it('should open a DB', async () => {
     const expected = 'dbname';
     await dbservice.open(expected);
-    should.exist(dbservice.dbs[expected]);
+    dbservice.dbs[expected].should.exist;
   });
 
   it('should open two DBs', async () => {
@@ -26,8 +22,8 @@ describe('DBService', () => {
     const db1 = dbservice.dbs[db1Name];
     const db2 = dbservice.dbs[db2Name];
 
-    should.exist(db1);
-    should.exist(db2);
+    db1.should.exist;
+    db2.should.exist;
     db1.should.not.deep.equal(db2);
   });
 });
