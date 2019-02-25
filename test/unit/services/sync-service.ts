@@ -1,23 +1,19 @@
 import chai from 'chai';
 import BigNum from 'bn.js';
-import { mock, when, instance, capture } from 'ts-mockito';
+import { capture } from 'ts-mockito';
 
 import {SyncService} from '../../../src/services/sync-service';
-import { PlasmaApp } from '../../../src/plasma';
-import { DepositEvent, BlockSubmittedEvent, ExitStartedEvent, ExitFinalizedEvent } from '../../../src/services/models/events';
-import { chain, chaindb, eventHandler, mockChainDB, mockChainService } from '../../mock';
+import { DepositEvent, BlockSubmittedEvent, ExitStartedEvent } from '../../../src/services/models/events';
+import { chain, chaindb, eventHandler, mockChainDB, mockChainService, createApp } from '../../mock';
 
 chai.should();
 
 describe('SyncService', () => {
-  // Create mock app.
-  const mockApp = mock(PlasmaApp);
-  when(mockApp.services).thenReturn({
+  const { app } = createApp({
     eventHandler,
     chaindb,
     chain
-  } as any);
-  const app = instance(mockApp);
+  });
 
   const sync = new SyncService({
     app,

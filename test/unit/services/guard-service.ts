@@ -1,13 +1,9 @@
 import chai from 'chai';
 import { GuardService } from '../../../src/services';
-import { mock, instance } from 'ts-mockito';
-import { PlasmaApp } from '../../../src/plasma';
+import { createApp } from '../../mock';
 
 describe('GuardService', () => {
-  // Mock the plasma app.
-  const mockApp = mock(PlasmaApp);
-  const app = instance(mockApp);
-
+  const { app } = createApp();
   const guard = new GuardService({
     app,
     name: 'guard'

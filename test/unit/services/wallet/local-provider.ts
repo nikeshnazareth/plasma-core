@@ -1,8 +1,6 @@
 import chai from 'chai';
-import { mock, instance, when, capture } from 'ts-mockito';
 import { LocalWalletProvider } from '../../../../src/services';
-import { PlasmaApp } from '../../../../src/plasma';
-import { walletdb, eth, mockETHProvider } from '../../../mock';
+import { walletdb, eth, createApp } from '../../../mock';
 import { utils } from 'plasma-utils';
 import { account as accountlib } from 'eth-lib';
 
@@ -10,14 +8,10 @@ chai.should();
 const web3Utils = utils.web3Utils;
 
 describe('LocalWalletProvider', () => {
-  // Mock the plasma app.
-  const mockApp = mock(PlasmaApp);
-  const app = instance(mockApp);
-
-  when(mockApp.services).thenReturn({
+  const { app } = createApp({
     walletdb,
     eth
-  } as any);
+  });
 
   const wallet = new LocalWalletProvider({
     app,
