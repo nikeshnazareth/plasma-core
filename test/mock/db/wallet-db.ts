@@ -10,6 +10,13 @@ when(mockWalletDB.addAccount(anything())).thenCall((account: EthereumAccount) =>
 when(mockWalletDB.getAccount(anyString())).thenCall((address: string) => {
   return accounts[address];
 });
+when(mockWalletDB.getAccounts()).thenCall(() => {
+  const arr = [];
+  for (const account of Object.keys(accounts)) {
+    arr.push(account);
+  }
+  return arr;
+});
 when(mockWalletDB.started).thenReturn(true);
 
 const walletdb = instance(mockWalletDB);

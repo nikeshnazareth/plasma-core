@@ -1,8 +1,11 @@
+import {utils} from 'plasma-utils';
 import {account as Account} from 'eth-lib';
 
 import {EthereumAccount} from '../models/eth';
 
 import {BaseWalletProvider} from './base-provider';
+
+const web3Utils = utils.web3Utils;
 
 export class LocalWalletProvider extends BaseWalletProvider {
   get dependencies(): string[] {
@@ -18,8 +21,9 @@ export class LocalWalletProvider extends BaseWalletProvider {
   }
 
   async sign(address: string, data: string): Promise<string> {
+    const hash = web3Utils.sha3(data);
     const account = await this.getAccount(address);
-    const sig = Account.sign(data, account.privateKey);
+    const sig = Account.sign(hash, account.privateKey);
     return sig.toString();
   }
 
