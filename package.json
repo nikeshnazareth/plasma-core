@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test.unit",
-    "test.unit": "mocha --require ts-node/register test/unit/**/*.ts",
+    "test.unit": "mocha --require ts-node/register 'test/unit/**/*.ts'",
     "test.coverage": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint src/ test/",
     "check": "gts check",

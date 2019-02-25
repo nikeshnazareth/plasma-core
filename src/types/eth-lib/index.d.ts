@@ -1,5 +1,5 @@
 declare module 'eth-lib' {
-  namespace Account {
+  namespace account {
     interface Account {
       address: string;
       privateKey: string;

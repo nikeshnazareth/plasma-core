@@ -1,4 +1,4 @@
-import {Account} from 'eth-lib';
+import {account as Account} from 'eth-lib';
 
 import {EthereumAccount} from '../models/eth';
 
