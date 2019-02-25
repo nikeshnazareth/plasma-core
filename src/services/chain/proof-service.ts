@@ -3,7 +3,7 @@ import {PlasmaMerkleSumTree, serialization} from 'plasma-utils';
 import {BaseService} from '../base-service';
 import {Deposit, ProofElement} from '../models/chain';
 
-import {SnapshotManager} from './snapshot-manager/snapshot-manager';
+import {SnapshotManager} from './snapshot-manager';
 
 const EMPTY_BLOCK_HASH =
     '0x0000000000000000000000000000000000000000000000000000000000000000';

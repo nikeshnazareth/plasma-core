@@ -47,7 +47,7 @@ export class UntypedSnapshot extends PrettyPrint {
   /**
    * Creates an UntypedSnapshot from a Snapshot.
    * @param snapshot A Snapshot object.
-   * @returns The UntypedSnapshot object.
+   * @returns the UntypedSnapshot object.
    */
   static fromSnapshot(snapshot: Snapshot): UntypedSnapshot {
     return new UntypedSnapshot({
@@ -60,6 +60,11 @@ export class UntypedSnapshot extends PrettyPrint {
     });
   }
 
+  /**
+   * Creates an UntypedSnapshot from some other object.
+   * @param args Other object to convert..
+   * @returns the UntypedSnapshot object.
+   */
   static from(args: Snapshot): UntypedSnapshot {
     if (args instanceof Snapshot) {
       return UntypedSnapshot.fromSnapshot(args);

@@ -3,7 +3,7 @@ import debug, {Debugger} from 'debug';
 import _ from 'lodash';
 import {serialization} from 'plasma-utils';
 
-import {Deposit, Exit, Range, Snapshot, TransferComponent, UntypedRange, UntypedSnapshot} from '../../models/chain';
+import {Deposit, Exit, Range, Snapshot, TransferComponent, UntypedRange, UntypedSnapshot} from '../models/chain';
 
 const models = serialization.models;
 const Transfer = models.Transfer;
@@ -56,6 +56,20 @@ export class SnapshotManager {
   get ranges(): Range[] {
     const ranges = this.snapshots.map(Range.fromSnapshot);
     return this.mergeRanges(ranges);
+  }
+
+  /**
+   * Checks if the current state equals a given state.
+   * @param snapshots A list of Snapshots.
+   * @returns `true` if the states are equal, `false` otherwise.
+   */
+  equals(snapshots: Snapshot[]): boolean {
+    for (let i = 0; i < snapshots.length; i++) {
+      if (!this.snapshots[i].equals(snapshots[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -601,20 +615,5 @@ export class SnapshotManager {
     });
 
     return picked;
-  }
-
-  /**
-   * Checks if the current state equals a given state.
-   * @param snapshots A list of Snapshots.
-   * @returns `true` if the states are equal, `false` otherwise.
-   */
-  private equals(snapshots: Snapshot[]): boolean {
-    for (let i = 0; i < snapshots.length; i++) {
-      const snapshot = new Snapshot(snapshots[i]);
-      if (!this.snapshots[i].equals(snapshot)) {
-        return false;
-      }
-    }
-    return true;
   }
 }

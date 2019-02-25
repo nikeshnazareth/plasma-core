@@ -5,7 +5,7 @@ import {serialization} from 'plasma-utils';
 import {BaseService, ServiceOptions} from '../base-service';
 import {Deposit, Exit, ProofElement, Range, UntypedSnapshot} from '../models/chain';
 
-import {SnapshotManager} from './snapshot-manager/snapshot-manager';
+import {SnapshotManager} from './snapshot-manager';
 
 const models = serialization.models;
 const SignedTransaction = models.SignedTransaction;

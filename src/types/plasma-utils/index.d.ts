@@ -2,7 +2,13 @@ declare module 'plasma-utils' {
   import BigNum from 'bn.js';
 
   namespace constants {
+    interface Account {
+      address: string;
+      privateKey: string;
+    }
+  
     const NULL_ADDRESS: string;
+    const ACCOUNTS: Account[];
   }
 
   namespace utils {
