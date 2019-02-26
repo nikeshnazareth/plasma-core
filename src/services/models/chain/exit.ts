@@ -1,5 +1,4 @@
 import BigNum from 'bn.js'
-import { ExitStartedEvent } from '../events'
 
 export interface ExitArgs {
   owner: string
@@ -11,14 +10,14 @@ export interface ExitArgs {
 }
 
 export class Exit {
-  owner: string
-  id: BigNum
-  token: BigNum
-  start: BigNum
-  end: BigNum
-  block: BigNum
-  completed?: boolean
-  finalized?: boolean
+  public owner: string
+  public id: BigNum
+  public token: BigNum
+  public start: BigNum
+  public end: BigNum
+  public block: BigNum
+  public completed?: boolean
+  public finalized?: boolean
 
   constructor(args: ExitArgs) {
     this.owner = args.owner

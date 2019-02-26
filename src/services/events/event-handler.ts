@@ -12,11 +12,11 @@ export class EventHandler extends BaseService {
     return ['eventWatcher']
   }
 
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     this.registerHandlers()
   }
 
-  async onStop(): Promise<void> {
+  public async onStop(): Promise<void> {
     this.removeAllListeners()
   }
 
@@ -33,11 +33,11 @@ export class EventHandler extends BaseService {
    * Registers event handlers.
    */
   private registerHandlers(): void {
-    const handlers: { [key: string]: Function } = {
-      DepositEvent: this.onDeposit,
-      SubmitBlockEvent: this.onBlockSubmitted,
+    const handlers: { [key: string]: (...args: any) => any } = {
       BeginExitEvent: this.onExitStarted,
+      DepositEvent: this.onDeposit,
       FinalizeExitEvent: this.onExitFinalized,
+      SubmitBlockEvent: this.onBlockSubmitted,
     }
     for (const event of Object.keys(handlers)) {
       this.services.eventWatcher.subscribe(event, handlers[event].bind(this))

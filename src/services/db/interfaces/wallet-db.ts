@@ -12,15 +12,15 @@ export class WalletDB extends BaseService {
   /**
    * @returns the current DB instance.
    */
-  get db(): BaseDBProvider {
-    const db = this.services.dbservice.dbs['wallet']
+  public get db(): BaseDBProvider {
+    const db = this.services.dbservice.dbs.wallet
     if (db === undefined) {
       throw new Error('WalletDB is not yet initialized.')
     }
     return db
   }
 
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     await this.services.dbservice.open('wallet')
   }
 
@@ -28,7 +28,7 @@ export class WalletDB extends BaseService {
    * Returns all available accounts.
    * @returns a list of account addresses.
    */
-  async getAccounts(): Promise<string[]> {
+  public async getAccounts(): Promise<string[]> {
     return (await this.db.get('accounts', [])) as string[]
   }
 
@@ -37,7 +37,7 @@ export class WalletDB extends BaseService {
    * @param address Adress of the account.
    * @returns an Ethereum account object.
    */
-  async getAccount(address: string): Promise<EthereumAccount> {
+  public async getAccount(address: string): Promise<EthereumAccount> {
     const keystore = (await this.db.get(
       `keystore:${address}`,
       undefined
@@ -53,7 +53,7 @@ export class WalletDB extends BaseService {
    * Adds an account to the database.
    * @param account An Ethereum account object.
    */
-  async addAccount(account: EthereumAccount): Promise<void> {
+  public async addAccount(account: EthereumAccount): Promise<void> {
     const accounts = await this.getAccounts()
     accounts.push(account.address)
     await this.db.set('accounts', accounts)

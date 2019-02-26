@@ -4,7 +4,7 @@ import { PlasmaApp } from '../../../plasma'
  * Base class for JSON-RPC subdispatchers that handle requests.
  */
 export class BaseSubdispatcher {
-  app: PlasmaApp
+  public app: PlasmaApp
 
   constructor(app: PlasmaApp) {
     this.app = app
@@ -32,7 +32,7 @@ export class BaseSubdispatcher {
    * Returns an object with pointers to methods.
    * @return names and pointers to handlers.
    */
-  get methods(): { [key: string]: Function } {
+  get methods(): { [key: string]: (...args: any) => any } {
     throw new Error(
       'Classes that extend Subdispatcher must implement this method'
     )
@@ -42,8 +42,8 @@ export class BaseSubdispatcher {
    * Returns all JSON-RPC methods of this subdispatcher.
    * @returns prefixed names and pointers to handlers.
    */
-  getAllMethods(): { [key: string]: Function } {
-    const methods: { [key: string]: Function } = {}
+  public getAllMethods(): { [key: string]: (...args: any) => any } {
+    const methods: { [key: string]: (...args: any) => any } = {}
     for (const method of Object.keys(this.methods)) {
       methods[this.prefix + method] = this.methods[method]
     }

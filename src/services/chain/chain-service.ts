@@ -21,7 +21,7 @@ interface Balances {
 }
 
 export class ChainService extends BaseService {
-  lock = new AsyncLock()
+  private lock = new AsyncLock()
 
   constructor(options: ServiceOptions) {
     super(options)
@@ -36,7 +36,7 @@ export class ChainService extends BaseService {
    * @param address Address of the account to query.
    * @returns an object that contains balances.
    */
-  async getBalances(address: string): Promise<Balances> {
+  public async getBalances(address: string): Promise<Balances> {
     const stateManager = await this.loadState()
     const ranges = stateManager.getOwnedRanges(address)
 
@@ -60,7 +60,7 @@ export class ChainService extends BaseService {
    * Adds deposit records to the database.
    * @param deposits Deposits to add.
    */
-  async addDeposits(deposits: Deposit[]): Promise<void> {
+  public async addDeposits(deposits: Deposit[]): Promise<void> {
     // Filter out any ranges that have already been exited.
     const isNotExited = await Promise.all(
       deposits.map(async (deposit) => {
@@ -96,7 +96,7 @@ export class ChainService extends BaseService {
    * @param address Address to query.
    * @returns a list of known exits.
    */
-  async getExitsWithStatus(address: string): Promise<Exit[]> {
+  public async getExitsWithStatus(address: string): Promise<Exit[]> {
     const exits = await this.services.chaindb.getExits(address)
 
     const currentBlock = await this.services.eth.getCurrentBlock()
@@ -116,7 +116,7 @@ export class ChainService extends BaseService {
    * Adds an exit to the database.
    * @param exit Exit to add to database.
    */
-  async addExit(exit: Exit): Promise<void> {
+  public async addExit(exit: Exit): Promise<void> {
     await this.services.chaindb.addExit(exit)
 
     await this.lock.acquire('state', async () => {
@@ -133,7 +133,7 @@ export class ChainService extends BaseService {
    * @param amount Amount of the token being sent.
    * @returns the best ranges for the transaction.
    */
-  async pickRanges(
+  public async pickRanges(
     address: string,
     token: BigNum,
     amount: BigNum
@@ -149,7 +149,7 @@ export class ChainService extends BaseService {
    * @param amount Amount of the token being exited.
    * @returns the best transfers for the exit.
    */
-  async pickTransfers(
+  public async pickTransfers(
     address: string,
     token: BigNum,
     amount: BigNum
@@ -165,7 +165,7 @@ export class ChainService extends BaseService {
    * @param {BigNum} amount Amount of the token being exited.
    * @returns the transaction hashes for each exit.
    */
-  async startExit(
+  public async startExit(
     address: string,
     token: BigNum,
     amount: BigNum
@@ -198,7 +198,7 @@ export class ChainService extends BaseService {
    * @param address Address to finalize exits for.
    * @returns the transaction hashes for each finalization.
    */
-  async finalizeExits(address: string): Promise<string[]> {
+  public async finalizeExits(address: string): Promise<string[]> {
     const exits = await this.getExitsWithStatus(address)
     const completed = exits.filter((exit) => {
       return exit.completed && !exit.finalized
@@ -233,7 +233,7 @@ export class ChainService extends BaseService {
    * @param deposits A list of deposits for the transaction.
    * @param proof A Proof object.
    */
-  async addTransaction(
+  public async addTransaction(
     transaction: serialization.models.SignedTransaction,
     deposits: Deposit[],
     proof: ProofElement[]
@@ -273,7 +273,7 @@ export class ChainService extends BaseService {
    * @param transaction A signed transaction.
    * @returns the transaction receipt.
    */
-  async sendTransaction(
+  public async sendTransaction(
     transaction: serialization.models.SignedTransaction
   ): Promise<string> {
     // TODO: Check that the transaction receipt is valid.
@@ -300,7 +300,7 @@ export class ChainService extends BaseService {
    * Loads the current head state as a SnapshotManager.
    * @returns Current head state.
    */
-  async loadState(): Promise<SnapshotManager> {
+  public async loadState(): Promise<SnapshotManager> {
     const state = await this.services.chaindb.getState()
     return new SnapshotManager(state)
   }
@@ -309,7 +309,7 @@ export class ChainService extends BaseService {
    * Saves the current head state from a SnapshotManager.
    * @param stateManager A SnapshotManager.
    */
-  async saveState(stateManager: SnapshotManager): Promise<void> {
+  public async saveState(stateManager: SnapshotManager): Promise<void> {
     const state = stateManager.state
     await this.services.chaindb.setState(state)
   }

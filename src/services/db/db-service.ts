@@ -19,8 +19,8 @@ const defaultOptions: DefaultDBOptions = {
 }
 
 export class DBService extends BaseService {
-  options!: DBOptions
-  dbs: { [key: string]: BaseDBProvider } = {}
+  public options!: DBOptions
+  public dbs: { [key: string]: BaseDBProvider } = {}
 
   constructor(options: UserDBOptions & ServiceOptions) {
     super(options, defaultOptions)
@@ -32,12 +32,14 @@ export class DBService extends BaseService {
    * @param options Any additional options to the provider.
    * @param provider The database provider.
    */
-  async open(
+  public async open(
     name: string,
     options: {} = {},
     provider = this.options.dbProvider
   ): Promise<void> {
-    if (name in this) return
+    if (name in this) {
+      return
+    }
 
     const db = new provider({ ...{ name }, ...options })
     await db.start()

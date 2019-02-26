@@ -6,7 +6,7 @@ import * as subdispatchers from './subdispatchers'
 import { BaseSubdispatcher } from './subdispatchers/base-subdispatcher'
 
 export class JSONRPCService extends BaseService {
-  subdispatchers: BaseSubdispatcher[] = []
+  public subdispatchers: BaseSubdispatcher[] = []
 
   constructor(options: ServiceOptions) {
     super(options)
@@ -37,7 +37,7 @@ export class JSONRPCService extends BaseService {
    * Returns all methods of all subdispatchers.
    * @returns all subdispatcher methods as a single object.
    */
-  getAllMethods(): { [key: string]: Function } {
+  public getAllMethods(): { [key: string]: (...args: any) => any } {
     return this.subdispatchers
       .map((subdispatcher) => {
         return subdispatcher.getAllMethods()
@@ -53,7 +53,7 @@ export class JSONRPCService extends BaseService {
    * @returns the method with the given name or
    * `undefined` if the method does not exist.
    */
-  getMethod(name: string): Function {
+  public getMethod(name: string): (...args: any) => any {
     const methods = this.getAllMethods()
     if (name in methods) {
       return methods[name]
@@ -67,7 +67,7 @@ export class JSONRPCService extends BaseService {
    * @param params Parameters to be used as arguments to the method.
    * @returns the result of the function call.
    */
-  async handle(
+  public async handle(
     method: string,
     params: JSONRPCParam[] = []
   ): Promise<string | number | {}> {
@@ -80,7 +80,7 @@ export class JSONRPCService extends BaseService {
    * @param request A JSON-RPC request object.
    * @return the result of the JSON-RPC call.
    */
-  async handleRawRequest(request: JSONRPCRequest) {
+  public async handleRawRequest(request: JSONRPCRequest) {
     if (!('method' in request && 'id' in request)) {
       return this.buildError('INVALID_REQUEST', null)
     }
@@ -113,10 +113,10 @@ export class JSONRPCService extends BaseService {
    */
   private buildError(type: string, id: string | null, message?: string): {} {
     const error: JSONRPCResponse = {
-      jsonrpc: '2.0',
       error: JSONRPC_ERRORS[type],
-      message,
       id,
+      jsonrpc: '2.0',
+      message,
     }
     return JSON.stringify(error)
   }

@@ -3,30 +3,30 @@ import { BaseService, ServiceOptions } from '../base-service'
 import { EthereumEvent } from '../models/eth'
 
 export interface UserEventWatcherOptions {
-  finalityDepth?: number
   eventPollInterval?: number
+  finalityDepth?: number
 }
 
 interface EventWatcherOptions extends ServiceOptions {
-  finalityDepth: number
   eventPollInterval: number
+  finalityDepth: number
 }
 
 interface DefaultEventWatcherOptions {
-  finalityDepth: number
   eventPollInterval: number
+  finalityDepth: number
 }
 
 const defaultOptions: DefaultEventWatcherOptions = {
-  finalityDepth: 12,
   eventPollInterval: 15000,
+  finalityDepth: 12,
 }
 
 export class EventWatcher extends BaseService {
-  options!: EventWatcherOptions
-  watching = false
-  subscriptions: { [key: string]: Function[] } = {}
-  events: { [key: string]: boolean } = {}
+  public options!: EventWatcherOptions
+  public watching = false
+  public subscriptions: { [key: string]: Array<(...args: any) => any> } = {}
+  public events: { [key: string]: boolean } = {}
 
   constructor(options: UserEventWatcherOptions & ServiceOptions) {
     super(options, defaultOptions)
@@ -36,20 +36,20 @@ export class EventWatcher extends BaseService {
     return ['eth', 'syncdb']
   }
 
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     this.reset()
   }
 
-  async onStop(): Promise<void> {
+  public async onStop(): Promise<void> {
     this.reset()
   }
 
   /**
    * Subscribes to an event with a given callback.
-   * @param {string} event Name of the event to subscribe to.
-   * @param {Function} listener Function to be called when the event is triggered.
+   * @param event Name of the event to subscribe to.
+   * @param listener Function to be called when the event is triggered.
    */
-  subscribe(event: string, listener: Function): void {
+  public subscribe(event: string, listener: (...args: any) => any): void {
     this.startPolling()
     if (!(event in this.events)) {
       this.events[event] = true
@@ -60,10 +60,10 @@ export class EventWatcher extends BaseService {
 
   /**
    * Unsubscribes from an event with a given callback.
-   * @param {string} event Name of the event to unsubscribe from.
-   * @param {Function} listener Function that was used to subscribe.
+   * @param event Name of the event to unsubscribe from.
+   * @param listener Function that was used to subscribe.
    */
-  unsubscribe(event: string, listener: Function): void {
+  public unsubscribe(event: string, listener: (...args: any) => any): void {
     this.subscriptions[event] = this.subscriptions[event].filter((l) => {
       return l !== listener
     })
@@ -78,8 +78,11 @@ export class EventWatcher extends BaseService {
    * Starts the polling loop.
    * Can only be called once.
    */
-  startPolling(): void {
-    if (this.watching) return
+  public startPolling(): void {
+    if (this.watching) {
+      return
+    }
+
     this.watching = true
     this.pollEvents()
   }
@@ -154,7 +157,9 @@ export class EventWatcher extends BaseService {
     const firstUnsyncedBlock = lastLoggedBLock + 1
 
     // Don't do anything if we've already seen the latest final block
-    if (firstUnsyncedBlock > lastFinalBlock) return
+    if (firstUnsyncedBlock > lastFinalBlock) {
+      return
+    }
 
     this.log(
       `Checking for new ${eventName} events between Ethereum blocks ${firstUnsyncedBlock} and ${lastFinalBlock}`
@@ -204,7 +209,9 @@ export class EventWatcher extends BaseService {
     eventName: string,
     events: EthereumEvent[]
   ): Promise<void> {
-    if (events.length === 0) return
+    if (events.length === 0) {
+      return
+    }
 
     // Mark these events as seen.
     await this.services.syncdb.addEvents(events)
@@ -214,7 +221,7 @@ export class EventWatcher extends BaseService {
       try {
         listener(events)
       } catch (err) {
-        console.log(err) // TODO: Handle this.
+        this.log(`ERROR: ${err}`)
       }
     }
   }

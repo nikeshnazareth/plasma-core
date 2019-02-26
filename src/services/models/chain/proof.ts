@@ -6,15 +6,7 @@ import { OperatorProof } from '../operator'
 import { Deposit } from './deposit'
 
 export class ProofElement {
-  transaction: serialization.models.SignedTransaction
-  transactionProof: serialization.models.TransactionProof
-
-  constructor(args: ProofElement) {
-    this.transaction = args.transaction
-    this.transactionProof = args.transactionProof
-  }
-
-  static fromEmptyProof(block: number) {
+  public static fromEmptyProof(block: number) {
     return new ProofElement({
       transaction: new serialization.models.SignedTransaction({
         block: new BigNum(block, 10),
@@ -26,7 +18,7 @@ export class ProofElement {
     })
   }
 
-  static fromOperatorProof(proof: OperatorProof) {
+  public static fromOperatorProof(proof: OperatorProof) {
     return new ProofElement({
       transaction: new serialization.models.SignedTransaction(
         proof.transaction
@@ -35,6 +27,14 @@ export class ProofElement {
         proof.transactionProof
       ),
     })
+  }
+
+  public transaction: serialization.models.SignedTransaction
+  public transactionProof: serialization.models.TransactionProof
+
+  constructor(args: ProofElement) {
+    this.transaction = args.transaction
+    this.transactionProof = args.transactionProof
   }
 }
 

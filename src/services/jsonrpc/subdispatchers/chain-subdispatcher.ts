@@ -12,19 +12,22 @@ export class ChainSubdispatcher extends BaseSubdispatcher {
     return ['chain', 'chaindb']
   }
 
-  get methods(): { [key: string]: Function } {
+  get methods(): { [key: string]: (...args: any) => any } {
     const chain = this.app.services.chain
     const chaindb = this.app.services.chaindb
     return {
+      /* ChainDB */
       getBlockHeader: chaindb.getBlockHeader.bind(chaindb),
-      getTransaction: chaindb.getTransaction.bind(chaindb),
       getLastSyncedBlock: chaindb.getLatestBlock.bind(chaindb),
-      sendTransaction: chain.sendTransaction.bind(chain),
-      pickRanges: chain.pickRanges.bind(chain),
-      startExit: chain.startExit.bind(chain),
+      getTransaction: chaindb.getTransaction.bind(chaindb),
+
+      /* Chain */
       finalizeExits: chain.finalizeExits.bind(chain),
-      getExits: chain.getExitsWithStatus.bind(chain),
       getBalances: chain.getBalances.bind(chain),
+      getExits: chain.getExitsWithStatus.bind(chain),
+      pickRanges: chain.pickRanges.bind(chain),
+      sendTransaction: chain.sendTransaction.bind(chain),
+      startExit: chain.startExit.bind(chain),
     }
   }
 }

@@ -1,14 +1,7 @@
 import { utils } from 'plasma-utils'
 
-export type DBResult =
-  | string
-  | string[]
-  | object
-  | object[]
-  | number
-  | number[]
-  | boolean
-export type DBValue = string | {}
+export type DBValue = string | object | number | boolean
+export type DBResult = DBValue | DBValue[]
 export interface DBObject {
   key: string
   value: DBValue
@@ -18,7 +11,7 @@ export interface DBObject {
  * Class that DB interfaces must implement.
  */
 export class BaseDBProvider {
-  options: {}
+  public options: {}
 
   constructor(options = {}) {
     this.options = options
@@ -27,7 +20,7 @@ export class BaseDBProvider {
   /**
    * Starts up the database.
    */
-  async start(): Promise<void> {
+  public async start(): Promise<void> {
     throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
@@ -37,7 +30,7 @@ export class BaseDBProvider {
    * @param fallback A fallback value if the key doesn't exist.
    * @returns the stored value or the fallback.
    */
-  async get<T>(key: string, fallback?: T): Promise<T | DBResult> {
+  public async get<T>(key: string, fallback?: T): Promise<T | DBResult> {
     throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
@@ -46,7 +39,7 @@ export class BaseDBProvider {
    * @param key Key to set.
    * @param value Value to store.
    */
-  async set(key: string, value: DBValue): Promise<void> {
+  public async set(key: string, value: DBValue): Promise<void> {
     throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
@@ -54,7 +47,7 @@ export class BaseDBProvider {
    * Deletes a given key from storage.
    * @param key Key to delete.
    */
-  async delete(key: string): Promise<void> {
+  public async delete(key: string): Promise<void> {
     throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
@@ -63,7 +56,7 @@ export class BaseDBProvider {
    * @param key Key to check.
    * @returns `true` if the key exists, `false` otherwise.
    */
-  async exists(key: string): Promise<boolean> {
+  public async exists(key: string): Promise<boolean> {
     throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
@@ -72,7 +65,7 @@ export class BaseDBProvider {
    * @param key The key to start searching from.
    * @returns the next key with the same prefix.
    */
-  async findNextKey(key: string): Promise<string> {
+  public async findNextKey(key: string): Promise<string> {
     throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
@@ -81,7 +74,7 @@ export class BaseDBProvider {
    * Should be more efficient than simply calling `set` repeatedly.
    * @param objects A series of objects to put into the database.
    */
-  async bulkPut(objects: DBObject[]): Promise<void> {
+  public async bulkPut(objects: DBObject[]): Promise<void> {
     throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
@@ -90,7 +83,7 @@ export class BaseDBProvider {
    * @param key The key at which the array is stored.
    * @param value Value to add to the array.
    */
-  async push<T>(key: string, value: T): Promise<void> {
+  public async push<T>(key: string, value: T): Promise<void> {
     throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
@@ -99,7 +92,7 @@ export class BaseDBProvider {
    * @param value Value to convert.
    * @returns the stringified value.
    */
-  stringify(value: DBValue): string {
+  public stringify(value: DBValue): string {
     if (!utils.isString(value)) {
       value = JSON.stringify(value)
     }
@@ -111,7 +104,7 @@ export class BaseDBProvider {
    * @param value Value to convert.
    * @returns the JSON-ified value.
    */
-  jsonify(value: string): {} {
+  public jsonify(value: string): {} {
     return this.isJson(value) ? JSON.parse(value) : value
   }
 
@@ -120,7 +113,7 @@ export class BaseDBProvider {
    * @param value Thing to check.
    * @returns `true` if it's a JSON string, `false` otherwise.
    */
-  isJson(value: string): boolean {
+  public isJson(value: string): boolean {
     try {
       JSON.parse(value)
     } catch (err) {

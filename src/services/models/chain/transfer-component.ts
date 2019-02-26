@@ -10,12 +10,12 @@ import { PrettyPrint } from './pretty-print'
 const isTransferLike = (value: serialization.models.Transfer): boolean => {
   return (
     value.sender !== undefined &&
-      value.recipient !== undefined &&
-      BigNum.isBN(value.token),
-    BigNum.isBN(value.start),
-    BigNum.isBN(value.end),
-    BigNum.isBN(value.block),
-    BigNum.isBN(value.implicitStart),
+    value.recipient !== undefined &&
+    BigNum.isBN(value.token) &&
+    BigNum.isBN(value.start) &&
+    BigNum.isBN(value.end) &&
+    BigNum.isBN(value.block) &&
+    BigNum.isBN(value.implicitStart) &&
     BigNum.isBN(value.implicitEnd)
   )
 }
@@ -33,12 +33,47 @@ interface TransferComponentArgs {
  * Represents an implicit or explicit piece of a transfer.
  */
 export class TransferComponent extends PrettyPrint {
-  start: BigNum
-  end: BigNum
-  block: BigNum
-  sender: string
-  recipient: string
-  implicit: boolean
+  /**
+   * Creates a TransferComponent from a Transfer.
+   * @param transfer Transfer to convert.
+   * @returns the TransferComponent.
+   */
+  public static fromTransfer(
+    transfer: serialization.models.Transfer
+  ): TransferComponent {
+    if (transfer.block === undefined) {
+      throw new Error('Cannot cast to TransferComponent.')
+    }
+
+    return new TransferComponent({
+      block: new BigNum(transfer.block, 'hex'),
+      end: new BigNum(transfer.end, 'hex'),
+      implicit: transfer.implicit || false,
+      recipient: transfer.recipient,
+      sender: transfer.sender,
+      start: new BigNum(transfer.start, 'hex'),
+    })
+  }
+
+  /**
+   * Creates a TransferComponent from a Transfer.
+   * @param args Transfer to convert.
+   * @returns the TransferComponent.
+   */
+  public static from(args: serialization.models.Transfer): TransferComponent {
+    if (isTransferLike(args)) {
+      return TransferComponent.fromTransfer(args)
+    }
+
+    throw new Error('Cannot cast to TransferComponent.')
+  }
+
+  public start: BigNum
+  public end: BigNum
+  public block: BigNum
+  public sender: string
+  public recipient: string
+  public implicit: boolean
 
   constructor(component: TransferComponentArgs) {
     super()
@@ -49,40 +84,5 @@ export class TransferComponent extends PrettyPrint {
     this.sender = component.sender
     this.recipient = component.recipient
     this.implicit = component.implicit
-  }
-
-  /**
-   * Creates a TransferComponent from a Transfer.
-   * @param transfer Transfer to convert.
-   * @returns the TransferComponent.
-   */
-  static fromTransfer(
-    transfer: serialization.models.Transfer
-  ): TransferComponent {
-    if (transfer.block === undefined) {
-      throw new Error('Cannot cast to TransferComponent.')
-    }
-
-    return new TransferComponent({
-      start: new BigNum(transfer.start, 'hex'),
-      end: new BigNum(transfer.end, 'hex'),
-      block: new BigNum(transfer.block, 'hex'),
-      sender: transfer.sender,
-      recipient: transfer.recipient,
-      implicit: transfer.implicit || false,
-    })
-  }
-
-  /**
-   * Creates a TransferComponent from a Transfer.
-   * @param args Transfer to convert.
-   * @returns the TransferComponent.
-   */
-  static from(args: serialization.models.Transfer): TransferComponent {
-    if (isTransferLike(args)) {
-      return TransferComponent.fromTransfer(args)
-    }
-
-    throw new Error('Cannot cast to TransferComponent.')
   }
 }

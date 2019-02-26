@@ -12,12 +12,13 @@ export class WalletSubdispatcher extends BaseSubdispatcher {
     return ['wallet']
   }
 
-  get methods(): { [key: string]: Function } {
+  get methods(): { [key: string]: (...args: any) => any } {
     const wallet = this.app.services.wallet
     return {
+      /* Wallet */
+      createAccount: wallet.createAccount.bind(wallet),
       getAccounts: wallet.getAccounts.bind(wallet),
       sign: wallet.sign.bind(wallet),
-      createAccount: wallet.createAccount.bind(wallet),
     }
   }
 }

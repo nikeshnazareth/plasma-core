@@ -12,12 +12,13 @@ export class OperatorSubdispatcher extends BaseSubdispatcher {
     return ['operator']
   }
 
-  get methods(): { [key: string]: Function } {
+  get methods(): { [key: string]: (...args: any) => any } {
     const operator = this.app.services.operator
     return {
-      submitBlock: operator.submitBlock.bind(operator),
+      /* Operator */
       getEthInfo: operator.getEthInfo.bind(operator),
       getNextBlock: operator.getNextBlock.bind(operator),
+      submitBlock: operator.submitBlock.bind(operator),
     }
   }
 }

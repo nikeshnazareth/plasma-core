@@ -40,8 +40,8 @@ const bnMax = (a: BigNum, b: BigNum) => {
  * Utility class that manages state transitions.
  */
 export class SnapshotManager {
-  snapshots: Snapshot[]
-  debug: Debugger = debug('debug:snapshots')
+  public snapshots: Snapshot[]
+  public debug: Debugger = debug('debug:snapshots')
 
   constructor(snapshots: Snapshot[] = []) {
     this.snapshots = snapshots.map((snapshot) => {
@@ -71,7 +71,7 @@ export class SnapshotManager {
    * @param snapshots A list of Snapshots.
    * @returns `true` if the states are equal, `false` otherwise.
    */
-  equals(snapshots: Snapshot[]): boolean {
+  public equals(snapshots: Snapshot[]): boolean {
     for (let i = 0; i < snapshots.length; i++) {
       if (!this.snapshots[i].equals(snapshots[i])) {
         return false
@@ -84,7 +84,7 @@ export class SnapshotManager {
    * Merges the state of another SnapshotManager into this one.
    * @param other Other manager.
    */
-  merge(other: SnapshotManager): void {
+  public merge(other: SnapshotManager): void {
     this.debug('Merging snapshots')
     for (const snapshot of other.state) {
       try {
@@ -100,7 +100,7 @@ export class SnapshotManager {
    * @param address Address to query.
    * @returns a list of owned ranges.
    */
-  getOwnedRanges(address: string): Range[] {
+  public getOwnedRanges(address: string): Range[] {
     return this.ranges.filter((range) => {
       return range.owner === address
     })
@@ -111,7 +111,7 @@ export class SnapshotManager {
    * @param address Address to query.
    * @return a list of owned snapshots.
    */
-  getOwnedSnapshots(address: string): UntypedSnapshot[] {
+  public getOwnedSnapshots(address: string): UntypedSnapshot[] {
     return this.snapshots.map(UntypedSnapshot.from).filter((snapshot) => {
       return snapshot.owner === address
     })
@@ -124,7 +124,7 @@ export class SnapshotManager {
    * @param amount Number of tokens being sent.
    * @returns a list of snapshots.
    */
-  pickSnapshots(
+  public pickSnapshots(
     address: string,
     token: BigNum,
     amount: BigNum
@@ -140,7 +140,7 @@ export class SnapshotManager {
    * @param amount Number of tokens being sent.
    * @returns a list of ranges to use for the transaction.
    */
-  pickRanges(address: string, token: BigNum, amount: BigNum): Range[] {
+  public pickRanges(address: string, token: BigNum, amount: BigNum): Range[] {
     const ownedRanges = this.getOwnedRanges(address)
     return this.pickElements(ownedRanges, token, amount)
   }
@@ -150,7 +150,7 @@ export class SnapshotManager {
    * @param transaction A Transaction object.
    * @returns `true` if the transaction is valid, `false` otherwise.
    */
-  validateTransaction(
+  public validateTransaction(
     transaction: serialization.models.UnsignedTransaction
   ): boolean {
     return transaction.transfers.every((transfer) => {
@@ -168,7 +168,7 @@ export class SnapshotManager {
    * Applies a Deposit to the local state.
    * @param deposit Deposit to apply.
    */
-  applyDeposit(deposit: Deposit): void {
+  public applyDeposit(deposit: Deposit): void {
     const snapshot = Snapshot.from(deposit)
     this.addSnapshot(snapshot)
   }
@@ -177,7 +177,7 @@ export class SnapshotManager {
    * Applies an Exit to the local state.
    * @param {Exit} exit Exit to apply.
    */
-  applyExit(exit: Exit): void {
+  public applyExit(exit: Exit): void {
     const snapshot = Snapshot.from(exit)
     this.addSnapshot(snapshot)
   }
@@ -188,7 +188,7 @@ export class SnapshotManager {
    * if the state transition is valid when sending transactions.
    * @param transaction Transaction to apply.
    */
-  applySentTransaction(
+  public applySentTransaction(
     transaction: serialization.models.UnsignedTransaction
   ): void {
     const snapshots = transaction.transfers.map((transfer) => {
@@ -209,7 +209,7 @@ export class SnapshotManager {
    * Applies an empty block.
    * @param block The block number.
    */
-  applyEmptyBlock(block: number): void {
+  public applyEmptyBlock(block: number): void {
     this.debug(`Applying empty block: ${block.toString(10)}`)
     for (const snapshot of this.snapshots) {
       if (snapshot.block.addn(1).eqn(block)) {
@@ -222,7 +222,7 @@ export class SnapshotManager {
    * Applies a Transaction to the local state.
    * @param transaction Transaction to apply.
    */
-  applyTransfer(transfer: ApplyableTransfer): void {
+  public applyTransfer(transfer: ApplyableTransfer): void {
     // Pull out all of the transfer components (implicit and explicit).
     const components = this.getTransferComponents(transfer)
 
@@ -277,10 +277,10 @@ export class SnapshotManager {
       }
       this.addSnapshot(
         new Snapshot({
-          start: bnMax(snapshot.start, component.start),
-          end: bnMin(snapshot.end, component.end),
           block: component.block,
+          end: bnMin(snapshot.end, component.end),
           owner: component.implicit ? snapshot.owner : component.recipient,
+          start: bnMax(snapshot.start, component.start),
         })
       )
     }
@@ -325,7 +325,8 @@ export class SnapshotManager {
     const merged: Snapshot[] = []
 
     snapshots.forEach((snapshot) => {
-      let left, right
+      let left
+      let right
       merged.forEach((s, i) => {
         if (!s.block.eq(snapshot.block) || s.owner !== snapshot.owner) {
           return
@@ -490,7 +491,9 @@ export class SnapshotManager {
 
     return ranges.reduce((merged: Range[], range) => {
       const lastRange = merged.pop()
-      if (lastRange === undefined) return [range]
+      if (lastRange === undefined) {
+        return [range]
+      }
       return merged.concat(orderRanges(lastRange, range))
     }, [])
   }
@@ -559,9 +562,9 @@ export class SnapshotManager {
         TransferComponent.from({
           ...serialized,
           ...{
-            start: serialized.implicitStart,
             end: serialized.typedStart,
             implicit: true,
+            start: serialized.implicitStart,
           },
         })
       )
@@ -573,9 +576,9 @@ export class SnapshotManager {
         TransferComponent.from({
           ...serialized,
           ...{
-            start: serialized.typedEnd,
             end: serialized.implicitEnd,
             implicit: true,
+            start: serialized.typedEnd,
           },
         })
       )
@@ -586,8 +589,8 @@ export class SnapshotManager {
       TransferComponent.from({
         ...serialized,
         ...{
-          start: serialized.typedStart,
           end: serialized.typedEnd,
+          start: serialized.typedStart,
         },
       })
     )

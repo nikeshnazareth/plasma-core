@@ -1,4 +1,4 @@
-import debug from 'debug';
+import debug from 'debug'
 import { EventEmitter } from 'events'
 
 import { DebugMap, PlasmaApp } from '../plasma'

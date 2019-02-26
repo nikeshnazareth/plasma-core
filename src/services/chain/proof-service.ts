@@ -20,7 +20,7 @@ export class ProofService extends BaseService {
    * @param proof A Proof object.
    * @returns `true` if the transaction is valid.
    */
-  async checkProof(
+  public async checkProof(
     transaction: serialization.models.SignedTransaction,
     deposits: Deposit[],
     proof: ProofElement[]
@@ -65,7 +65,7 @@ export class ProofService extends BaseService {
    * @param deposits Deposits to apply.
    * @param proof Proof to apply.
    */
-  applyProof(
+  public applyProof(
     snapshotManager: SnapshotManager,
     deposits: Deposit[],
     proof: ProofElement[]
@@ -90,7 +90,7 @@ export class ProofService extends BaseService {
    * @param proof A TransactionProof object.
    * @returns `true` if the transaction is valid, `false` otherwise.
    */
-  async transactionValid(
+  public async transactionValid(
     transaction: serialization.models.UnsignedTransaction,
     proof: serialization.models.TransactionProof
   ) {

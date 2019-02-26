@@ -6,8 +6,10 @@ import { ServiceOptions } from '../base-service'
 import { EthereumAccount, isAccount } from '../models/eth'
 
 import { BaseETHProvider } from './base-provider'
-import { BaseContractProvider } from './contract/base-provider'
-import { UserContractOptions } from './contract/base-provider'
+import {
+  BaseContractProvider,
+  UserContractOptions,
+} from './contract/base-provider'
 import { ContractProvider } from './contract/contract-provider'
 
 export interface UserETHProviderOptions extends UserContractOptions {
@@ -15,8 +17,8 @@ export interface UserETHProviderOptions extends UserContractOptions {
 }
 
 export class ETHProvider extends BaseETHProvider {
-  contract: BaseContractProvider
-  web3: Web3
+  public contract: BaseContractProvider
+  public web3: Web3
 
   constructor(options: UserETHProviderOptions & ServiceOptions) {
     super(options)
@@ -26,12 +28,14 @@ export class ETHProvider extends BaseETHProvider {
     this.contract = new ContractProvider({ ...options, web3: this.web3 })
   }
 
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     await this.contract.start()
   }
 
-  async connected(): Promise<boolean> {
-    if (!this.web3) return false
+  public async connected(): Promise<boolean> {
+    if (!this.web3) {
+      return false
+    }
 
     try {
       await this.web3.eth.net.isListening()
@@ -41,24 +45,24 @@ export class ETHProvider extends BaseETHProvider {
     }
   }
 
-  async getBalance(address: string): Promise<BigNum> {
+  public async getBalance(address: string): Promise<BigNum> {
     const balance = await this.web3.eth.getBalance(address)
     return new BigNum(balance, 10)
   }
 
-  async getCurrentBlock(): Promise<number> {
+  public async getCurrentBlock(): Promise<number> {
     return this.web3.eth.getBlockNumber()
   }
 
-  async getAccounts(): Promise<string[]> {
+  public async getAccounts(): Promise<string[]> {
     return this.web3.eth.getAccounts()
   }
 
-  async sign(address: string, data: string): Promise<string> {
+  public async sign(address: string, data: string): Promise<string> {
     return this.web3.eth.sign(data, address)
   }
 
-  async getWalletAccounts(): Promise<string[]> {
+  public async getWalletAccounts(): Promise<string[]> {
     const wallet = this.web3.eth.accounts.wallet
     const keys = Object.keys(wallet)
     return keys.filter((key) => {
@@ -66,7 +70,7 @@ export class ETHProvider extends BaseETHProvider {
     })
   }
 
-  async getWalletAccount(address: string): Promise<EthereumAccount> {
+  public async getWalletAccount(address: string): Promise<EthereumAccount> {
     const wallet: { [key: string]: string | {} } = this.web3.eth.accounts.wallet
     for (const key of Object.keys(wallet)) {
       const value = wallet[key]
@@ -78,12 +82,12 @@ export class ETHProvider extends BaseETHProvider {
     throw new Error('Account not found.')
   }
 
-  async hasWalletAccount(address: string): Promise<boolean> {
+  public async hasWalletAccount(address: string): Promise<boolean> {
     const accounts = await this.getWalletAccounts()
     return accounts.includes(address)
   }
 
-  async addWalletAccount(privateKey: string): Promise<void> {
+  public async addWalletAccount(privateKey: string): Promise<void> {
     await this.web3.eth.accounts.wallet.add(privateKey)
   }
 }

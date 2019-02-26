@@ -26,14 +26,14 @@ export class ChainDB extends BaseService {
    * @returns the current db instance.
    */
   get db(): BaseDBProvider {
-    const db = this.services.dbservice.dbs['chain']
+    const db = this.services.dbservice.dbs.chain
     if (db === undefined) {
       throw new Error('ChainDB is not yet initialized.')
     }
     return db
   }
 
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     if (this.services.eth.contract.hasAddress) {
       await this.open()
     } else {
@@ -49,7 +49,7 @@ export class ChainDB extends BaseService {
   /**
    * Opens the database connection.
    */
-  async open(): Promise<void> {
+  public async open(): Promise<void> {
     const address = this.services.eth.contract.address
     await this.services.dbservice.open('chain', { id: address })
   }
@@ -59,7 +59,7 @@ export class ChainDB extends BaseService {
    * @param hash Hash of the transaction.
    * @returns the transaction object.
    */
-  async getTransaction(
+  public async getTransaction(
     hash: string
   ): Promise<serialization.models.SignedTransaction> {
     const encoded = await this.db.get(`transaction:${hash}`, undefined)
@@ -73,7 +73,7 @@ export class ChainDB extends BaseService {
    * Adds a transaction to the database.
    * @param transaction Transaction to store.
    */
-  async setTransaction(
+  public async setTransaction(
     transaction: serialization.models.SignedTransaction
   ): Promise<void> {
     await this.db.set(`transaction:${transaction.hash}`, transaction.encoded)
@@ -84,7 +84,7 @@ export class ChainDB extends BaseService {
    * @param hash The transaction hash.
    * @returns `true` if the chain has stored the transaction, `false` otherwise.
    */
-  async hasTransaction(hash: string): Promise<boolean> {
+  public async hasTransaction(hash: string): Promise<boolean> {
     return this.db.exists(`transaction:${hash}`)
   }
 
@@ -92,7 +92,7 @@ export class ChainDB extends BaseService {
    * Returns the number of the last known block.
    * @returns the latest block.
    */
-  async getLatestBlock(): Promise<number> {
+  public async getLatestBlock(): Promise<number> {
     return (await this.db.get('latestblock', -1)) as number
   }
 
@@ -100,7 +100,7 @@ export class ChainDB extends BaseService {
    * Sets the latest block.
    * @param block A block number.
    */
-  async setLatestBlock(block: number): Promise<void> {
+  public async setLatestBlock(block: number): Promise<void> {
     await this.db.set('latestblock', block)
   }
 
@@ -109,7 +109,7 @@ export class ChainDB extends BaseService {
    * @param block Number of the block to query.
    * @returns the hash of the specified block.
    */
-  async getBlockHeader(block: number): Promise<string | null> {
+  public async getBlockHeader(block: number): Promise<string | null> {
     return (await this.db.get(`header:${block}`, null)) as string | null
   }
 
@@ -118,7 +118,7 @@ export class ChainDB extends BaseService {
    * @param block Number of the block to add.
    * @param hash Hash of the given block.
    */
-  async addBlockHeader(block: number, hash: string): Promise<void> {
+  public async addBlockHeader(block: number, hash: string): Promise<void> {
     await this.setLatestBlock(block)
     await this.db.set(`header:${block}`, hash)
   }
@@ -127,7 +127,7 @@ export class ChainDB extends BaseService {
    * Adds multiple block headers to the database.
    * @param blocks An array of block objects.
    */
-  async addBlockHeaders(blocks: Block[]): Promise<void> {
+  public async addBlockHeaders(blocks: Block[]): Promise<void> {
     // Set the latest block.
     const latest = blocks.reduce((a, b) => {
       return a.number > b.number ? a : b
@@ -145,7 +145,7 @@ export class ChainDB extends BaseService {
    * @param address Address to query.
    * @returns a list of known deposits.
    */
-  async getDeposits(address: string): Promise<Deposit[]> {
+  public async getDeposits(address: string): Promise<Deposit[]> {
     const deposits = (await this.db.get(
       `deposits:${address}`,
       []
@@ -160,7 +160,7 @@ export class ChainDB extends BaseService {
    * @param address Address to query.
    * @returns a list of known exits.
    */
-  async getExits(address: string): Promise<Exit[]> {
+  public async getExits(address: string): Promise<Exit[]> {
     const exits = (await this.db.get(`exits:${address}`, [])) as ExitArgs[]
     return exits.map((exit) => {
       return new Exit(exit)
@@ -171,7 +171,7 @@ export class ChainDB extends BaseService {
    * Adds an exit to the database.
    * @param exit Exit to add to database.
    */
-  async addExit(exit: Exit): Promise<void> {
+  public async addExit(exit: Exit): Promise<void> {
     await this.markExited(exit)
     await this.db.push(`exits:${exit.owner}`, exit)
   }
@@ -183,7 +183,7 @@ export class ChainDB extends BaseService {
    * @param token Token of the range.
    * @param end End of the range.
    */
-  async addExitableEnd(token: BigNum, end: BigNum): Promise<void> {
+  public async addExitableEnd(token: BigNum, end: BigNum): Promise<void> {
     await this.addExitableEnds([{ token, end }])
   }
 
@@ -193,7 +193,7 @@ export class ChainDB extends BaseService {
    * https://github.com/plasma-group/plasma-contracts/issues/44.
    * @param exitable Ends to add to the database.
    */
-  async addExitableEnds(
+  public async addExitableEnds(
     exitables: Array<{ token: BigNum; end: BigNum }>
   ): Promise<void> {
     const objects = exitables.map((exitable) => {
@@ -210,7 +210,7 @@ export class ChainDB extends BaseService {
    * @param end End of the range.
    * @returns the exitable end.
    */
-  async getExitableEnd(token: BigNum, end: BigNum): Promise<BigNum> {
+  public async getExitableEnd(token: BigNum, end: BigNum): Promise<BigNum> {
     const startKey = this.getTypedValue(token, end)
     const nextKey = await this.db.findNextKey(`exitable:${startKey}`)
     const exitableEnd = (await this.db.get(nextKey)) as string
@@ -221,7 +221,7 @@ export class ChainDB extends BaseService {
    * Marks a range as exited.
    * @param range Range to mark.
    */
-  async markExited(range: UntypedRange): Promise<void> {
+  public async markExited(range: UntypedRange): Promise<void> {
     await this.db.set(`exited:${range.token}:${range.start}:${range.end}`, true)
   }
 
@@ -230,7 +230,7 @@ export class ChainDB extends BaseService {
    * @param range Range to check.
    * @returns `true` if the range is exited, `false` otherwise.
    */
-  async checkExited(range: UntypedRange): Promise<boolean> {
+  public async checkExited(range: UntypedRange): Promise<boolean> {
     return (await this.db.get(
       `exited:${range.token}:${range.start}:${range.end}`,
       false
@@ -241,7 +241,7 @@ export class ChainDB extends BaseService {
    * Marks an exit as finalized.
    * @param exit Exit to mark.
    */
-  async markFinalized(exit: {
+  public async markFinalized(exit: {
     token: BigNum
     start: BigNum
     end: BigNum
@@ -254,7 +254,7 @@ export class ChainDB extends BaseService {
    * @param exit Exit to check.
    * @returns `true` if the exit is finalized, `false` otherwise.
    */
-  async checkFinalized(exit: Exit): Promise<boolean> {
+  public async checkFinalized(exit: Exit): Promise<boolean> {
     return (await this.db.get(
       `finalized:${exit.token}:${exit.start}:${exit.end}`,
       false
@@ -265,7 +265,7 @@ export class ChainDB extends BaseService {
    * Returns the latest state.
    * @returns a list of snapshots.
    */
-  async getState(): Promise<Snapshot[]> {
+  public async getState(): Promise<Snapshot[]> {
     const snapshots = (await this.db.get(`state:latest`, [])) as TypedSnapshot[]
     return snapshots.map((snapshot) => {
       return new Snapshot(snapshot)
@@ -276,7 +276,7 @@ export class ChainDB extends BaseService {
    * Sets the latest state.
    * @param state A list of snapshots.
    */
-  async setState(state: Snapshot[]): Promise<void> {
+  public async setState(state: Snapshot[]): Promise<void> {
     await this.db.set('state:latest', state)
   }
 
@@ -286,7 +286,7 @@ export class ChainDB extends BaseService {
    * @param value The value to type.
    * @returns the typed value.
    */
-  getTypedValue(token: BigNum, value: BigNum): string {
+  public getTypedValue(token: BigNum, value: BigNum): string {
     return new BigNum(
       token.toString('hex', 8) + value.toString('hex', 24),
       'hex'

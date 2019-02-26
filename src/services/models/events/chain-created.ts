@@ -1,5 +1,5 @@
 import { utils } from 'plasma-utils'
-import { EventLog } from 'web3/types'
+import { EventLog } from 'web3/types' // tslint:disable-line:no-submodule-imports
 
 import { EthereumEvent, isEventLog } from '../eth'
 

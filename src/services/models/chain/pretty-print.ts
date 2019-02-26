@@ -1,6 +1,6 @@
 import BigNum from 'bn.js'
 
-type PrettyPrintable = string | number | BigNum | Function | boolean
+type PrettyPrintable = string | number | BigNum | boolean | any
 
 /**
  * Base class that allows for printing objects in a prettified manner.
@@ -13,15 +13,11 @@ export class PrettyPrint {
    * Converts BigNums to decimal strings.
    * @returns the JSON string.
    */
-  prettify(): string {
+  public prettify(): string {
     const parsed: { [key: string]: PrettyPrintable } = {}
     Object.keys(this).forEach((key) => {
       const value = this[key]
-      if (BigNum.isBN(value)) {
-        parsed[key] = value.toString(10)
-      } else {
-        parsed[key] = value
-      }
+      parsed[key] = BigNum.isBN(value) ? value.toString(10) : value
     })
     return JSON.stringify(parsed, null, 2)
   }

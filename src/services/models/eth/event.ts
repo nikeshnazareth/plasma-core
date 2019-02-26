@@ -1,7 +1,7 @@
 import BigNum from 'bn.js'
 import _ from 'lodash'
 import { utils } from 'plasma-utils'
-import { EventLog } from 'web3/types'
+import { EventLog } from 'web3/types' // tslint:disable-line:no-submodule-imports
 
 const web3Utils = utils.web3Utils
 
@@ -63,29 +63,17 @@ interface EthereumEventArgs {
  * Represents an Ethereum event log object.
  */
 export class EthereumEvent {
-  raw: RawEventData
-  data: EventData
-  block: BigNum
-  hash: string
-
-  constructor(event: EthereumEventArgs) {
-    this.raw = event.raw
-    this.data = event.data
-    this.block = event.block
-    this.hash = event.hash
-  }
-
   /**
    * Creates an EthereumEvent from an EthereumEvent.
    * @param event The EthereumEvent to cast.
    * @returns the ExitStartedEvent object.
    */
-  static fromEventLog(event: EventLog): EthereumEvent {
+  public static fromEventLog(event: EventLog): EthereumEvent {
     return new EthereumEvent({
       block: new BigNum(event.blockNumber, 10),
-      raw: event.returnValues as RawEventData,
       data: parseEventValues(event),
       hash: web3Utils.sha3(event.transactionHash + event.logIndex),
+      raw: event.returnValues as RawEventData,
     })
   }
 
@@ -94,11 +82,23 @@ export class EthereumEvent {
    * @param args The arguments to cast.
    * @returns the EthereumEvent object.
    */
-  static from(args: EventLog): EthereumEvent {
+  public static from(args: EventLog): EthereumEvent {
     if (isEventLog(args)) {
       return EthereumEvent.fromEventLog(args)
     }
 
     throw new Error('Cannot cast to EthereumEvent.')
+  }
+
+  public raw: RawEventData
+  public data: EventData
+  public block: BigNum
+  public hash: string
+
+  constructor(event: EthereumEventArgs) {
+    this.raw = event.raw
+    this.data = event.data
+    this.block = event.block
+    this.hash = event.hash
   }
 }

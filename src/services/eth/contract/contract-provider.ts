@@ -1,14 +1,15 @@
 import BigNum from 'bn.js'
-import Web3 = require('web3')
-import Contract from 'web3/eth/contract'
-import { EventLog } from 'web3/types'
-import { utils } from 'plasma-utils'
 import * as compiledContracts from 'plasma-contracts'
+import { utils } from 'plasma-utils'
+import Web3 = require('web3')
+import Contract from 'web3/eth/contract' // tslint:disable-line:no-submodule-imports
+import { EventLog } from 'web3/types' // tslint:disable-line:no-submodule-imports
+
 import { ServiceOptions } from '../../base-service'
-import { BaseContractProvider } from './base-provider'
-import { EthereumTransactionReceipt, EthereumEvent } from '../../models/eth'
 import { Deposit } from '../../models/chain'
+import { EthereumEvent, EthereumTransactionReceipt } from '../../models/eth'
 import { ChainCreatedEvent } from '../../models/events'
+import { BaseContractProvider } from './base-provider'
 
 const web3Utils = utils.web3Utils
 
@@ -26,11 +27,11 @@ export interface UserContractOptions {
 type ContractOptions = UserContractOptions & ServiceOptions
 
 export class ContractProvider extends BaseContractProvider {
-  options!: ContractOptions
-  web3: Web3
-  contract: Contract
-  registry: Contract
-  endpoint?: string
+  public options!: ContractOptions
+  public web3: Web3
+  public contract: Contract
+  public registry: Contract
+  public endpoint?: string
 
   constructor(options: UserContractOptions & ServiceOptions) {
     super(options)
@@ -43,7 +44,7 @@ export class ContractProvider extends BaseContractProvider {
     )
   }
 
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     this.initContractInfo()
   }
 
@@ -63,33 +64,35 @@ export class ContractProvider extends BaseContractProvider {
     return this.options.plasmaChainName
   }
 
-  async getBlock(block: number): Promise<string> {
+  public async getBlock(block: number): Promise<string> {
     return this.contract.methods.blockHashes(block).call()
   }
 
-  async getNextBlock(): Promise<number> {
+  public async getNextBlock(): Promise<number> {
     return this.contract.methods.nextPlasmaBlockNumber().call()
   }
 
-  async getCurrentBlock(): Promise<number> {
+  public async getCurrentBlock(): Promise<number> {
     const nextBlockNumber = await this.getNextBlock()
     return nextBlockNumber - 1
   }
 
-  async getOperator(): Promise<string> {
+  public async getOperator(): Promise<string> {
     return this.contract.methods.operator().call()
   }
 
-  async getTokenAddress(token: string): Promise<string> {
+  public async getTokenAddress(token: string): Promise<string> {
     if (web3Utils.isAddress(token)) {
       return token
     }
+
+    // tslint:disable-next-line:no-string-literal
     return this.contract.methods['listings__contractAddress'](
       token.toString()
     ).call()
   }
 
-  async listToken(
+  public async listToken(
     tokenAddress: string,
     sender: string
   ): Promise<EthereumTransactionReceipt> {
@@ -101,25 +104,26 @@ export class ContractProvider extends BaseContractProvider {
     return tx.send({ from: sender, gas })
   }
 
-  async getChallengePeriod(): Promise<number> {
+  public async getChallengePeriod(): Promise<number> {
+    // tslint:disable-next-line:no-string-literal
     return this.contract.methods['CHALLENGE_PERIOD']().call()
   }
 
-  async getTokenId(tokenAddress: string): Promise<string> {
+  public async getTokenId(tokenAddress: string): Promise<string> {
     return this.contract.methods.listed(tokenAddress).call()
   }
 
-  async getPastEvents(
+  public async getPastEvents(
     event: string,
     filter: {} = {}
   ): Promise<EthereumEvent[]> {
     const events: EventLog[] = await this.contract.getPastEvents(event, filter)
-    return events.map((event) => {
-      return EthereumEvent.from(event)
+    return events.map((ethereumEvent) => {
+      return EthereumEvent.from(ethereumEvent)
     })
   }
 
-  async depositValid(deposit: Deposit): Promise<boolean> {
+  public async depositValid(deposit: Deposit): Promise<boolean> {
     // Find past deposit events.
     const depositEvents = await this.getPastEvents('DepositEvent', {
       filter: {
@@ -136,7 +140,7 @@ export class ContractProvider extends BaseContractProvider {
     return deposits.some(deposit.equals)
   }
 
-  async deposit(
+  public async deposit(
     token: BigNum,
     amount: BigNum,
     owner: string
@@ -157,7 +161,7 @@ export class ContractProvider extends BaseContractProvider {
    * @param owner Address of the user to deposit for.
    * @returns the deposit transaction receipt.
    */
-  async depositETH(
+  public async depositETH(
     amount: BigNum,
     owner: string
   ): Promise<EthereumTransactionReceipt> {
@@ -173,7 +177,7 @@ export class ContractProvider extends BaseContractProvider {
    * @param owner Address of the user to deposit for.
    * @returns the deposit transaction receipt.
    */
-  async depositERC20(
+  public async depositERC20(
     token: BigNum,
     amount: BigNum,
     owner: string
@@ -193,7 +197,7 @@ export class ContractProvider extends BaseContractProvider {
     })
   }
 
-  async startExit(
+  public async startExit(
     block: BigNum,
     token: BigNum,
     start: BigNum,
@@ -207,7 +211,7 @@ export class ContractProvider extends BaseContractProvider {
       .send({ from: owner, gas: 200000 })
   }
 
-  async finalizeExit(
+  public async finalizeExit(
     exitId: string,
     exitableEnd: BigNum,
     owner: string
@@ -219,7 +223,7 @@ export class ContractProvider extends BaseContractProvider {
       .send({ from: owner, gas: 100000 })
   }
 
-  async submitBlock(hash: string): Promise<EthereumTransactionReceipt> {
+  public async submitBlock(hash: string): Promise<EthereumTransactionReceipt> {
     const operator = await this.getOperator()
     await this.services.wallet.addAccountToWallet(operator)
 
@@ -250,8 +254,8 @@ export class ContractProvider extends BaseContractProvider {
     const parsed = events.map(ChainCreatedEvent.from)
 
     // Find a matching event.
-    const event = parsed.find((event: ChainCreatedEvent) => {
-      return event.plasmaChainName === plasmaChainName
+    const event = parsed.find((parsedEvent: ChainCreatedEvent) => {
+      return parsedEvent.plasmaChainName === plasmaChainName
     })
 
     if (!event) {

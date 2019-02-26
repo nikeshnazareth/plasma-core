@@ -11,7 +11,7 @@ export interface UserContractOptions {
 type ContractOptions = UserContractOptions & ServiceOptions
 
 export class BaseContractProvider extends BaseService {
-  options!: ContractOptions
+  public options!: ContractOptions
 
   constructor(options: UserContractOptions & ServiceOptions) {
     super(options)
@@ -68,7 +68,7 @@ export class BaseContractProvider extends BaseService {
    * @param filter The filter object.
    * @returns past events with the given filter.
    */
-  async getPastEvents(
+  public async getPastEvents(
     event: string,
     filter: {} = {}
   ): Promise<EthereumEvent[]> {
@@ -82,7 +82,7 @@ export class BaseContractProvider extends BaseService {
    * @param block Number of the block to query.
    * @returns Root hash of the block with that number.
    */
-  async getBlock(block: number): Promise<string> {
+  public async getBlock(block: number): Promise<string> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     )
@@ -91,7 +91,7 @@ export class BaseContractProvider extends BaseService {
   /**
    * @returns Number of the block that will be submitted next.
    */
-  async getNextBlock(): Promise<number> {
+  public async getNextBlock(): Promise<number> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     )
@@ -100,7 +100,7 @@ export class BaseContractProvider extends BaseService {
   /**
    * @returns Number of the last submitted block.
    */
-  async getCurrentBlock(): Promise<number> {
+  public async getCurrentBlock(): Promise<number> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     )
@@ -109,7 +109,7 @@ export class BaseContractProvider extends BaseService {
   /**
    * @returns Address of the current operator.
    */
-  async getOperator(): Promise<string> {
+  public async getOperator(): Promise<string> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     )
@@ -120,7 +120,7 @@ export class BaseContractProvider extends BaseService {
    * @param token The token ID.
    * @returns Address of the contract for that token.
    */
-  async getTokenAddress(token: string): Promise<string> {
+  public async getTokenAddress(token: string): Promise<string> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     )
@@ -133,7 +133,7 @@ export class BaseContractProvider extends BaseService {
    * @param sender Address of the account sending the listToken transaction.
    * @returns The Ethereum transaction result.
    */
-  async listToken(
+  public async listToken(
     tokenAddress: string,
     sender: string
   ): Promise<EthereumTransactionReceipt> {
@@ -147,7 +147,7 @@ export class BaseContractProvider extends BaseService {
    * Challenge period is returned in number of blocks.
    * @returns Current challenge period.
    */
-  async getChallengePeriod(): Promise<number> {
+  public async getChallengePeriod(): Promise<number> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     )
@@ -160,7 +160,7 @@ export class BaseContractProvider extends BaseService {
    * @param tokenAddress Token contract address.
    * @returns ID of that token.
    */
-  async getTokenId(tokenAddress: string): Promise<string> {
+  public async getTokenId(tokenAddress: string): Promise<string> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     )
@@ -171,7 +171,7 @@ export class BaseContractProvider extends BaseService {
    * @param deposit Deposit to check.
    * @returns `true` if the deposit exists, `false` otherwise.
    */
-  async depositValid(deposit: Deposit): Promise<boolean> {
+  public async depositValid(deposit: Deposit): Promise<boolean> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     )
@@ -186,7 +186,7 @@ export class BaseContractProvider extends BaseService {
    * @param owner Address of the user to deposit for.
    * @returns Deposit transaction receipt.
    */
-  async deposit(
+  public async deposit(
     token: BigNum,
     amount: BigNum,
     owner: string
@@ -208,7 +208,7 @@ export class BaseContractProvider extends BaseService {
    * @param owner Adress to exit from.
    * @returns Exit transaction receipt.
    */
-  async startExit(
+  public async startExit(
     block: BigNum,
     token: BigNum,
     start: BigNum,
@@ -229,7 +229,7 @@ export class BaseContractProvider extends BaseService {
    * @param owner Address that owns this exit.
    * @returns Finalization transaction receipt.
    */
-  async finalizeExit(
+  public async finalizeExit(
     exitId: string,
     exitableEnd: BigNum,
     owner: string
@@ -246,7 +246,7 @@ export class BaseContractProvider extends BaseService {
    * @param hash Hash of the block to submit.
    * @returns Block submission transaction receipt.
    */
-  async submitBlock(hash: string): Promise<EthereumTransactionReceipt> {
+  public async submitBlock(hash: string): Promise<EthereumTransactionReceipt> {
     throw new Error(
       'Classes that extend BaseContractProvider must implement this method.'
     )
