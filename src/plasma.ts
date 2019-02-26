@@ -1,13 +1,14 @@
-import toposort = require('toposort')
-import debug = require('debug')
+import debug from 'debug'
 import { EventEmitter } from 'events'
+import toposort from 'toposort'
+
 import * as services from './services'
+import { UserDBOptions } from './services/db/db-service'
+import { UserETHProviderOptions } from './services/eth/base-provider'
+import { UserEventWatcherOptions } from './services/events/event-watcher'
+import { UserOperatorOptions } from './services/operator/operator-provider'
 import { AppServices, RequiredServiceTypes } from './services/service-interface'
 import { UserSyncOptions } from './services/sync-service'
-import { UserOperatorOptions } from './services/operator/operator-provider'
-import { UserEventWatcherOptions } from './services/events/event-watcher'
-import { UserETHProviderOptions } from './services/eth/base-provider'
-import { UserDBOptions } from './services/db/db-service'
 
 export interface UserPlasmaOptions
   extends UserSyncOptions,
@@ -35,12 +36,12 @@ const defaultOptions: PlasmaOptions = {
   walletProvider: services.LocalWalletProvider,
 }
 
-export type DebugMap = {
+export interface DebugMap {
   [key: string]: debug.Debugger
 }
 
 export class PlasmaApp extends EventEmitter {
-  options: PlasmaOptions
+  public options: PlasmaOptions
   private _services: AppServices
   private _loggers: DebugMap = {}
 
@@ -89,7 +90,7 @@ export class PlasmaApp extends EventEmitter {
    * Starts a single service.
    * @param name Name of the service to start.
    */
-  async startService(name: string): Promise<void> {
+  public async startService(name: string): Promise<void> {
     const service = this.services[name]
 
     for (const dependency of service.dependencies) {
@@ -101,12 +102,12 @@ export class PlasmaApp extends EventEmitter {
       }
     }
 
+    const logger = this.loggers['core:bootstrap']
     try {
       await service.start()
-      const logger = this.loggers['core:bootstrap']
       logger(`${service.name}: STARTED`)
     } catch (err) {
-      console.log(err)
+      logger(`ERROR: ${err}`)
     }
   }
 
@@ -114,24 +115,24 @@ export class PlasmaApp extends EventEmitter {
    * Stops a single service.
    * @param name Name of the service to stop.
    */
-  async stopService(name: string): Promise<void> {
+  public async stopService(name: string): Promise<void> {
     const service = this.services[name]
 
+    const logger = this.loggers['core:bootstrap']
     try {
       await service.stop()
-      const logger = this.loggers['core:bootstrap']
       logger(`${service.name}: STOPPED`)
     } catch (err) {
-      console.log(err)
+      logger(`ERROR: ${err}`)
     }
   }
 
   /**
    * Starts all available services.
    */
-  async start(): Promise<void> {
-    const services = this.getOrderedServices()
-    for (const service of services) {
+  public async start(): Promise<void> {
+    const orderedServices = this.getOrderedServices()
+    for (const service of orderedServices) {
       await this.startService(service)
     }
   }
@@ -139,10 +140,10 @@ export class PlasmaApp extends EventEmitter {
   /**
    * Stops all available services.
    */
-  async stop(): Promise<void> {
+  public async stop(): Promise<void> {
     // Stop services backwards to avoid dependencies being killed off.
-    const services = this.getOrderedServices().reverse()
-    for (const service of services) {
+    const orderedServices = this.getOrderedServices().reverse()
+    for (const service of orderedServices) {
       await this.stopService(service)
     }
   }
@@ -153,13 +154,52 @@ export class PlasmaApp extends EventEmitter {
    * @param name Name of the service.
    * @param options Any additional options.
    */
-  registerService(
+  public registerService(
     service: typeof services.BaseService,
     name: string,
     options = {}
   ): void {
     const instance = this.buildService(service, name, options)
     this.services[name] = instance
+  }
+
+  /**
+   * Builds the required services into their instances.
+   * @returns an AppServices object.
+   */
+  public buildRequiredServices(): AppServices {
+    const required: RequiredServiceTypes = {
+      /* Providers */
+      eth: this.options.ethProvider,
+      operator: this.options.operatorProvider,
+      wallet: this.options.walletProvider,
+
+      /* Services */
+      chain: services.ChainService,
+      dbservice: services.DBService,
+      eventHandler: services.EventHandler,
+      eventWatcher: services.EventWatcher,
+      guard: services.GuardService,
+      jsonrpc: services.JSONRPCService,
+      proof: services.ProofService,
+      sync: services.SyncService,
+
+      /* Database Interfaces */
+      chaindb: services.ChainDB,
+      syncdb: services.SyncDB,
+      walletdb: services.WalletDB,
+    }
+
+    const built: { [key: string]: services.BaseService } = {}
+    for (const service of Object.keys(required)) {
+      built[service] = this.buildService(
+        required[service],
+        service,
+        this.options
+      )
+    }
+
+    return built as AppServices
   }
 
   /**
@@ -186,45 +226,6 @@ export class PlasmaApp extends EventEmitter {
     }
 
     return instance
-  }
-
-  /**
-   * Builds the required services into their instances.
-   * @returns an AppServices object.
-   */
-  buildRequiredServices(): AppServices {
-    const required: RequiredServiceTypes = {
-      /* Providers */
-      eth: this.options.ethProvider,
-      operator: this.options.operatorProvider,
-      wallet: this.options.walletProvider,
-
-      /* Services */
-      guard: services.GuardService,
-      sync: services.SyncService,
-      dbservice: services.DBService,
-      eventWatcher: services.EventWatcher,
-      eventHandler: services.EventHandler,
-      proof: services.ProofService,
-      chain: services.ChainService,
-      jsonrpc: services.JSONRPCService,
-
-      /* Database Interfaces */
-      walletdb: services.WalletDB,
-      chaindb: services.ChainDB,
-      syncdb: services.SyncDB,
-    }
-
-    const built: { [key: string]: services.BaseService } = {}
-    for (const service of Object.keys(required)) {
-      built[service] = this.buildService(
-        required[service],
-        service,
-        this.options
-      )
-    }
-
-    return built as AppServices
   }
 
   /**

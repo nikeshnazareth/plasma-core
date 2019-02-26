@@ -1,7 +1,8 @@
-import debug = require('debug')
+import debug from 'debug';
 import { EventEmitter } from 'events'
+
+import { DebugMap, PlasmaApp } from '../plasma'
 import { AppServices } from './service-interface'
-import { PlasmaApp, DebugMap } from '../plasma'
 
 export interface ServiceOptions {
   app: PlasmaApp
@@ -12,10 +13,10 @@ export interface ServiceOptions {
  * A base class for services to extend.
  */
 export class BaseService extends EventEmitter {
-  started = false
-  name: string
-  options: ServiceOptions
-  app: PlasmaApp
+  public started = false
+  public name: string
+  public options: ServiceOptions
+  public app: PlasmaApp
 
   constructor(options: ServiceOptions, defaultOptions = {}) {
     super()
@@ -95,7 +96,7 @@ export class BaseService extends EventEmitter {
   /**
    * Starts the service.
    */
-  async start(): Promise<void> {
+  public async start(): Promise<void> {
     this.started = true
     await this.onStart()
     this.emit('started')
@@ -104,7 +105,7 @@ export class BaseService extends EventEmitter {
   /**
    * Stops the service.
    */
-  async stop(): Promise<void> {
+  public async stop(): Promise<void> {
     this.started = false
     await this.onStop()
     this.emit('stopped')
@@ -113,14 +114,14 @@ export class BaseService extends EventEmitter {
   /**
    * Called once the service has been started.
    */
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     return
   }
 
   /**
    * Called once the service has been stopped.
    */
-  async onStop(): Promise<void> {
+  public async onStop(): Promise<void> {
     return
   }
 }

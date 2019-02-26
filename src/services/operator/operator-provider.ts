@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import BigNum from 'bn.js'
 import { serialization, utils } from 'plasma-utils'
-import uuidv4 from 'uuid/v4'
+import uuidv4 from 'uuid'
 
 import { ServiceOptions } from '../base-service'
 import { Deposit, Proof, ProofElement } from '../models/chain'
@@ -35,10 +35,10 @@ const defaultOptions: DefaultOperatorOptions = {
 }
 
 export class OperatorProvider extends BaseOperatorProvider {
-  options!: OperatorOptions
-  pinging = false
-  endpoint?: string
-  http?: AxiosInstance
+  public options!: OperatorOptions
+  public pinging = false
+  public endpoint?: string
+  public http?: AxiosInstance
 
   constructor(options: UserOperatorOptions & ServiceOptions) {
     super(options, defaultOptions)
@@ -48,7 +48,7 @@ export class OperatorProvider extends BaseOperatorProvider {
     return ['eth']
   }
 
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     this.services.eth.contract.on('initialized', () => {
       this.initConnection()
     })
@@ -58,22 +58,25 @@ export class OperatorProvider extends BaseOperatorProvider {
   /**
    * Regularly pings the operator to check if it's online.
    */
-  async startPingInterval(): Promise<void> {
-    if (this.pinging) return
+  public async startPingInterval(): Promise<void> {
+    if (this.pinging) {
+      return
+    }
+
     this.pinging = true
     this.pingInterval()
   }
 
-  async getNextBlock(): Promise<number> {
+  public async getNextBlock(): Promise<number> {
     const block = await this.handle('getBlockNumber')
     return block as number
   }
 
-  async getEthInfo(): Promise<EthInfo> {
+  public async getEthInfo(): Promise<EthInfo> {
     return (await this.handle('getEthInfo')) as EthInfo
   }
 
-  async getReceivedTransactions(
+  public async getReceivedTransactions(
     address: string,
     startBlock: number,
     endBlock: number
@@ -91,7 +94,7 @@ export class OperatorProvider extends BaseOperatorProvider {
     })
   }
 
-  async getTransactionProof(encoded: string): Promise<Proof> {
+  public async getTransactionProof(encoded: string): Promise<Proof> {
     const transaction = new SignedTransaction(encoded)
     const rawProof = (await this.handle('getHistoryProof', [
       0,
@@ -128,8 +131,8 @@ export class OperatorProvider extends BaseOperatorProvider {
       (proofs: ProofElement[], block) => {
         const operatorProofs: OperatorProof[] =
           rawProof.transactionHistory[block]
-        const parsed: ProofElement[] = operatorProofs.map((proof) => {
-          return ProofElement.fromOperatorProof(proof)
+        const parsed: ProofElement[] = operatorProofs.map((operatorProof) => {
+          return ProofElement.fromOperatorProof(operatorProof)
         })
         return proofs.concat(parsed)
       },
@@ -154,12 +157,12 @@ export class OperatorProvider extends BaseOperatorProvider {
     return { transaction, proof, deposits }
   }
 
-  async sendTransaction(transaction: string): Promise<string> {
+  public async sendTransaction(transaction: string): Promise<string> {
     const tx = new SignedTransaction(transaction)
     return (await this.handle('addTransaction', [tx.encoded])) as string
   }
 
-  async submitBlock(): Promise<void> {
+  public async submitBlock(): Promise<void> {
     await this.handle('newBlock')
   }
 
@@ -180,10 +183,10 @@ export class OperatorProvider extends BaseOperatorProvider {
     let response: AxiosResponse
     try {
       response = await this.http.post('/', {
+        id: uuidv4(),
         jsonrpc: '2.0',
         method,
         params,
-        id: uuidv4(),
       })
     } catch (err) {
       this.log(`ERROR: ${err}`)

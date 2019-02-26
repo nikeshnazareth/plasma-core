@@ -5,7 +5,7 @@ export class BaseWalletProvider extends BaseService {
    * Returns the addresses of all accounts in this wallet.
    * @returns the list of addresses in this wallet.
    */
-  async getAccounts(): Promise<string[]> {
+  public async getAccounts(): Promise<string[]> {
     throw new Error(
       'Classes that extend BaseWalletProvider must implement this method'
     )
@@ -14,7 +14,7 @@ export class BaseWalletProvider extends BaseService {
   /**
    * @returns the keystore file for a given account.
    */
-  async getAccount(address: string): Promise<{}> {
+  public async getAccount(address: string): Promise<{}> {
     throw new Error(
       'Classes that extend BaseWalletProvider must implement this method'
     )
@@ -26,7 +26,7 @@ export class BaseWalletProvider extends BaseService {
    * @param data Data to sign
    * @returns a signature over the data.
    */
-  async sign(address: string, data: string): Promise<string> {
+  public async sign(address: string, data: string): Promise<string> {
     throw new Error(
       'Classes that extend BaseWalletProvider must implement this method'
     )
@@ -36,7 +36,7 @@ export class BaseWalletProvider extends BaseService {
    * Creates a new account.
    * @returns the account's address.
    */
-  async createAccount(): Promise<string> {
+  public async createAccount(): Promise<string> {
     throw new Error(
       'Classes that extend BaseWalletProvider must implement this method'
     )
@@ -47,7 +47,7 @@ export class BaseWalletProvider extends BaseService {
    * transactions directly. See https://bit.ly/2MPAbRd for more information.
    * @param address Address of the account to add to wallet.
    */
-  async addAccountToWallet(address: string): Promise<void> {
+  public async addAccountToWallet(address: string): Promise<void> {
     throw new Error(
       'Classes that extend BaseWalletProvider must implement this method'
     )

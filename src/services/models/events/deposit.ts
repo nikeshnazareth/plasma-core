@@ -12,11 +12,39 @@ interface DepositEventArgs {
 }
 
 export class DepositEvent {
-  owner: string
-  start: BigNum
-  end: BigNum
-  token: BigNum
-  block: BigNum
+  /**
+   * Creates a DepositEvent from an EthereumEvent.
+   * @param event The EthereumEvent to cast.
+   * @returns the DepositEvent object.
+   */
+  public static fromEthereumEvent(event: EthereumEvent): DepositEvent {
+    return new DepositEvent({
+      block: event.data.plasmaBlockNumber as BigNum,
+      end: event.data.untypedEnd as BigNum,
+      owner: event.data.depositer as string,
+      start: event.data.untypedStart as BigNum,
+      token: event.data.tokenType as BigNum,
+    })
+  }
+
+  /**
+   * Creates a DepositEvent from some arguments.
+   * @param args The arguments to cast.
+   * @returns the DepositEvent object.
+   */
+  public static from(args: EthereumEvent): DepositEvent {
+    if (args instanceof EthereumEvent) {
+      return DepositEvent.fromEthereumEvent(args)
+    }
+
+    throw new Error('Cannot cast to DepositEvent.')
+  }
+
+  public owner: string
+  public start: BigNum
+  public end: BigNum
+  public token: BigNum
+  public block: BigNum
 
   constructor(event: DepositEventArgs) {
     this.owner = event.owner
@@ -37,41 +65,13 @@ export class DepositEvent {
    * Converts the deposit event to a deposit object.
    * @returns the deposit object.
    */
-  toDeposit(): Deposit {
+  public toDeposit(): Deposit {
     return new Deposit({
-      owner: this.owner,
-      token: this.token,
-      start: this.start,
-      end: this.end,
       block: this.block,
+      end: this.end,
+      owner: this.owner,
+      start: this.start,
+      token: this.token,
     })
-  }
-
-  /**
-   * Creates a DepositEvent from an EthereumEvent.
-   * @param event The EthereumEvent to cast.
-   * @returns the DepositEvent object.
-   */
-  static fromEthereumEvent(event: EthereumEvent): DepositEvent {
-    return new DepositEvent({
-      owner: event.data.depositer as string,
-      start: event.data.untypedStart as BigNum,
-      end: event.data.untypedEnd as BigNum,
-      token: event.data.tokenType as BigNum,
-      block: event.data.plasmaBlockNumber as BigNum,
-    })
-  }
-
-  /**
-   * Creates a DepositEvent from some arguments.
-   * @param args The arguments to cast.
-   * @returns the DepositEvent object.
-   */
-  static from(args: EthereumEvent): DepositEvent {
-    if (args instanceof EthereumEvent) {
-      return DepositEvent.fromEthereumEvent(args)
-    }
-
-    throw new Error('Cannot cast to DepositEvent.')
   }
 }

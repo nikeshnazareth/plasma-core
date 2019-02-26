@@ -28,9 +28,9 @@ const defaultOptions: DefaultSyncOptions = {
 }
 
 export class SyncService extends BaseService {
-  options!: SyncOptions
-  pending: string[] = []
-  polling = false
+  public options!: SyncOptions
+  public pending: string[] = []
+  public polling = false
 
   constructor(options: UserSyncOptions & ServiceOptions) {
     super(options, defaultOptions)
@@ -48,15 +48,18 @@ export class SyncService extends BaseService {
     ]
   }
 
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     this.attachHandlers()
   }
 
   /**
    * Starts regularly polling pending transactions.
    */
-  async startPollInterval(): Promise<void> {
-    if (this.polling) return
+  public async startPollInterval(): Promise<void> {
+    if (this.polling) {
+      return
+    }
+
     this.polling = true
     this.pollInterval()
   }
@@ -65,7 +68,9 @@ export class SyncService extends BaseService {
    * Polling loop that checks for new transactions.
    */
   private async pollInterval(): Promise<void> {
-    if (!this.started) return
+    if (!this.started) {
+      return
+    }
 
     try {
       await this.checkPendingTransactions()
@@ -79,11 +84,11 @@ export class SyncService extends BaseService {
    * Attaches handlers to Ethereum events.
    */
   private attachHandlers(): void {
-    const handlers: { [key: string]: Function } = {
-      Deposit: this.onDeposit,
+    const handlers: { [key: string]: (events: any[]) => void } = {
       BlockSubmitted: this.onBlockSubmitted,
-      ExitStarted: this.onExitStarted,
+      Deposit: this.onDeposit,
       ExitFinalized: this.onExitFinalized,
+      ExitStarted: this.onExitStarted,
     }
 
     for (const event of Object.keys(handlers)) {
@@ -138,8 +143,7 @@ export class SyncService extends BaseService {
     this.pending = [...new Set(this.pending)]
 
     const failed = []
-    for (let i = 0; i < this.pending.length; i++) {
-      const encoded = this.pending[i]
+    for (const encoded of this.pending) {
       const tx = new SignedTransaction(encoded)
 
       // Make sure we're not importing transactions we don't have blocks for.
