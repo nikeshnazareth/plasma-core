@@ -1,36 +1,36 @@
-import BigNum from 'bn.js';
+import BigNum from 'bn.js'
 
-import {Deposit} from '../chain';
-import {EthereumEvent} from '../eth';
+import { Deposit } from '../chain'
+import { EthereumEvent } from '../eth'
 
 interface DepositEventArgs {
-  owner: string;
-  start: BigNum;
-  end: BigNum;
-  token: BigNum;
-  block: BigNum;
+  owner: string
+  start: BigNum
+  end: BigNum
+  token: BigNum
+  block: BigNum
 }
 
 export class DepositEvent {
-  owner: string;
-  start: BigNum;
-  end: BigNum;
-  token: BigNum;
-  block: BigNum;
+  owner: string
+  start: BigNum
+  end: BigNum
+  token: BigNum
+  block: BigNum
 
   constructor(event: DepositEventArgs) {
-    this.owner = event.owner;
-    this.start = event.start;
-    this.end = event.end;
-    this.token = event.token;
-    this.block = event.block;
+    this.owner = event.owner
+    this.start = event.start
+    this.end = event.end
+    this.token = event.token
+    this.block = event.block
   }
 
   /**
    * @returns the total amount deposited.
    */
   get amount(): BigNum {
-    return this.end.sub(this.start);
+    return this.end.sub(this.start)
   }
 
   /**
@@ -43,8 +43,8 @@ export class DepositEvent {
       token: this.token,
       start: this.start,
       end: this.end,
-      block: this.block
-    });
+      block: this.block,
+    })
   }
 
   /**
@@ -58,8 +58,8 @@ export class DepositEvent {
       start: event.data.untypedStart as BigNum,
       end: event.data.untypedEnd as BigNum,
       token: event.data.tokenType as BigNum,
-      block: event.data.plasmaBlockNumber as BigNum
-    });
+      block: event.data.plasmaBlockNumber as BigNum,
+    })
   }
 
   /**
@@ -69,9 +69,9 @@ export class DepositEvent {
    */
   static from(args: EthereumEvent): DepositEvent {
     if (args instanceof EthereumEvent) {
-      return DepositEvent.fromEthereumEvent(args);
+      return DepositEvent.fromEthereumEvent(args)
     }
 
-    throw new Error('Cannot cast to DepositEvent.');
+    throw new Error('Cannot cast to DepositEvent.')
   }
 }

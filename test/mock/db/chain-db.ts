@@ -1,10 +1,10 @@
-import {instance, mock, when} from 'ts-mockito';
+import { instance, mock, when } from 'ts-mockito'
 
-import {ChainDB} from '../../../src/services';
+import { ChainDB } from '../../../src/services'
 
-const mockChainDB = mock(ChainDB);
-when(mockChainDB.started).thenReturn(true);
+const mockChainDB = mock(ChainDB)
+when(mockChainDB.started).thenReturn(true)
 
-const chaindb = instance(mockChainDB);
+const chaindb = instance(mockChainDB)
 
-export {mockChainDB, chaindb};
+export { mockChainDB, chaindb }

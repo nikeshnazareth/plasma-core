@@ -1,29 +1,29 @@
-import {BaseService, ServiceOptions} from '../base-service';
-import {BaseDBProvider} from './backends/base-provider';
-import {EphemDBProvider} from './backends/ephem-provider';
+import { BaseService, ServiceOptions } from '../base-service'
+import { BaseDBProvider } from './backends/base-provider'
+import { EphemDBProvider } from './backends/ephem-provider'
 
 export interface UserDBOptions {
-  dbProvider?: typeof BaseDBProvider;
+  dbProvider?: typeof BaseDBProvider
 }
 
 interface DBOptions extends ServiceOptions {
-  dbProvider: typeof BaseDBProvider;
+  dbProvider: typeof BaseDBProvider
 }
 
 interface DefaultDBOptions {
-  dbProvider: typeof BaseDBProvider;
+  dbProvider: typeof BaseDBProvider
 }
 
 const defaultOptions: DefaultDBOptions = {
-  dbProvider: EphemDBProvider
-};
+  dbProvider: EphemDBProvider,
+}
 
 export class DBService extends BaseService {
-  options!: DBOptions;
-  dbs: {[key: string]: BaseDBProvider} = {};
+  options!: DBOptions
+  dbs: { [key: string]: BaseDBProvider } = {}
 
-  constructor(options: UserDBOptions&ServiceOptions) {
-    super(options, defaultOptions);
+  constructor(options: UserDBOptions & ServiceOptions) {
+    super(options, defaultOptions)
   }
 
   /**
@@ -33,12 +33,14 @@ export class DBService extends BaseService {
    * @param provider The database provider.
    */
   async open(
-      name: string, options: {} = {},
-      provider = this.options.dbProvider): Promise<void> {
-    if (name in this) return;
+    name: string,
+    options: {} = {},
+    provider = this.options.dbProvider
+  ): Promise<void> {
+    if (name in this) return
 
-    const db = new provider({...{name}, ...options});
-    await db.start();
-    this.dbs[name] = db;
+    const db = new provider({ ...{ name }, ...options })
+    await db.start()
+    this.dbs[name] = db
   }
 }

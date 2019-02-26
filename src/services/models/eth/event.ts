@@ -1,16 +1,16 @@
-import BigNum from 'bn.js';
-import _ from 'lodash';
-import {utils} from 'plasma-utils';
-import {EventLog} from 'web3/types';
+import BigNum from 'bn.js'
+import _ from 'lodash'
+import { utils } from 'plasma-utils'
+import { EventLog } from 'web3/types'
 
-const web3Utils = utils.web3Utils;
+const web3Utils = utils.web3Utils
 
 interface RawEventData {
-  [key: string]: string|number;
+  [key: string]: string | number
 }
 
 interface EventData {
-  [key: string]: string|BigNum;
+  [key: string]: string | BigNum
 }
 
 /**
@@ -20,22 +20,22 @@ interface EventData {
  * @returns the parsed event values.
  */
 const parseEventValues = (event: EventLog): EventData => {
-  const values = _.cloneDeep(event.returnValues as RawEventData);
-  const parsed: EventData = {};
+  const values = _.cloneDeep(event.returnValues as RawEventData)
+  const parsed: EventData = {}
   for (const key of Object.keys(values)) {
-    const value = values[key];
+    const value = values[key]
     if (!isNaN(Number(value)) && !web3Utils.isAddress(value)) {
-      parsed[key] = new BigNum(value, 10);
+      parsed[key] = new BigNum(value, 10)
     }
   }
-  return parsed;
-};
+  return parsed
+}
 
 interface EventLogLike {
-  blockNumber?: number;
-  returnValues?: {};
-  transactionHash?: string;
-  logIndex: number;
+  blockNumber?: number
+  returnValues?: {}
+  transactionHash?: string
+  logIndex: number
 }
 
 /**
@@ -45,31 +45,34 @@ interface EventLogLike {
  */
 export const isEventLog = (data: EventLogLike): boolean => {
   return (
-      data.blockNumber !== undefined && data.returnValues !== undefined &&
-      data.transactionHash !== undefined && data.logIndex !== undefined);
-};
+    data.blockNumber !== undefined &&
+    data.returnValues !== undefined &&
+    data.transactionHash !== undefined &&
+    data.logIndex !== undefined
+  )
+}
 
 interface EthereumEventArgs {
-  raw: RawEventData;
-  data: EventData;
-  block: BigNum;
-  hash: string;
+  raw: RawEventData
+  data: EventData
+  block: BigNum
+  hash: string
 }
 
 /**
  * Represents an Ethereum event log object.
  */
 export class EthereumEvent {
-  raw: RawEventData;
-  data: EventData;
-  block: BigNum;
-  hash: string;
+  raw: RawEventData
+  data: EventData
+  block: BigNum
+  hash: string
 
   constructor(event: EthereumEventArgs) {
-    this.raw = event.raw;
-    this.data = event.data;
-    this.block = event.block;
-    this.hash = event.hash;
+    this.raw = event.raw
+    this.data = event.data
+    this.block = event.block
+    this.hash = event.hash
   }
 
   /**
@@ -80,10 +83,10 @@ export class EthereumEvent {
   static fromEventLog(event: EventLog): EthereumEvent {
     return new EthereumEvent({
       block: new BigNum(event.blockNumber, 10),
-      raw: (event.returnValues as RawEventData),
+      raw: event.returnValues as RawEventData,
       data: parseEventValues(event),
       hash: web3Utils.sha3(event.transactionHash + event.logIndex),
-    });
+    })
   }
 
   /**
@@ -93,9 +96,9 @@ export class EthereumEvent {
    */
   static from(args: EventLog): EthereumEvent {
     if (isEventLog(args)) {
-      return EthereumEvent.fromEventLog(args);
+      return EthereumEvent.fromEventLog(args)
     }
 
-    throw new Error('Cannot cast to EthereumEvent.');
+    throw new Error('Cannot cast to EthereumEvent.')
   }
 }

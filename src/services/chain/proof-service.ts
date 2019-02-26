@@ -1,16 +1,16 @@
-import {PlasmaMerkleSumTree, serialization} from 'plasma-utils';
+import { PlasmaMerkleSumTree, serialization } from 'plasma-utils'
 
-import {BaseService} from '../base-service';
-import {Deposit, ProofElement} from '../models/chain';
+import { BaseService } from '../base-service'
+import { Deposit, ProofElement } from '../models/chain'
 
-import {SnapshotManager} from './snapshot-manager';
+import { SnapshotManager } from './snapshot-manager'
 
 const EMPTY_BLOCK_HASH =
-    '0x0000000000000000000000000000000000000000000000000000000000000000';
+  '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 export class ProofService extends BaseService {
   get dependencies(): string[] {
-    return ['eth', 'chaindb'];
+    return ['eth', 'chaindb']
   }
 
   /**
@@ -21,36 +21,42 @@ export class ProofService extends BaseService {
    * @returns `true` if the transaction is valid.
    */
   async checkProof(
-      transaction: serialization.models.SignedTransaction, deposits: Deposit[],
-      proof: ProofElement[]): Promise<boolean> {
-    this.log(`Checking signatures for: ${transaction.hash}`);
+    transaction: serialization.models.SignedTransaction,
+    deposits: Deposit[],
+    proof: ProofElement[]
+  ): Promise<boolean> {
+    this.log(`Checking signatures for: ${transaction.hash}`)
     if (!transaction.checkSigs()) {
-      throw new Error('Invalid transaction signatures');
+      throw new Error('Invalid transaction signatures')
     }
 
-    this.log(`Checking validity of deposits for: ${transaction.hash}`);
+    this.log(`Checking validity of deposits for: ${transaction.hash}`)
     for (const deposit of deposits) {
       if (!(await this.services.eth.contract.depositValid(deposit))) {
-        throw new Error('Invalid deposit');
+        throw new Error('Invalid deposit')
       }
     }
 
-    this.log(`Checking validity of proof elements for: ${transaction.hash}`);
+    this.log(`Checking validity of proof elements for: ${transaction.hash}`)
     for (const element of proof) {
-      if (!(await this.transactionValid(
-              element.transaction, element.transactionProof))) {
-        throw new Error('Invalid transaction');
+      if (
+        !(await this.transactionValid(
+          element.transaction,
+          element.transactionProof
+        ))
+      ) {
+        throw new Error('Invalid transaction')
       }
     }
 
-    this.log(`Applying proof elements for: ${transaction.hash}`);
-    const snapshotManager = new SnapshotManager();
-    this.applyProof(snapshotManager, deposits, proof);
+    this.log(`Applying proof elements for: ${transaction.hash}`)
+    const snapshotManager = new SnapshotManager()
+    this.applyProof(snapshotManager, deposits, proof)
     if (!snapshotManager.validateTransaction(transaction)) {
-      throw new Error('Invalid state transition');
+      throw new Error('Invalid state transition')
     }
 
-    return true;
+    return true
   }
 
   /**
@@ -60,18 +66,20 @@ export class ProofService extends BaseService {
    * @param proof Proof to apply.
    */
   applyProof(
-      snapshotManager: SnapshotManager, deposits: Deposit[],
-      proof: ProofElement[]) {
+    snapshotManager: SnapshotManager,
+    deposits: Deposit[],
+    proof: ProofElement[]
+  ) {
     for (const deposit of deposits) {
-      snapshotManager.applyDeposit(deposit);
+      snapshotManager.applyDeposit(deposit)
     }
 
     for (const element of proof) {
-      const tx = element.transaction;
+      const tx = element.transaction
       if (tx.isEmptyBlockTransaction) {
-        snapshotManager.applyEmptyBlock(tx.block.toNumber());
+        snapshotManager.applyEmptyBlock(tx.block.toNumber())
       } else {
-        snapshotManager.applyTransaction(element.transaction);
+        snapshotManager.applyTransaction(element.transaction)
       }
     }
   }
@@ -83,38 +91,47 @@ export class ProofService extends BaseService {
    * @returns `true` if the transaction is valid, `false` otherwise.
    */
   async transactionValid(
-      transaction: serialization.models.UnsignedTransaction,
-      proof: serialization.models.TransactionProof) {
+    transaction: serialization.models.UnsignedTransaction,
+    proof: serialization.models.TransactionProof
+  ) {
     let root = await this.services.chaindb.getBlockHeader(
-        transaction.block.toNumber());
+      transaction.block.toNumber()
+    )
     if (root === null) {
       throw new Error(
-          `Received transaction for non-existent block #${transaction.block}`);
+        `Received transaction for non-existent block #${transaction.block}`
+      )
     }
 
     // If the root is '0x00....', then this block was empty.
     if (root === EMPTY_BLOCK_HASH) {
       if (transaction.transfers.length > 0) {
-        this.log(`WARNING: Block #${
-            transaction
-                .block} is empty but received a non-empty proof element. Proof will likely be rejected. This is probably due to an error in the operator.`);
+        this.log(
+          `WARNING: Block #${
+            transaction.block
+          } is empty but received a non-empty proof element. Proof will likely be rejected. This is probably due to an error in the operator.`
+        )
       }
-      transaction.isEmptyBlockTransaction = true;
-      return true;
+      transaction.isEmptyBlockTransaction = true
+      return true
     }
 
-    root = root + 'ffffffffffffffffffffffffffffffff';
+    root = root + 'ffffffffffffffffffffffffffffffff'
 
     // Hack for now, make sure that all other transactions aren't fake.
-    transaction.isEmptyBlockTransaction = false;
+    transaction.isEmptyBlockTransaction = false
     transaction.transfers.forEach((transfer, i) => {
-      const {implicitStart, implicitEnd} =
-          PlasmaMerkleSumTree.getTransferProofBounds(
-              transaction, proof.transferProofs[i]);
-      transfer.implicitStart = implicitStart;
-      transfer.implicitEnd = implicitEnd;
-    });
+      const {
+        implicitStart,
+        implicitEnd,
+      } = PlasmaMerkleSumTree.getTransferProofBounds(
+        transaction,
+        proof.transferProofs[i]
+      )
+      transfer.implicitStart = implicitStart
+      transfer.implicitEnd = implicitEnd
+    })
 
-    return PlasmaMerkleSumTree.checkTransactionProof(transaction, proof, root);
+    return PlasmaMerkleSumTree.checkTransactionProof(transaction, proof, root)
   }
 }

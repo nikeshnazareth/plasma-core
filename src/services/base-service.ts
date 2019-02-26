@@ -1,28 +1,28 @@
-import debug = require('debug');
-import {EventEmitter} from 'events';
-import {AppServices} from './service-interface';
-import {PlasmaApp, DebugMap} from '../plasma';
+import debug = require('debug')
+import { EventEmitter } from 'events'
+import { AppServices } from './service-interface'
+import { PlasmaApp, DebugMap } from '../plasma'
 
 export interface ServiceOptions {
-  app: PlasmaApp;
-  name: string;
+  app: PlasmaApp
+  name: string
 }
 
 /**
  * A base class for services to extend.
  */
 export class BaseService extends EventEmitter {
-  started = false;
-  name: string;
-  options: ServiceOptions;
-  app: PlasmaApp;
+  started = false
+  name: string
+  options: ServiceOptions
+  app: PlasmaApp
 
   constructor(options: ServiceOptions, defaultOptions = {}) {
-    super();
+    super()
 
-    this.options = {...defaultOptions, ...options};
-    this.app = this.options.app;
-    this.name = this.options.name;
+    this.options = { ...defaultOptions, ...options }
+    this.app = this.options.app
+    this.name = this.options.name
   }
 
   /**
@@ -30,7 +30,7 @@ export class BaseService extends EventEmitter {
    * @returns a list of dependencies.
    */
   get dependencies(): string[] {
-    return [];
+    return []
   }
 
   /**
@@ -38,7 +38,7 @@ export class BaseService extends EventEmitter {
    * @returns A mapping from logger names to loggers.
    */
   get loggers(): DebugMap {
-    return this.app.loggers;
+    return this.app.loggers
   }
 
   /**
@@ -46,7 +46,7 @@ export class BaseService extends EventEmitter {
    * @returns A logger instance.
    */
   get log(): debug.Debugger {
-    return this.loggers[`service:${this.name}`];
+    return this.loggers[`service:${this.name}`]
   }
 
   /**
@@ -54,7 +54,7 @@ export class BaseService extends EventEmitter {
    * @returns A logger instance.
    */
   get debug(): debug.Debugger {
-    return this.loggers[`debug:service:${this.name}`];
+    return this.loggers[`debug:service:${this.name}`]
   }
 
   /**
@@ -65,13 +65,13 @@ export class BaseService extends EventEmitter {
   get services(): AppServices {
     return new Proxy(this.app.services, {
       get: (services: AppServices, name: string) => {
-        const service = services[name];
+        const service = services[name]
         if (!service.started) {
-          throw new Error(`Service has not been started: ${name}`);
+          throw new Error(`Service has not been started: ${name}`)
         }
-        return service;
-      }
-    });
+        return service
+      },
+    })
   }
 
   /**
@@ -79,45 +79,48 @@ export class BaseService extends EventEmitter {
    * @returns `true` if all started, `false` otherwise.
    */
   get healthy(): boolean {
-    return (this.started && this.dependencies.every((dependency: string) => {
-      try {
-        const service = this.services[dependency];
-        return service !== undefined && service.started;
-      } catch {
-        return false;
-      }
-    }));
+    return (
+      this.started &&
+      this.dependencies.every((dependency: string) => {
+        try {
+          const service = this.services[dependency]
+          return service !== undefined && service.started
+        } catch {
+          return false
+        }
+      })
+    )
   }
 
   /**
    * Starts the service.
    */
   async start(): Promise<void> {
-    this.started = true;
-    await this.onStart();
-    this.emit('started');
+    this.started = true
+    await this.onStart()
+    this.emit('started')
   }
 
   /**
    * Stops the service.
    */
   async stop(): Promise<void> {
-    this.started = false;
-    await this.onStop();
-    this.emit('stopped');
+    this.started = false
+    await this.onStop()
+    this.emit('stopped')
   }
 
   /**
    * Called once the service has been started.
    */
   async onStart(): Promise<void> {
-    return;
+    return
   }
 
   /**
    * Called once the service has been stopped.
    */
   async onStop(): Promise<void> {
-    return;
+    return
   }
 }

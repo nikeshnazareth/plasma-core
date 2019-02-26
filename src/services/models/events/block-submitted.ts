@@ -1,22 +1,22 @@
-import {Block} from '../chain';
-import {EthereumEvent} from '../eth';
+import { Block } from '../chain'
+import { EthereumEvent } from '../eth'
 
 interface BlockSubmittedEventArgs {
-  number: number;
-  hash: string;
+  number: number
+  hash: string
 }
 
 export class BlockSubmittedEvent {
-  number: number;
-  hash: string;
+  number: number
+  hash: string
 
   constructor(event: BlockSubmittedEventArgs) {
-    this.number = event.number;
-    this.hash = event.hash;
+    this.number = event.number
+    this.hash = event.hash
   }
 
   toBlock(): Block {
-    return {number: this.number, hash: this.hash};
+    return { number: this.number, hash: this.hash }
   }
 
   /**
@@ -27,8 +27,8 @@ export class BlockSubmittedEvent {
   static fromEthereumEvent(event: EthereumEvent): BlockSubmittedEvent {
     return new BlockSubmittedEvent({
       number: event.block.toNumber(),
-      hash: event.raw.submittedHash as string
-    });
+      hash: event.raw.submittedHash as string,
+    })
   }
 
   /**
@@ -38,9 +38,9 @@ export class BlockSubmittedEvent {
    */
   static from(args: EthereumEvent): BlockSubmittedEvent {
     if (args instanceof EthereumEvent) {
-      return BlockSubmittedEvent.fromEthereumEvent(args);
+      return BlockSubmittedEvent.fromEthereumEvent(args)
     }
 
-    throw new Error('Cannot cast to BlockSubmittedEvent.');
+    throw new Error('Cannot cast to BlockSubmittedEvent.')
   }
 }

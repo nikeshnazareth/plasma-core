@@ -1,32 +1,32 @@
-import BigNum from 'bn.js';
+import BigNum from 'bn.js'
 
-import {Exit} from '../chain';
-import {EthereumEvent} from '../eth';
+import { Exit } from '../chain'
+import { EthereumEvent } from '../eth'
 
 interface ExitStartedEventArgs {
-  token: BigNum;
-  start: BigNum;
-  end: BigNum;
-  id: BigNum;
-  block: BigNum;
-  owner: string;
+  token: BigNum
+  start: BigNum
+  end: BigNum
+  id: BigNum
+  block: BigNum
+  owner: string
 }
 
 export class ExitStartedEvent {
-  token: BigNum;
-  start: BigNum;
-  end: BigNum;
-  id: BigNum;
-  block: BigNum;
-  owner: string;
+  token: BigNum
+  start: BigNum
+  end: BigNum
+  id: BigNum
+  block: BigNum
+  owner: string
 
   constructor(event: ExitStartedEventArgs) {
-    this.token = event.token;
-    this.start = event.start;
-    this.end = event.end;
-    this.id = event.id;
-    this.block = event.block;
-    this.owner = event.owner;
+    this.token = event.token
+    this.start = event.start
+    this.end = event.end
+    this.id = event.id
+    this.block = event.block
+    this.owner = event.owner
   }
 
   /**
@@ -40,8 +40,8 @@ export class ExitStartedEvent {
       token: this.token,
       start: this.start,
       end: this.end,
-      block: this.block
-    });
+      block: this.block,
+    })
   }
 
   /**
@@ -56,8 +56,8 @@ export class ExitStartedEvent {
       end: event.data.untypedEnd as BigNum,
       id: event.data.exitID as BigNum,
       block: event.data.eventBlockNumber as BigNum,
-      owner: event.data.exiter as string
-    });
+      owner: event.data.exiter as string,
+    })
   }
 
   /**
@@ -67,9 +67,9 @@ export class ExitStartedEvent {
    */
   static from(args: EthereumEvent): ExitStartedEvent {
     if (args instanceof EthereumEvent) {
-      return ExitStartedEvent.fromEthereumEvent(args);
+      return ExitStartedEvent.fromEthereumEvent(args)
     }
 
-    throw new Error('Cannot cast to ExitStartedEvent.');
+    throw new Error('Cannot cast to ExitStartedEvent.')
   }
 }

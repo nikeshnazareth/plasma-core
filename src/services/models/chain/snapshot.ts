@@ -1,34 +1,34 @@
-import BigNum from 'bn.js';
-import {constants, serialization} from 'plasma-utils';
+import BigNum from 'bn.js'
+import { constants, serialization } from 'plasma-utils'
 
-import {Deposit} from './deposit';
-import {Exit} from './exit';
-import {PrettyPrint} from './pretty-print';
-import {TypedRange} from './range';
+import { Deposit } from './deposit'
+import { Exit } from './exit'
+import { PrettyPrint } from './pretty-print'
+import { TypedRange } from './range'
 
-const models = serialization.models;
-const Transfer = models.Transfer;
+const models = serialization.models
+const Transfer = models.Transfer
 
 export interface TypedSnapshot extends TypedRange {
-  block: BigNum;
+  block: BigNum
 }
 
 /**
  * Represents a single state component ("snapshot").
  */
 export class Snapshot extends PrettyPrint {
-  start: BigNum;
-  end: BigNum;
-  block: BigNum;
-  owner: string;
+  start: BigNum
+  end: BigNum
+  block: BigNum
+  owner: string
 
   constructor(snapshot: TypedSnapshot) {
-    super();
+    super()
 
-    this.start = new BigNum(snapshot.start, 'hex');
-    this.end = new BigNum(snapshot.end, 'hex');
-    this.block = new BigNum(snapshot.block, 'hex');
-    this.owner = snapshot.owner;
+    this.start = new BigNum(snapshot.start, 'hex')
+    this.end = new BigNum(snapshot.end, 'hex')
+    this.block = new BigNum(snapshot.block, 'hex')
+    this.owner = snapshot.owner
   }
 
   /**
@@ -36,7 +36,7 @@ export class Snapshot extends PrettyPrint {
    * @returns `true` if the snapshot is valid, `false` otherwise.
    */
   get valid(): boolean {
-    return this.start.lt(this.end) && this.block.gten(0);
+    return this.start.lt(this.end) && this.block.gten(0)
   }
 
   /**
@@ -46,8 +46,11 @@ export class Snapshot extends PrettyPrint {
    */
   equals(other: Snapshot): boolean {
     return (
-        this.start.eq(other.start) && this.end.eq(other.end) &&
-        this.block.eq(other.block) && this.owner === other.owner);
+      this.start.eq(other.start) &&
+      this.end.eq(other.end) &&
+      this.block.eq(other.block) &&
+      this.owner === other.owner
+    )
   }
 
   /**
@@ -57,8 +60,11 @@ export class Snapshot extends PrettyPrint {
    */
   contains(other: Snapshot): boolean {
     return (
-        this.start.lte(other.start) && this.end.gte(other.end) &&
-        this.block.eq(other.block) && this.owner === other.owner);
+      this.start.lte(other.start) &&
+      this.end.gte(other.end) &&
+      this.block.eq(other.block) &&
+      this.owner === other.owner
+    )
   }
 
   /**
@@ -67,19 +73,22 @@ export class Snapshot extends PrettyPrint {
    * @returns the snapshot object.
    */
   static fromTransfer(transfer: serialization.models.Transfer): Snapshot {
-    const serialized = new Transfer(transfer);
+    const serialized = new Transfer(transfer)
 
-    if (serialized.typedStart === undefined ||
-        serialized.typedEnd === undefined || transfer.block === undefined) {
-      throw new Error('Could not create Snapshot from Transfer.');
+    if (
+      serialized.typedStart === undefined ||
+      serialized.typedEnd === undefined ||
+      transfer.block === undefined
+    ) {
+      throw new Error('Could not create Snapshot from Transfer.')
     }
 
     return new Snapshot({
       start: serialized.typedStart,
       end: serialized.typedEnd,
       owner: serialized.recipient,
-      block: transfer.block
-    });
+      block: transfer.block,
+    })
   }
 
   /**
@@ -91,9 +100,10 @@ export class Snapshot extends PrettyPrint {
     return new Snapshot({
       ...deposit,
       ...{
-        sender: constants.NULL_ADDRESS, recipient: deposit.owner
-      }
-    });
+        sender: constants.NULL_ADDRESS,
+        recipient: deposit.owner,
+      },
+    })
   }
 
   /**
@@ -105,20 +115,21 @@ export class Snapshot extends PrettyPrint {
     return new Snapshot({
       ...exit,
       ...{
-        sender: exit.owner, recipient: constants.NULL_ADDRESS
-      }
-    });
+        sender: exit.owner,
+        recipient: constants.NULL_ADDRESS,
+      },
+    })
   }
 
-  static from(args: serialization.models.Transfer|Deposit|Exit): Snapshot {
+  static from(args: serialization.models.Transfer | Deposit | Exit): Snapshot {
     if (args instanceof Transfer) {
-      return Snapshot.fromTransfer(args);
+      return Snapshot.fromTransfer(args)
     } else if (args instanceof Deposit) {
-      return Snapshot.fromDeposit(args);
+      return Snapshot.fromDeposit(args)
     } else if (args instanceof Exit) {
-      return Snapshot.fromExit(args);
+      return Snapshot.fromExit(args)
     }
 
-    throw new Error('Cannot cast to Snapshot.');
+    throw new Error('Cannot cast to Snapshot.')
   }
 }

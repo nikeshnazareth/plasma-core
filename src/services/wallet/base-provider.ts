@@ -1,4 +1,4 @@
-import {BaseService} from '../base-service';
+import { BaseService } from '../base-service'
 
 export class BaseWalletProvider extends BaseService {
   /**
@@ -7,7 +7,8 @@ export class BaseWalletProvider extends BaseService {
    */
   async getAccounts(): Promise<string[]> {
     throw new Error(
-        'Classes that extend BaseWalletProvider must implement this method');
+      'Classes that extend BaseWalletProvider must implement this method'
+    )
   }
 
   /**
@@ -15,7 +16,8 @@ export class BaseWalletProvider extends BaseService {
    */
   async getAccount(address: string): Promise<{}> {
     throw new Error(
-        'Classes that extend BaseWalletProvider must implement this method');
+      'Classes that extend BaseWalletProvider must implement this method'
+    )
   }
 
   /**
@@ -26,7 +28,8 @@ export class BaseWalletProvider extends BaseService {
    */
   async sign(address: string, data: string): Promise<string> {
     throw new Error(
-        'Classes that extend BaseWalletProvider must implement this method');
+      'Classes that extend BaseWalletProvider must implement this method'
+    )
   }
 
   /**
@@ -35,7 +38,8 @@ export class BaseWalletProvider extends BaseService {
    */
   async createAccount(): Promise<string> {
     throw new Error(
-        'Classes that extend BaseWalletProvider must implement this method');
+      'Classes that extend BaseWalletProvider must implement this method'
+    )
   }
 
   /**
@@ -45,6 +49,7 @@ export class BaseWalletProvider extends BaseService {
    */
   async addAccountToWallet(address: string): Promise<void> {
     throw new Error(
-        'Classes that extend BaseWalletProvider must implement this method');
+      'Classes that extend BaseWalletProvider must implement this method'
+    )
   }
 }

@@ -1,29 +1,29 @@
-import '../../setup';
-import {GuardService} from '../../../src/services';
-import {createApp} from '../../mock';
+import '../../setup'
+import { GuardService } from '../../../src/services'
+import { createApp } from '../../mock'
 
 describe('GuardService', () => {
-  const {app} = createApp();
-  const guard = new GuardService({app, name: 'guard'});
+  const { app } = createApp()
+  const guard = new GuardService({ app, name: 'guard' })
 
   beforeEach(async () => {
-    await guard.start();
-  });
+    await guard.start()
+  })
 
   afterEach(async () => {
-    await guard.stop();
-  });
+    await guard.stop()
+  })
 
   it('should have dependencies', () => {
-    const dependencies = ['eventHandler'];
-    guard.dependencies.should.deep.equal(dependencies);
-  });
+    const dependencies = ['eventHandler']
+    guard.dependencies.should.deep.equal(dependencies)
+  })
 
   it('should have a name', () => {
-    guard.name.should.equal('guard');
-  });
+    guard.name.should.equal('guard')
+  })
 
   it('should start correctly', () => {
-    guard.started.should.be.true;
-  });
-});
+    guard.started.should.be.true
+  })
+})

@@ -1,40 +1,60 @@
-import '../../setup';
+import '../../setup'
 
-import BigNum from 'bn.js';
-import {capture} from 'ts-mockito';
+import BigNum from 'bn.js'
+import { capture } from 'ts-mockito'
 
-import {BlockSubmittedEvent, DepositEvent, ExitStartedEvent} from '../../../src/services/models/events';
-import {SyncService} from '../../../src/services/sync-service';
-import {chain, chaindb, createApp, eventHandler, mockChainDB, mockChainService} from '../../mock';
+import {
+  BlockSubmittedEvent,
+  DepositEvent,
+  ExitStartedEvent,
+} from '../../../src/services/models/events'
+import { SyncService } from '../../../src/services/sync-service'
+import {
+  chain,
+  chaindb,
+  createApp,
+  eventHandler,
+  mockChainDB,
+  mockChainService,
+} from '../../mock'
 
 describe('SyncService', () => {
-  const {app} = createApp({eventHandler, chaindb, chain});
+  const { app } = createApp({ eventHandler, chaindb, chain })
 
-  const sync =
-      new SyncService({app, name: 'sync', transactionPollInterval: 100});
+  const sync = new SyncService({
+    app,
+    name: 'sync',
+    transactionPollInterval: 100,
+  })
 
   beforeEach(async () => {
-    await sync.start();
-  });
+    await sync.start()
+  })
 
   afterEach(async () => {
-    await sync.stop();
-  });
+    await sync.stop()
+  })
 
   it('should have dependencies', () => {
     const dependencies = [
-      'eth', 'chain', 'eventHandler', 'syncdb', 'chaindb', 'wallet', 'operator'
-    ];
-    sync.dependencies.should.deep.equal(dependencies);
-  });
+      'eth',
+      'chain',
+      'eventHandler',
+      'syncdb',
+      'chaindb',
+      'wallet',
+      'operator',
+    ]
+    sync.dependencies.should.deep.equal(dependencies)
+  })
 
   it('should have a name', () => {
-    sync.name.should.equal('sync');
-  });
+    sync.name.should.equal('sync')
+  })
 
   it('should start correctly', () => {
-    sync.started.should.be.true;
-  });
+    sync.started.should.be.true
+  })
 
   it('should react to new deposits', () => {
     const depositEvent = new DepositEvent({
@@ -42,24 +62,26 @@ describe('SyncService', () => {
       start: new BigNum(0),
       end: new BigNum(100),
       block: new BigNum(0),
-      owner: '0x123'
-    });
-    const deposit = depositEvent.toDeposit();
-    eventHandler.emit('event:Deposit', [depositEvent]);
+      owner: '0x123',
+    })
+    const deposit = depositEvent.toDeposit()
+    eventHandler.emit('event:Deposit', [depositEvent])
 
-    const callArgs = capture(mockChainService.addDeposits).last();
-    callArgs[0].should.deep.equal([deposit]);
-  });
+    const callArgs = capture(mockChainService.addDeposits).last()
+    callArgs[0].should.deep.equal([deposit])
+  })
 
   it('should react to new blocks', () => {
-    const blockSubmittedEvent =
-        new BlockSubmittedEvent({number: 0, hash: '0x0'});
-    const block = blockSubmittedEvent.toBlock();
-    eventHandler.emit('event:BlockSubmitted', [blockSubmittedEvent]);
+    const blockSubmittedEvent = new BlockSubmittedEvent({
+      number: 0,
+      hash: '0x0',
+    })
+    const block = blockSubmittedEvent.toBlock()
+    eventHandler.emit('event:BlockSubmitted', [blockSubmittedEvent])
 
-    const callArgs = capture(mockChainDB.addBlockHeaders).last();
-    callArgs[0].should.deep.equal([block]);
-  });
+    const callArgs = capture(mockChainDB.addBlockHeaders).last()
+    callArgs[0].should.deep.equal([block])
+  })
 
   it('should react to new exits', () => {
     const exitStartedEvent = new ExitStartedEvent({
@@ -68,12 +90,12 @@ describe('SyncService', () => {
       end: new BigNum(100),
       block: new BigNum(0),
       id: new BigNum(0),
-      owner: '0x123'
-    });
-    const exit = exitStartedEvent.toExit();
-    eventHandler.emit('event:ExitStarted', [exitStartedEvent]);
+      owner: '0x123',
+    })
+    const exit = exitStartedEvent.toExit()
+    eventHandler.emit('event:ExitStarted', [exitStartedEvent])
 
-    const callArgs = capture(mockChainService.addExit).last();
-    callArgs[0].should.deep.equal(exit);
-  });
-});
+    const callArgs = capture(mockChainService.addExit).last()
+    callArgs[0].should.deep.equal(exit)
+  })
+})

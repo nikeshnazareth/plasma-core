@@ -1,4 +1,4 @@
 export interface Block {
-  number: number;
-  hash: string;
+  number: number
+  hash: string
 }

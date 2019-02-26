@@ -1,66 +1,77 @@
-import {constants, serialization, utils} from 'plasma-utils';
+import { constants, serialization, utils } from 'plasma-utils'
 
-import {BaseService, ServiceOptions} from './base-service';
-import {BlockSubmittedEvent, DepositEvent, ExitFinalizedEvent, ExitStartedEvent} from './models/events';
+import { BaseService, ServiceOptions } from './base-service'
+import {
+  BlockSubmittedEvent,
+  DepositEvent,
+  ExitFinalizedEvent,
+  ExitStartedEvent,
+} from './models/events'
 
-const models = serialization.models;
-const SignedTransaction = models.SignedTransaction;
+const models = serialization.models
+const SignedTransaction = models.SignedTransaction
 
 export interface UserSyncOptions {
-  transactionPollInterval?: number;
+  transactionPollInterval?: number
 }
 
 interface SyncOptions extends ServiceOptions {
-  transactionPollInterval: number;
+  transactionPollInterval: number
 }
 
 interface DefaultSyncOptions {
-  transactionPollInterval: number;
+  transactionPollInterval: number
 }
 
 const defaultOptions: DefaultSyncOptions = {
-  transactionPollInterval: 15000
-};
+  transactionPollInterval: 15000,
+}
 
 export class SyncService extends BaseService {
-  options!: SyncOptions;
-  pending: string[] = [];
-  polling = false;
+  options!: SyncOptions
+  pending: string[] = []
+  polling = false
 
-  constructor(options: UserSyncOptions&ServiceOptions) {
-    super(options, defaultOptions);
+  constructor(options: UserSyncOptions & ServiceOptions) {
+    super(options, defaultOptions)
   }
 
   get dependencies(): string[] {
     return [
-      'eth', 'chain', 'eventHandler', 'syncdb', 'chaindb', 'wallet', 'operator'
-    ];
+      'eth',
+      'chain',
+      'eventHandler',
+      'syncdb',
+      'chaindb',
+      'wallet',
+      'operator',
+    ]
   }
 
   async onStart(): Promise<void> {
-    this.attachHandlers();
+    this.attachHandlers()
   }
 
   /**
    * Starts regularly polling pending transactions.
    */
   async startPollInterval(): Promise<void> {
-    if (this.polling) return;
-    this.polling = true;
-    this.pollInterval();
+    if (this.polling) return
+    this.polling = true
+    this.pollInterval()
   }
 
   /**
    * Polling loop that checks for new transactions.
    */
   private async pollInterval(): Promise<void> {
-    if (!this.started) return;
+    if (!this.started) return
 
     try {
-      await this.checkPendingTransactions();
+      await this.checkPendingTransactions()
     } finally {
-      await utils.sleep(this.options.transactionPollInterval);
-      this.pollInterval();
+      await utils.sleep(this.options.transactionPollInterval)
+      this.pollInterval()
     }
   }
 
@@ -68,16 +79,18 @@ export class SyncService extends BaseService {
    * Attaches handlers to Ethereum events.
    */
   private attachHandlers(): void {
-    const handlers: {[key: string]: Function} = {
+    const handlers: { [key: string]: Function } = {
       Deposit: this.onDeposit,
       BlockSubmitted: this.onBlockSubmitted,
       ExitStarted: this.onExitStarted,
-      ExitFinalized: this.onExitFinalized
-    };
+      ExitFinalized: this.onExitFinalized,
+    }
 
     for (const event of Object.keys(handlers)) {
       this.services.eventHandler.on(
-          `event:${event}`, handlers[event].bind(this));
+        `event:${event}`,
+        handlers[event].bind(this)
+      )
     }
   }
 
@@ -85,63 +98,72 @@ export class SyncService extends BaseService {
    * Checks for any available pending transactions and emits an event for each.
    */
   private async checkPendingTransactions() {
-    if (!this.services.operator.online ||
-        !this.services.eth.contract.hasAddress) {
-      return;
+    if (
+      !this.services.operator.online ||
+      !this.services.eth.contract.hasAddress
+    ) {
+      return
     }
 
-    const lastSyncedBlock = await this.services.syncdb.getLastSyncedBlock();
-    const firstUnsyncedBlock = lastSyncedBlock + 1;
-    const currentBlock = await this.services.chaindb.getLatestBlock();
-    const prevFailed = await this.services.syncdb.getFailedTransactions();
+    const lastSyncedBlock = await this.services.syncdb.getLastSyncedBlock()
+    const firstUnsyncedBlock = lastSyncedBlock + 1
+    const currentBlock = await this.services.chaindb.getLatestBlock()
+    const prevFailed = await this.services.syncdb.getFailedTransactions()
 
     if (firstUnsyncedBlock <= currentBlock) {
-      this.log(`Checking for new transactions between plasma blocks ${
-          firstUnsyncedBlock} and ${currentBlock}.`);
+      this.log(
+        `Checking for new transactions between plasma blocks ${firstUnsyncedBlock} and ${currentBlock}.`
+      )
     } else if (prevFailed.length > 0) {
-      this.log(`Attempting to apply failed transactions.`);
+      this.log(`Attempting to apply failed transactions.`)
     } else {
-      return;
+      return
     }
 
     // TODO: Figure out how handle operator errors.
-    const addresses = await this.services.wallet.getAccounts();
+    const addresses = await this.services.wallet.getAccounts()
     for (const address of addresses) {
       const received = await this.services.operator.getReceivedTransactions(
-          address, firstUnsyncedBlock, currentBlock);
-      this.pending = this.pending.concat(received);
+        address,
+        firstUnsyncedBlock,
+        currentBlock
+      )
+      this.pending = this.pending.concat(received)
     }
 
     // Add any previously failed transactions to try again.
-    this.pending = this.pending.concat(prevFailed);
+    this.pending = this.pending.concat(prevFailed)
 
     // Remove any duplicates
-    this.pending = [...new Set(this.pending)];
+    this.pending = [...new Set(this.pending)]
 
-    const failed = [];
+    const failed = []
     for (let i = 0; i < this.pending.length; i++) {
-      const encoded = this.pending[i];
-      const tx = new SignedTransaction(encoded);
+      const encoded = this.pending[i]
+      const tx = new SignedTransaction(encoded)
 
       // Make sure we're not importing transactions we don't have blocks for.
       // Necessary because of a bug in the operator.
       // TODO: Fix operator so this isn't necessary.
       if (tx.block.gtn(currentBlock)) {
-        continue;
+        continue
       }
 
       try {
-        await this.addTransaction(tx);
+        await this.addTransaction(tx)
       } catch (err) {
-        failed.push(encoded);
-        this.log(`ERROR: ${err}`);
-        this.log(`Ran into an error while importing transaction: ${
-            tx.hash}, trying again in a few seconds...`);
+        failed.push(encoded)
+        this.log(`ERROR: ${err}`)
+        this.log(
+          `Ran into an error while importing transaction: ${
+            tx.hash
+          }, trying again in a few seconds...`
+        )
       }
     }
 
-    await this.services.syncdb.setFailedTransactions(failed);
-    await this.services.syncdb.setLastSyncedBlock(currentBlock);
+    await this.services.syncdb.setFailedTransactions(failed)
+    await this.services.syncdb.setLastSyncedBlock(currentBlock)
   }
 
   /**
@@ -150,26 +172,34 @@ export class SyncService extends BaseService {
    */
   private async addTransaction(tx: serialization.models.SignedTransaction) {
     // TODO: The operator should really be avoiding this.
-    if (tx.transfers[0].sender === constants.NULL_ADDRESS ||
-        (await this.services.chaindb.hasTransaction(tx.hash))) {
-      return;
+    if (
+      tx.transfers[0].sender === constants.NULL_ADDRESS ||
+      (await this.services.chaindb.hasTransaction(tx.hash))
+    ) {
+      return
     }
 
-    this.log(`Detected new transaction: ${tx.hash}`);
-    this.log(`Attemping to pull information for transaction: ${tx.hash}`);
-    let txdata;
+    this.log(`Detected new transaction: ${tx.hash}`)
+    this.log(`Attemping to pull information for transaction: ${tx.hash}`)
+    let txdata
     try {
-      txdata = await this.services.operator.getTransactionProof(tx.encoded);
+      txdata = await this.services.operator.getTransactionProof(tx.encoded)
     } catch (err) {
-      this.log(`ERROR: Operator failed to return information for transaction: ${
-          tx.hash}`);
-      throw err;
+      this.log(
+        `ERROR: Operator failed to return information for transaction: ${
+          tx.hash
+        }`
+      )
+      throw err
     }
 
-    this.log(`Importing new transaction: ${tx.hash}`);
+    this.log(`Importing new transaction: ${tx.hash}`)
     await this.services.chain.addTransaction(
-        txdata.transaction, txdata.deposits, txdata.proof);
-    this.log(`Successfully imported transaction: ${tx.hash}`);
+      txdata.transaction,
+      txdata.deposits,
+      txdata.proof
+    )
+    this.log(`Successfully imported transaction: ${tx.hash}`)
   }
 
   /**
@@ -178,9 +208,9 @@ export class SyncService extends BaseService {
    */
   private async onDeposit(events: DepositEvent[]): Promise<void> {
     const deposits = events.map((event) => {
-      return event.toDeposit();
-    });
-    await this.services.chain.addDeposits(deposits);
+      return event.toDeposit()
+    })
+    await this.services.chain.addDeposits(deposits)
   }
 
   /**
@@ -189,9 +219,9 @@ export class SyncService extends BaseService {
    */
   private async onBlockSubmitted(events: BlockSubmittedEvent[]): Promise<void> {
     const blocks = events.map((event) => {
-      return event.toBlock();
-    });
-    await this.services.chaindb.addBlockHeaders(blocks);
+      return event.toBlock()
+    })
+    await this.services.chaindb.addBlockHeaders(blocks)
   }
 
   /**
@@ -200,10 +230,10 @@ export class SyncService extends BaseService {
    */
   private async onExitStarted(events: ExitStartedEvent[]): Promise<void> {
     const exits = events.map((event) => {
-      return event.toExit();
-    });
+      return event.toExit()
+    })
     for (const exit of exits) {
-      await this.services.chain.addExit(exit);
+      await this.services.chain.addExit(exit)
     }
   }
 
@@ -213,8 +243,8 @@ export class SyncService extends BaseService {
    */
   private async onExitFinalized(exits: ExitFinalizedEvent[]): Promise<void> {
     for (const exit of exits) {
-      await this.services.chaindb.markFinalized(exit);
-      await this.services.chaindb.addExitableEnd(exit.token, exit.start);
+      await this.services.chaindb.markFinalized(exit)
+      await this.services.chaindb.addExitableEnd(exit.token, exit.start)
     }
   }
 }

@@ -1,54 +1,56 @@
-import toposort = require('toposort');
-import debug = require('debug');
-import {EventEmitter} from 'events';
-import * as services from './services';
-import {AppServices, RequiredServiceTypes} from './services/service-interface';
-import {UserSyncOptions} from './services/sync-service';
-import {UserOperatorOptions} from './services/operator/operator-provider';
-import {UserEventWatcherOptions} from './services/events/event-watcher';
-import {UserETHProviderOptions} from './services/eth/base-provider';
-import {UserDBOptions} from './services/db/db-service';
+import toposort = require('toposort')
+import debug = require('debug')
+import { EventEmitter } from 'events'
+import * as services from './services'
+import { AppServices, RequiredServiceTypes } from './services/service-interface'
+import { UserSyncOptions } from './services/sync-service'
+import { UserOperatorOptions } from './services/operator/operator-provider'
+import { UserEventWatcherOptions } from './services/events/event-watcher'
+import { UserETHProviderOptions } from './services/eth/base-provider'
+import { UserDBOptions } from './services/db/db-service'
 
-export interface UserPlasmaOptions extends UserSyncOptions, UserOperatorOptions,
-                                           UserEventWatcherOptions,
-                                           UserETHProviderOptions,
-                                           UserDBOptions {
-  debug?: string;
-  ethProvider?: typeof services.BaseETHProvider;
-  operatorProvider?: typeof services.BaseOperatorProvider;
-  walletProvider?: typeof services.BaseWalletProvider;
+export interface UserPlasmaOptions
+  extends UserSyncOptions,
+    UserOperatorOptions,
+    UserEventWatcherOptions,
+    UserETHProviderOptions,
+    UserDBOptions {
+  debug?: string
+  ethProvider?: typeof services.BaseETHProvider
+  operatorProvider?: typeof services.BaseOperatorProvider
+  walletProvider?: typeof services.BaseWalletProvider
 }
 
 interface PlasmaOptions {
-  debug: string;
-  ethProvider: typeof services.BaseETHProvider;
-  operatorProvider: typeof services.BaseOperatorProvider;
-  walletProvider: typeof services.BaseWalletProvider;
+  debug: string
+  ethProvider: typeof services.BaseETHProvider
+  operatorProvider: typeof services.BaseOperatorProvider
+  walletProvider: typeof services.BaseWalletProvider
 }
 
 const defaultOptions: PlasmaOptions = {
   debug: '',
   ethProvider: services.ETHProvider,
   operatorProvider: services.OperatorProvider,
-  walletProvider: services.LocalWalletProvider
-};
+  walletProvider: services.LocalWalletProvider,
+}
 
 export type DebugMap = {
   [key: string]: debug.Debugger
-};
+}
 
 export class PlasmaApp extends EventEmitter {
-  options: PlasmaOptions;
-  private _services: AppServices;
-  private _loggers: DebugMap = {};
+  options: PlasmaOptions
+  private _services: AppServices
+  private _loggers: DebugMap = {}
 
   constructor(options: UserPlasmaOptions) {
-    super();
+    super()
 
-    this.options = {...defaultOptions, ...options};
+    this.options = { ...defaultOptions, ...options }
 
-    debug.enable(this.options.debug);
-    this._services = this.buildRequiredServices();
+    debug.enable(this.options.debug)
+    this._services = this.buildRequiredServices()
   }
 
   /**
@@ -58,13 +60,13 @@ export class PlasmaApp extends EventEmitter {
   get services(): AppServices {
     return new Proxy(this._services, {
       get: (services: AppServices, key: string) => {
-        const service = services[key];
+        const service = services[key]
         if (service === undefined) {
-          throw new Error(`Service does not exist: ${key}`);
+          throw new Error(`Service does not exist: ${key}`)
         }
-        return service;
-      }
-    });
+        return service
+      },
+    })
   }
 
   /**
@@ -76,11 +78,11 @@ export class PlasmaApp extends EventEmitter {
     return new Proxy(this._loggers, {
       get: (obj: DebugMap, prop: string): debug.Debugger => {
         if (!(prop in obj)) {
-          obj[prop] = debug(prop);
+          obj[prop] = debug(prop)
         }
-        return obj[prop];
-      }
-    });
+        return obj[prop]
+      },
+    })
   }
 
   /**
@@ -88,23 +90,23 @@ export class PlasmaApp extends EventEmitter {
    * @param name Name of the service to start.
    */
   async startService(name: string): Promise<void> {
-    const service = this.services[name];
+    const service = this.services[name]
 
     for (const dependency of service.dependencies) {
-      const dep = this.services[dependency];
+      const dep = this.services[dependency]
       if (dep === undefined || !dep.started) {
-        throw new Error(`ERROR: Service ${
-            name} is dependent on service that has not been started: ${
-            dependency}`);
+        throw new Error(
+          `ERROR: Service ${name} is dependent on service that has not been started: ${dependency}`
+        )
       }
     }
 
     try {
-      await service.start();
-      const logger = this.loggers['core:bootstrap'];
-      logger(`${service.name}: STARTED`);
+      await service.start()
+      const logger = this.loggers['core:bootstrap']
+      logger(`${service.name}: STARTED`)
     } catch (err) {
-      console.log(err);
+      console.log(err)
     }
   }
 
@@ -113,14 +115,14 @@ export class PlasmaApp extends EventEmitter {
    * @param name Name of the service to stop.
    */
   async stopService(name: string): Promise<void> {
-    const service = this.services[name];
+    const service = this.services[name]
 
     try {
-      await service.stop();
-      const logger = this.loggers['core:bootstrap'];
-      logger(`${service.name}: STOPPED`);
+      await service.stop()
+      const logger = this.loggers['core:bootstrap']
+      logger(`${service.name}: STOPPED`)
     } catch (err) {
-      console.log(err);
+      console.log(err)
     }
   }
 
@@ -128,9 +130,9 @@ export class PlasmaApp extends EventEmitter {
    * Starts all available services.
    */
   async start(): Promise<void> {
-    const services = this.getOrderedServices();
+    const services = this.getOrderedServices()
     for (const service of services) {
-      await this.startService(service);
+      await this.startService(service)
     }
   }
 
@@ -139,9 +141,9 @@ export class PlasmaApp extends EventEmitter {
    */
   async stop(): Promise<void> {
     // Stop services backwards to avoid dependencies being killed off.
-    const services = this.getOrderedServices().reverse();
+    const services = this.getOrderedServices().reverse()
     for (const service of services) {
-      await this.stopService(service);
+      await this.stopService(service)
     }
   }
 
@@ -152,9 +154,12 @@ export class PlasmaApp extends EventEmitter {
    * @param options Any additional options.
    */
   registerService(
-      service: typeof services.BaseService, name: string, options = {}): void {
-    const instance = this.buildService(service, name, options);
-    this.services[name] = instance;
+    service: typeof services.BaseService,
+    name: string,
+    options = {}
+  ): void {
+    const instance = this.buildService(service, name, options)
+    this.services[name] = instance
   }
 
   /**
@@ -165,20 +170,22 @@ export class PlasmaApp extends EventEmitter {
    * @returns the built service.
    */
   private buildService(
-      service: typeof services.BaseService, name: string,
-      options = {}): services.BaseService {
-    const appInject = {app: this, name};
-    const instance = new service({...options, ...appInject});
+    service: typeof services.BaseService,
+    name: string,
+    options = {}
+  ): services.BaseService {
+    const appInject = { app: this, name }
+    const instance = new service({ ...options, ...appInject })
 
     // Relay lifecycle events.
-    const lifecycle = ['started', 'initialized', 'stopped'];
+    const lifecycle = ['started', 'initialized', 'stopped']
     for (const event of lifecycle) {
       instance.on(event, () => {
-        this.emit(`${name}:${event}`);
-      });
+        this.emit(`${name}:${event}`)
+      })
     }
 
-    return instance;
+    return instance
   }
 
   /**
@@ -205,16 +212,19 @@ export class PlasmaApp extends EventEmitter {
       /* Database Interfaces */
       walletdb: services.WalletDB,
       chaindb: services.ChainDB,
-      syncdb: services.SyncDB
-    };
-
-    const built: {[key: string]: services.BaseService} = {};
-    for (const service of Object.keys(required)) {
-      built[service] =
-          this.buildService(required[service], service, this.options);
+      syncdb: services.SyncDB,
     }
 
-    return built as AppServices;
+    const built: { [key: string]: services.BaseService } = {}
+    for (const service of Object.keys(required)) {
+      built[service] = this.buildService(
+        required[service],
+        service,
+        this.options
+      )
+    }
+
+    return built as AppServices
   }
 
   /**
@@ -223,19 +233,20 @@ export class PlasmaApp extends EventEmitter {
    * @returns a list of service names ordered by dependencies.
    */
   private getOrderedServices(): string[] {
-    const dependencyGraph =
-        Object.keys(this.services)
-            .reduce((graph: Array<[string, string]>, key) => {
-              const service = this.services[key];
+    const dependencyGraph = Object.keys(this.services).reduce(
+      (graph: Array<[string, string]>, key) => {
+        const service = this.services[key]
 
-              for (const dependency of service.dependencies) {
-                graph.push([service.name, dependency]);
-              }
+        for (const dependency of service.dependencies) {
+          graph.push([service.name, dependency])
+        }
 
-              return graph;
-            }, []);
+        return graph
+      },
+      []
+    )
 
-    const sorted = toposort(dependencyGraph) as string[];
-    return sorted.reverse();
+    const sorted = toposort(dependencyGraph) as string[]
+    return sorted.reverse()
   }
 }

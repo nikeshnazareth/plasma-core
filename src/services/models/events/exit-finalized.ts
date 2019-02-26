@@ -1,24 +1,24 @@
-import BigNum from 'bn.js';
-import {EthereumEvent} from '../eth';
+import BigNum from 'bn.js'
+import { EthereumEvent } from '../eth'
 
 interface ExitFinalizedEventArgs {
-  token: BigNum;
-  start: BigNum;
-  end: BigNum;
-  id: BigNum;
+  token: BigNum
+  start: BigNum
+  end: BigNum
+  id: BigNum
 }
 
 export class ExitFinalizedEvent {
-  token: BigNum;
-  start: BigNum;
-  end: BigNum;
-  id: BigNum;
+  token: BigNum
+  start: BigNum
+  end: BigNum
+  id: BigNum
 
   constructor(event: ExitFinalizedEventArgs) {
-    this.token = event.token;
-    this.start = event.start;
-    this.end = event.end;
-    this.id = event.id;
+    this.token = event.token
+    this.start = event.start
+    this.end = event.end
+    this.id = event.id
   }
 
   /**
@@ -31,8 +31,8 @@ export class ExitFinalizedEvent {
       token: event.data.tokenType as BigNum,
       start: event.data.untypedStart as BigNum,
       end: event.data.untypedEnd as BigNum,
-      id: event.data.exitID as BigNum
-    });
+      id: event.data.exitID as BigNum,
+    })
   }
 
   /**
@@ -42,9 +42,9 @@ export class ExitFinalizedEvent {
    */
   static from(args: EthereumEvent): ExitFinalizedEvent {
     if (args instanceof EthereumEvent) {
-      return ExitFinalizedEvent.fromEthereumEvent(args);
+      return ExitFinalizedEvent.fromEthereumEvent(args)
     }
 
-    throw new Error('Cannot cast to ExitFinalizedEvent.');
+    throw new Error('Cannot cast to ExitFinalizedEvent.')
   }
 }

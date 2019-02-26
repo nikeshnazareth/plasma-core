@@ -1,6 +1,6 @@
 interface AccountLike {
-  address?: string;
-  privateKey?: string;
+  address?: string
+  privateKey?: string
 }
 
 /**
@@ -9,11 +9,10 @@ interface AccountLike {
  * @returns `true` if it's an EthereumAccount, `false` otherwise.
  */
 export const isAccount = (data: AccountLike): boolean => {
-  return (data.address !== undefined && data.privateKey !== undefined);
-};
-
+  return data.address !== undefined && data.privateKey !== undefined
+}
 
 export interface EthereumAccount {
-  address: string;
-  privateKey: string;
+  address: string
+  privateKey: string
 }

@@ -1,27 +1,27 @@
-import {account as Account} from 'eth-lib';
+import { account as Account } from 'eth-lib'
 
-import {BaseService} from '../../base-service';
-import {EthereumAccount} from '../../models/eth';
-import {BaseDBProvider} from '../backends/base-provider';
+import { BaseService } from '../../base-service'
+import { EthereumAccount } from '../../models/eth'
+import { BaseDBProvider } from '../backends/base-provider'
 
 export class WalletDB extends BaseService {
   get dependencies(): string[] {
-    return ['eth', 'dbservice'];
+    return ['eth', 'dbservice']
   }
 
   /**
    * @returns the current DB instance.
    */
   get db(): BaseDBProvider {
-    const db = this.services.dbservice.dbs['wallet'];
+    const db = this.services.dbservice.dbs['wallet']
     if (db === undefined) {
-      throw new Error('WalletDB is not yet initialized.');
+      throw new Error('WalletDB is not yet initialized.')
     }
-    return db;
+    return db
   }
 
   async onStart(): Promise<void> {
-    await this.services.dbservice.open('wallet');
+    await this.services.dbservice.open('wallet')
   }
 
   /**
@@ -29,7 +29,7 @@ export class WalletDB extends BaseService {
    * @returns a list of account addresses.
    */
   async getAccounts(): Promise<string[]> {
-    return (await this.db.get('accounts', []) as string[]);
+    return (await this.db.get('accounts', [])) as string[]
   }
 
   /**
@@ -38,14 +38,15 @@ export class WalletDB extends BaseService {
    * @returns an Ethereum account object.
    */
   async getAccount(address: string): Promise<EthereumAccount> {
-    const keystore =
-        (await this.db.get(`keystore:${address}`, undefined) as
-         EthereumAccount);
+    const keystore = (await this.db.get(
+      `keystore:${address}`,
+      undefined
+    )) as EthereumAccount
     if (keystore === undefined) {
-      throw new Error('Account not found.');
+      throw new Error('Account not found.')
     }
 
-    return Account.fromPrivate(keystore.privateKey);
+    return Account.fromPrivate(keystore.privateKey)
   }
 
   /**
@@ -53,9 +54,9 @@ export class WalletDB extends BaseService {
    * @param account An Ethereum account object.
    */
   async addAccount(account: EthereumAccount): Promise<void> {
-    const accounts = await this.getAccounts();
-    accounts.push(account.address);
-    await this.db.set('accounts', accounts);
-    await this.db.set(`keystore:${account.address}`, account);
+    const accounts = await this.getAccounts()
+    accounts.push(account.address)
+    await this.db.set('accounts', accounts)
+    await this.db.set(`keystore:${account.address}`, account)
   }
 }

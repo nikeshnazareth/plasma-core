@@ -1,33 +1,36 @@
-import BigNum from 'bn.js';
+import BigNum from 'bn.js'
 
-import {BaseService, ServiceOptions} from '../base-service';
-import {EthereumAccount} from '../models/eth';
+import { BaseService, ServiceOptions } from '../base-service'
+import { EthereumAccount } from '../models/eth'
 
-import {BaseContractProvider, UserContractOptions} from './contract/base-provider';
+import {
+  BaseContractProvider,
+  UserContractOptions,
+} from './contract/base-provider'
 
 export interface UserETHProviderOptions extends UserContractOptions {
-  ethereumEndpoint?: string;
+  ethereumEndpoint?: string
 }
 
 interface ETHProviderOptions extends ServiceOptions {
-  ethereumEndpoint: string;
+  ethereumEndpoint: string
 }
 
 interface DefaultETHProviderOptions {
-  ethereumEndpoint: string;
+  ethereumEndpoint: string
 }
 
 const defaultOptions: DefaultETHProviderOptions = {
-  ethereumEndpoint: 'http://localhost:8545'
-};
+  ethereumEndpoint: 'http://localhost:8545',
+}
 
 export class BaseETHProvider extends BaseService {
-  options!: ETHProviderOptions;
-  contract: BaseContractProvider;
+  options!: ETHProviderOptions
+  contract: BaseContractProvider
 
-  constructor(options: UserETHProviderOptions&ServiceOptions) {
-    super(options, defaultOptions);
-    this.contract = new BaseContractProvider(options);
+  constructor(options: UserETHProviderOptions & ServiceOptions) {
+    super(options, defaultOptions)
+    this.contract = new BaseContractProvider(options)
   }
 
   /**
@@ -35,7 +38,8 @@ export class BaseETHProvider extends BaseService {
    */
   async connected(): Promise<boolean> {
     throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+      'Classes that extend BaseETHProvider must implement this method.'
+    )
   }
 
   /**
@@ -46,7 +50,8 @@ export class BaseETHProvider extends BaseService {
    */
   async getBalance(address: string): Promise<BigNum> {
     throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+      'Classes that extend BaseETHProvider must implement this method.'
+    )
   }
 
   /**
@@ -54,7 +59,8 @@ export class BaseETHProvider extends BaseService {
    */
   async getCurrentBlock(): Promise<number> {
     throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+      'Classes that extend BaseETHProvider must implement this method.'
+    )
   }
 
   /**
@@ -63,7 +69,8 @@ export class BaseETHProvider extends BaseService {
    */
   async getAccounts(): Promise<string[]> {
     throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+      'Classes that extend BaseETHProvider must implement this method.'
+    )
   }
 
   /**
@@ -71,7 +78,8 @@ export class BaseETHProvider extends BaseService {
    */
   async getWalletAccounts(): Promise<string[]> {
     throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+      'Classes that extend BaseETHProvider must implement this method.'
+    )
   }
 
   /**
@@ -81,7 +89,8 @@ export class BaseETHProvider extends BaseService {
    */
   async getWalletAccount(address: string): Promise<EthereumAccount> {
     throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+      'Classes that extend BaseETHProvider must implement this method.'
+    )
   }
 
   /**
@@ -91,7 +100,8 @@ export class BaseETHProvider extends BaseService {
    */
   async hasWalletAccount(address: string): Promise<boolean> {
     throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+      'Classes that extend BaseETHProvider must implement this method.'
+    )
   }
 
   /**
@@ -100,7 +110,8 @@ export class BaseETHProvider extends BaseService {
    */
   async addWalletAccount(privateKey: string): Promise<void> {
     throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+      'Classes that extend BaseETHProvider must implement this method.'
+    )
   }
 
   /**
@@ -112,6 +123,7 @@ export class BaseETHProvider extends BaseService {
    */
   async sign(address: string, data: string): Promise<string> {
     throw new Error(
-        'Classes that extend BaseETHProvider must implement this method.');
+      'Classes that extend BaseETHProvider must implement this method.'
+    )
   }
 }

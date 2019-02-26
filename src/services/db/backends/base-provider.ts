@@ -1,27 +1,34 @@
-import {utils} from 'plasma-utils';
+import { utils } from 'plasma-utils'
 
-export type DBResult = string|string[]|object|object[]|number|number[]|boolean;
-export type DBValue = string|{};
+export type DBResult =
+  | string
+  | string[]
+  | object
+  | object[]
+  | number
+  | number[]
+  | boolean
+export type DBValue = string | {}
 export interface DBObject {
-  key: string;
-  value: DBValue;
+  key: string
+  value: DBValue
 }
 
 /**
  * Class that DB interfaces must implement.
  */
 export class BaseDBProvider {
-  options: {};
+  options: {}
 
   constructor(options = {}) {
-    this.options = options;
+    this.options = options
   }
 
   /**
    * Starts up the database.
    */
   async start(): Promise<void> {
-    throw new Error('Classes that extend BaseDB must implement this method.');
+    throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
   /**
@@ -30,8 +37,8 @@ export class BaseDBProvider {
    * @param fallback A fallback value if the key doesn't exist.
    * @returns the stored value or the fallback.
    */
-  async get<T>(key: string, fallback?: T): Promise<T|DBResult> {
-    throw new Error('Classes that extend BaseDB must implement this method.');
+  async get<T>(key: string, fallback?: T): Promise<T | DBResult> {
+    throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
   /**
@@ -40,7 +47,7 @@ export class BaseDBProvider {
    * @param value Value to store.
    */
   async set(key: string, value: DBValue): Promise<void> {
-    throw new Error('Classes that extend BaseDB must implement this method.');
+    throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
   /**
@@ -48,7 +55,7 @@ export class BaseDBProvider {
    * @param key Key to delete.
    */
   async delete(key: string): Promise<void> {
-    throw new Error('Classes that extend BaseDB must implement this method.');
+    throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
   /**
@@ -57,7 +64,7 @@ export class BaseDBProvider {
    * @returns `true` if the key exists, `false` otherwise.
    */
   async exists(key: string): Promise<boolean> {
-    throw new Error('Classes that extend BaseDB must implement this method.');
+    throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
   /**
@@ -66,7 +73,7 @@ export class BaseDBProvider {
    * @returns the next key with the same prefix.
    */
   async findNextKey(key: string): Promise<string> {
-    throw new Error('Classes that extend BaseDB must implement this method.');
+    throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
   /**
@@ -75,7 +82,7 @@ export class BaseDBProvider {
    * @param objects A series of objects to put into the database.
    */
   async bulkPut(objects: DBObject[]): Promise<void> {
-    throw new Error('Classes that extend BaseDB must implement this method.');
+    throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
   /**
@@ -84,7 +91,7 @@ export class BaseDBProvider {
    * @param value Value to add to the array.
    */
   async push<T>(key: string, value: T): Promise<void> {
-    throw new Error('Classes that extend BaseDB must implement this method.');
+    throw new Error('Classes that extend BaseDB must implement this method.')
   }
 
   /**
@@ -94,9 +101,9 @@ export class BaseDBProvider {
    */
   stringify(value: DBValue): string {
     if (!utils.isString(value)) {
-      value = JSON.stringify(value);
+      value = JSON.stringify(value)
     }
-    return value as string;
+    return value as string
   }
 
   /**
@@ -105,7 +112,7 @@ export class BaseDBProvider {
    * @returns the JSON-ified value.
    */
   jsonify(value: string): {} {
-    return this.isJson(value) ? JSON.parse(value) : value;
+    return this.isJson(value) ? JSON.parse(value) : value
   }
 
   /**
@@ -115,10 +122,10 @@ export class BaseDBProvider {
    */
   isJson(value: string): boolean {
     try {
-      JSON.parse(value);
+      JSON.parse(value)
     } catch (err) {
-      return false;
+      return false
     }
-    return true;
+    return true
   }
 }

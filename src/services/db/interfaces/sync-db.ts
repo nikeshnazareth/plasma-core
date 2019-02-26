@@ -1,33 +1,33 @@
-import {BaseService} from '../../base-service';
-import {EthereumEvent} from '../../models/eth';
-import {BaseDBProvider} from '../backends/base-provider';
+import { BaseService } from '../../base-service'
+import { EthereumEvent } from '../../models/eth'
+import { BaseDBProvider } from '../backends/base-provider'
 
 export class SyncDB extends BaseService {
   get dependencies(): string[] {
-    return ['eth', 'dbservice'];
+    return ['eth', 'dbservice']
   }
 
   /**
    * @returns the current db instance.
    */
   get db(): BaseDBProvider {
-    const db = this.services.dbservice.dbs['sync'];
+    const db = this.services.dbservice.dbs['sync']
     if (db === undefined) {
-      throw new Error('SyncDB is not yet initialized.');
+      throw new Error('SyncDB is not yet initialized.')
     }
-    return db;
+    return db
   }
 
   async onStart(): Promise<void> {
     if (this.services.eth.contract.hasAddress) {
-      await this.open();
+      await this.open()
     } else {
       await new Promise((resolve) => {
         this.services.eth.contract.on('initialized', async () => {
-          await this.open();
-          resolve();
-        });
-      });
+          await this.open()
+          resolve()
+        })
+      })
     }
   }
 
@@ -35,8 +35,8 @@ export class SyncDB extends BaseService {
    * Opens the database connection.
    */
   async open(): Promise<void> {
-    const address = this.services.eth.contract.address;
-    await this.services.dbservice.open('sync', {id: address});
+    const address = this.services.eth.contract.address
+    await this.services.dbservice.open('sync', { id: address })
   }
 
   /**
@@ -45,7 +45,7 @@ export class SyncDB extends BaseService {
    * @returns Last synced block number.
    */
   async getLastLoggedEventBlock(eventName: string): Promise<number> {
-    return (await this.db.get(`lastlogged:${eventName}`, -1) as number);
+    return (await this.db.get(`lastlogged:${eventName}`, -1)) as number
   }
 
   /**
@@ -53,9 +53,11 @@ export class SyncDB extends BaseService {
    * @param eventName Name of the event.
    * @param block Last synced block number.
    */
-  async setLastLoggedEventBlock(eventName: string, block: number):
-      Promise<void> {
-    await this.db.set(`lastlogged:${eventName}`, block);
+  async setLastLoggedEventBlock(
+    eventName: string,
+    block: number
+  ): Promise<void> {
+    await this.db.set(`lastlogged:${eventName}`, block)
   }
 
   /**
@@ -63,7 +65,7 @@ export class SyncDB extends BaseService {
    * @returns Last synced block number.
    */
   async getLastSyncedBlock(): Promise<number> {
-    return (await this.db.get('sync:block', -1) as number);
+    return (await this.db.get('sync:block', -1)) as number
   }
 
   /**
@@ -71,7 +73,7 @@ export class SyncDB extends BaseService {
    * @param block Block number to set.
    */
   async setLastSyncedBlock(block: number): Promise<void> {
-    await this.db.set('sync:block', block);
+    await this.db.set('sync:block', block)
   }
 
   /**
@@ -79,7 +81,7 @@ export class SyncDB extends BaseService {
    * @returns An array of encoded transactions.
    */
   async getFailedTransactions(): Promise<string[]> {
-    return (await this.db.get('sync:failed', []) as string[]);
+    return (await this.db.get('sync:failed', [])) as string[]
   }
 
   /**
@@ -87,7 +89,7 @@ export class SyncDB extends BaseService {
    * @param transactions An array of encoded transactions.
    */
   async setFailedTransactions(transactions: string[]): Promise<void> {
-    await this.db.set('sync:failed', transactions);
+    await this.db.set('sync:failed', transactions)
   }
 
   /**
@@ -96,9 +98,9 @@ export class SyncDB extends BaseService {
    */
   async addEvents(events: EthereumEvent[]): Promise<void> {
     const objects = events.map((event) => {
-      return {key: `event:${event.hash}`, value: true};
-    });
-    await this.db.bulkPut(objects);
+      return { key: `event:${event.hash}`, value: true }
+    })
+    await this.db.bulkPut(objects)
   }
 
   /**
@@ -107,6 +109,6 @@ export class SyncDB extends BaseService {
    * @returns `true` if we've seen the event, `false` otherwise.
    */
   async hasEvent(event: EthereumEvent): Promise<boolean> {
-    return this.db.exists(`event:${event.hash}`);
+    return this.db.exists(`event:${event.hash}`)
   }
 }

@@ -1,39 +1,48 @@
-import BigNum from 'bn.js';
-import {serialization} from 'plasma-utils';
+import BigNum from 'bn.js'
+import { serialization } from 'plasma-utils'
 
-import {BaseService} from '../../base-service';
-import {Block, Deposit, DepositArgs, Exit, ExitArgs, Snapshot, TypedSnapshot, UntypedRange} from '../../models/chain';
-import {BaseDBProvider} from '../backends/base-provider';
+import { BaseService } from '../../base-service'
+import {
+  Block,
+  Deposit,
+  DepositArgs,
+  Exit,
+  ExitArgs,
+  Snapshot,
+  TypedSnapshot,
+  UntypedRange,
+} from '../../models/chain'
+import { BaseDBProvider } from '../backends/base-provider'
 
-const models = serialization.models;
-const SignedTransaction = models.SignedTransaction;
+const models = serialization.models
+const SignedTransaction = models.SignedTransaction
 
 export class ChainDB extends BaseService {
   get dependencies(): string[] {
-    return ['eth', 'dbservice'];
+    return ['eth', 'dbservice']
   }
 
   /**
    * @returns the current db instance.
    */
   get db(): BaseDBProvider {
-    const db = this.services.dbservice.dbs['chain'];
+    const db = this.services.dbservice.dbs['chain']
     if (db === undefined) {
-      throw new Error('ChainDB is not yet initialized.');
+      throw new Error('ChainDB is not yet initialized.')
     }
-    return db;
+    return db
   }
 
   async onStart(): Promise<void> {
     if (this.services.eth.contract.hasAddress) {
-      await this.open();
+      await this.open()
     } else {
       await new Promise((resolve) => {
         this.services.eth.contract.on('initialized', async () => {
-          await this.open();
-          resolve();
-        });
-      });
+          await this.open()
+          resolve()
+        })
+      })
     }
   }
 
@@ -41,8 +50,8 @@ export class ChainDB extends BaseService {
    * Opens the database connection.
    */
   async open(): Promise<void> {
-    const address = this.services.eth.contract.address;
-    await this.services.dbservice.open('chain', {id: address});
+    const address = this.services.eth.contract.address
+    await this.services.dbservice.open('chain', { id: address })
   }
 
   /**
@@ -50,22 +59,24 @@ export class ChainDB extends BaseService {
    * @param hash Hash of the transaction.
    * @returns the transaction object.
    */
-  async getTransaction(hash: string):
-      Promise<serialization.models.SignedTransaction> {
-    const encoded = await this.db.get(`transaction:${hash}`, undefined);
+  async getTransaction(
+    hash: string
+  ): Promise<serialization.models.SignedTransaction> {
+    const encoded = await this.db.get(`transaction:${hash}`, undefined)
     if (encoded === undefined) {
-      throw new Error('Transaction not found in database.');
+      throw new Error('Transaction not found in database.')
     }
-    return new SignedTransaction(encoded);
+    return new SignedTransaction(encoded)
   }
 
   /**
    * Adds a transaction to the database.
    * @param transaction Transaction to store.
    */
-  async setTransaction(transaction: serialization.models.SignedTransaction):
-      Promise<void> {
-    await this.db.set(`transaction:${transaction.hash}`, transaction.encoded);
+  async setTransaction(
+    transaction: serialization.models.SignedTransaction
+  ): Promise<void> {
+    await this.db.set(`transaction:${transaction.hash}`, transaction.encoded)
   }
 
   /**
@@ -74,7 +85,7 @@ export class ChainDB extends BaseService {
    * @returns `true` if the chain has stored the transaction, `false` otherwise.
    */
   async hasTransaction(hash: string): Promise<boolean> {
-    return this.db.exists(`transaction:${hash}`);
+    return this.db.exists(`transaction:${hash}`)
   }
 
   /**
@@ -82,7 +93,7 @@ export class ChainDB extends BaseService {
    * @returns the latest block.
    */
   async getLatestBlock(): Promise<number> {
-    return (await this.db.get('latestblock', -1) as number);
+    return (await this.db.get('latestblock', -1)) as number
   }
 
   /**
@@ -90,7 +101,7 @@ export class ChainDB extends BaseService {
    * @param block A block number.
    */
   async setLatestBlock(block: number): Promise<void> {
-    await this.db.set('latestblock', block);
+    await this.db.set('latestblock', block)
   }
 
   /**
@@ -98,8 +109,8 @@ export class ChainDB extends BaseService {
    * @param block Number of the block to query.
    * @returns the hash of the specified block.
    */
-  async getBlockHeader(block: number): Promise<string|null> {
-    return (await this.db.get(`header:${block}`, null) as string | null);
+  async getBlockHeader(block: number): Promise<string | null> {
+    return (await this.db.get(`header:${block}`, null)) as string | null
   }
 
   /**
@@ -108,8 +119,8 @@ export class ChainDB extends BaseService {
    * @param hash Hash of the given block.
    */
   async addBlockHeader(block: number, hash: string): Promise<void> {
-    await this.setLatestBlock(block);
-    await this.db.set(`header:${block}`, hash);
+    await this.setLatestBlock(block)
+    await this.db.set(`header:${block}`, hash)
   }
 
   /**
@@ -119,14 +130,14 @@ export class ChainDB extends BaseService {
   async addBlockHeaders(blocks: Block[]): Promise<void> {
     // Set the latest block.
     const latest = blocks.reduce((a, b) => {
-      return a.number > b.number ? a : b;
-    });
-    await this.setLatestBlock(latest.number);
+      return a.number > b.number ? a : b
+    })
+    await this.setLatestBlock(latest.number)
 
     const objects = blocks.map((block) => {
-      return {key: `header:${block.number}`, value: block.hash};
-    });
-    await this.db.bulkPut(objects);
+      return { key: `header:${block.number}`, value: block.hash }
+    })
+    await this.db.bulkPut(objects)
   }
 
   /**
@@ -135,11 +146,13 @@ export class ChainDB extends BaseService {
    * @returns a list of known deposits.
    */
   async getDeposits(address: string): Promise<Deposit[]> {
-    const deposits =
-        (await this.db.get(`deposits:${address}`, []) as DepositArgs[]);
+    const deposits = (await this.db.get(
+      `deposits:${address}`,
+      []
+    )) as DepositArgs[]
     return deposits.map((deposit) => {
-      return new Deposit(deposit);
-    });
+      return new Deposit(deposit)
+    })
   }
 
   /**
@@ -148,10 +161,10 @@ export class ChainDB extends BaseService {
    * @returns a list of known exits.
    */
   async getExits(address: string): Promise<Exit[]> {
-    const exits = (await this.db.get(`exits:${address}`, []) as ExitArgs[]);
+    const exits = (await this.db.get(`exits:${address}`, [])) as ExitArgs[]
     return exits.map((exit) => {
-      return new Exit(exit);
-    });
+      return new Exit(exit)
+    })
   }
 
   /**
@@ -159,8 +172,8 @@ export class ChainDB extends BaseService {
    * @param exit Exit to add to database.
    */
   async addExit(exit: Exit): Promise<void> {
-    await this.markExited(exit);
-    await this.db.push(`exits:${exit.owner}`, exit);
+    await this.markExited(exit)
+    await this.db.push(`exits:${exit.owner}`, exit)
   }
 
   /**
@@ -171,7 +184,7 @@ export class ChainDB extends BaseService {
    * @param end End of the range.
    */
   async addExitableEnd(token: BigNum, end: BigNum): Promise<void> {
-    await this.addExitableEnds([{token, end}]);
+    await this.addExitableEnds([{ token, end }])
   }
 
   /**
@@ -180,14 +193,15 @@ export class ChainDB extends BaseService {
    * https://github.com/plasma-group/plasma-contracts/issues/44.
    * @param exitable Ends to add to the database.
    */
-  async addExitableEnds(exitables: Array<{token: BigNum, end: BigNum}>):
-      Promise<void> {
+  async addExitableEnds(
+    exitables: Array<{ token: BigNum; end: BigNum }>
+  ): Promise<void> {
     const objects = exitables.map((exitable) => {
-      const key = this.getTypedValue(exitable.token, exitable.end);
-      return {key: `exitable:${key}`, value: exitable.end.toString('hex')};
-    });
+      const key = this.getTypedValue(exitable.token, exitable.end)
+      return { key: `exitable:${key}`, value: exitable.end.toString('hex') }
+    })
 
-    await this.db.bulkPut(objects);
+    await this.db.bulkPut(objects)
   }
 
   /**
@@ -197,10 +211,10 @@ export class ChainDB extends BaseService {
    * @returns the exitable end.
    */
   async getExitableEnd(token: BigNum, end: BigNum): Promise<BigNum> {
-    const startKey = this.getTypedValue(token, end);
-    const nextKey = await this.db.findNextKey(`exitable:${startKey}`);
-    const exitableEnd = (await this.db.get(nextKey) as string);
-    return new BigNum(exitableEnd, 'hex');
+    const startKey = this.getTypedValue(token, end)
+    const nextKey = await this.db.findNextKey(`exitable:${startKey}`)
+    const exitableEnd = (await this.db.get(nextKey)) as string
+    return new BigNum(exitableEnd, 'hex')
   }
 
   /**
@@ -208,8 +222,7 @@ export class ChainDB extends BaseService {
    * @param range Range to mark.
    */
   async markExited(range: UntypedRange): Promise<void> {
-    await this.db.set(
-        `exited:${range.token}:${range.start}:${range.end}`, true);
+    await this.db.set(`exited:${range.token}:${range.start}:${range.end}`, true)
   }
 
   /**
@@ -218,20 +231,22 @@ export class ChainDB extends BaseService {
    * @returns `true` if the range is exited, `false` otherwise.
    */
   async checkExited(range: UntypedRange): Promise<boolean> {
-    return (
-        await this.db.get(
-            `exited:${range.token}:${range.start}:${range.end}`, false) as
-        boolean);
+    return (await this.db.get(
+      `exited:${range.token}:${range.start}:${range.end}`,
+      false
+    )) as boolean
   }
 
   /**
    * Marks an exit as finalized.
    * @param exit Exit to mark.
    */
-  async markFinalized(exit: {token: BigNum, start: BigNum, end: BigNum}):
-      Promise<void> {
-    await this.db.set(
-        `finalized:${exit.token}:${exit.start}:${exit.end}`, true);
+  async markFinalized(exit: {
+    token: BigNum
+    start: BigNum
+    end: BigNum
+  }): Promise<void> {
+    await this.db.set(`finalized:${exit.token}:${exit.start}:${exit.end}`, true)
   }
 
   /**
@@ -240,10 +255,10 @@ export class ChainDB extends BaseService {
    * @returns `true` if the exit is finalized, `false` otherwise.
    */
   async checkFinalized(exit: Exit): Promise<boolean> {
-    return (
-        await this.db.get(
-            `finalized:${exit.token}:${exit.start}:${exit.end}`, false) as
-        boolean);
+    return (await this.db.get(
+      `finalized:${exit.token}:${exit.start}:${exit.end}`,
+      false
+    )) as boolean
   }
 
   /**
@@ -251,11 +266,10 @@ export class ChainDB extends BaseService {
    * @returns a list of snapshots.
    */
   async getState(): Promise<Snapshot[]> {
-    const snapshots =
-        (await this.db.get(`state:latest`, []) as TypedSnapshot[]);
+    const snapshots = (await this.db.get(`state:latest`, [])) as TypedSnapshot[]
     return snapshots.map((snapshot) => {
-      return new Snapshot(snapshot);
-    });
+      return new Snapshot(snapshot)
+    })
   }
 
   /**
@@ -263,7 +277,7 @@ export class ChainDB extends BaseService {
    * @param state A list of snapshots.
    */
   async setState(state: Snapshot[]): Promise<void> {
-    await this.db.set('state:latest', state);
+    await this.db.set('state:latest', state)
   }
 
   /**
@@ -274,7 +288,8 @@ export class ChainDB extends BaseService {
    */
   getTypedValue(token: BigNum, value: BigNum): string {
     return new BigNum(
-               token.toString('hex', 8) + value.toString('hex', 24), 'hex')
-        .toString('hex', 32);
+      token.toString('hex', 8) + value.toString('hex', 24),
+      'hex'
+    ).toString('hex', 32)
   }
 }
