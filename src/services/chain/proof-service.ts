@@ -27,47 +27,40 @@ export class ProofService extends BaseService {
     tx: Transaction,
     proof: TransactionProof
   ): Promise<StateManager> {
-    const deposits = proof.deposits
-    const transactions = proof.transactions
+    const state = new StateManager()
 
-    this.log(`Checking validity of deposits for: ${tx.hash}`)
-    for (const deposit of deposits) {
+    // Apply deposits.
+    this.log(`Applying deposits for: ${tx.hash}`)
+    for (const deposit of proof.deposits) {
+      // Validate the deposit.
       const validDeposit = await this.services.eth.contract.depositValid(
         deposit
       )
       if (!validDeposit) {
         throw new Error('Invalid deposit')
       }
-    }
 
-    this.log(`Checking inclusion proofs for: ${tx.hash}`)
-    for (const transaction of transactions) {
-      const validInclusionProof = await this.checkInclusionProof(transaction)
-      if (!validInclusionProof) {
-        throw new Error('Invalid transaction')
-      }
-    }
-
-    this.log(`Getting implicit bounds for: ${tx.hash}`)
-    for (let transaction of transactions) {
-      transaction = this.setImplicitBounds(transaction)
-    }
-
-    const state = new StateManager()
-
-    this.log(`Applying deposits for: ${tx.hash}`)
-    for (const deposit of deposits) {
       state.addStateObject(deposit)
     }
 
+    // Apply transactions.
     this.log(`Applying transactions for: ${tx.hash}`)
-    for (const transaction of transactions) {
+    for (let transaction of proof.transactions) {
+      // Check inclusion proofs.
+      const validInclusionProof = await this.checkInclusionProof(transaction)
+      if (!validInclusionProof) {
+        throw new Error('Invalid transaction inclusion proof')
+      }
+
+      // Set implicit bounds.
+      transaction = this.setImplicitBounds(transaction)
+
       const witness = transaction.witness
       const newState = transaction.newState
       const oldStates = state.getOldStates(newState)
 
-      let validStateObject = true
       for (const oldState of oldStates) {
+        // Validate the state transition using the predicate.
         const bytecode = await this.getPredicateBytecode(oldState.predicate)
         const valid = await validStateTransition(
           oldState.encode(),
@@ -76,21 +69,20 @@ export class ProofService extends BaseService {
           bytecode
         )
 
+        // State object is invalid if any transition fails.
         if (!valid) {
-          validStateObject = false
-          break
+          throw new Error('Invalid state transition')
         }
       }
 
-      if (validStateObject) {
-        state.applyStateObject(newState)
-      }
+      // Apply the transaction to local state.
+      state.applyStateObject(newState)
     }
 
-    this.log(`Checking validity of: ${tx.hash}`)
+    // Check that the transaction is in the verified state.
     const validTransaction = state.hasStateObject(tx.newState)
     if (!validTransaction) {
-      throw new Error('Invalid state transition')
+      throw new Error('Invalid transaction')
     }
 
     return state
