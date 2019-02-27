@@ -90,4 +90,8 @@ export class ETHProvider extends BaseETHProvider {
   public async addWalletAccount(privateKey: string): Promise<void> {
     await this.web3.eth.accounts.wallet.add(privateKey)
   }
+
+  public async getContractBytecode(address: string): Promise<string> {
+    return this.web3.eth.getCode(address)
+  }
 }

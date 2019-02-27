@@ -88,6 +88,7 @@
     "lodash": "^4.17.11",
     "plasma-contracts": "0.0.4-beta.2",
     "plasma-utils": "0.0.4-beta.2",
+    "plasma-verifier": "github:plasma-group/plasma-verifier",
     "toposort": "^2.0.2",
     "uuid": "^3.3.2",
     "web3": "1.0.0-beta.33"

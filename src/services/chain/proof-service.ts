@@ -1,9 +1,11 @@
-import { PlasmaMerkleSumTree, serialization } from 'plasma-utils'
+import { PlasmaMerkleSumTree } from 'plasma-utils'
 
 import { BaseService } from '../base-service'
-import { Deposit, ProofElement } from '../models/chain'
+import { StateObject } from '../models/chain/state-object'
+import { Transaction } from '../models/chain/transaction'
 
-import { SnapshotManager } from './snapshot-manager'
+import { PredicateCache, SnapshotManager } from './snapshot-manager'
+import { TransactionProof } from '../models/chain'
 
 const EMPTY_BLOCK_HASH =
   '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -15,123 +17,131 @@ export class ProofService extends BaseService {
 
   /**
    * Checks a transaction proof.
-   * @param transaction A Transaction object.
+   * @param tx The Transaction to verify.
    * @param deposits A list of deposits.
-   * @param proof A Proof object.
-   * @returns `true` if the transaction is valid.
+   * @param transaction Transactions that prove tx is valid.
+   * @returns the head state at the end of the transaction if valid.
    */
-  public async checkProof(
-    transaction: serialization.models.SignedTransaction,
-    deposits: Deposit[],
-    proof: ProofElement[]
-  ): Promise<boolean> {
-    this.log(`Checking signatures for: ${transaction.hash}`)
-    if (!transaction.checkSigs()) {
-      throw new Error('Invalid transaction signatures')
-    }
+  public async applyProof(
+    tx: Transaction,
+    proof: TransactionProof
+  ): Promise<SnapshotManager> {
+    const deposits = proof.deposits
+    const transactions = proof.transactions
 
-    this.log(`Checking validity of deposits for: ${transaction.hash}`)
+    this.log(`Checking validity of deposits for: ${tx.hash}`)
     for (const deposit of deposits) {
-      if (!(await this.services.eth.contract.depositValid(deposit))) {
+      const validDeposit = await this.services.eth.contract.depositValid(
+        deposit
+      )
+      if (!validDeposit) {
         throw new Error('Invalid deposit')
       }
     }
 
-    this.log(`Checking validity of proof elements for: ${transaction.hash}`)
-    for (const element of proof) {
-      if (
-        !(await this.transactionValid(
-          element.transaction,
-          element.transactionProof
-        ))
-      ) {
+    this.log(`Checking validity of proof elements for: ${tx.hash}`)
+    for (const transaction of transactions) {
+      const validInclusionProof = await this.checkInclusionProof(transaction)
+      if (!validInclusionProof) {
         throw new Error('Invalid transaction')
       }
     }
 
-    this.log(`Applying proof elements for: ${transaction.hash}`)
-    const snapshotManager = new SnapshotManager()
-    this.applyProof(snapshotManager, deposits, proof)
-    if (!snapshotManager.validateTransaction(transaction)) {
-      throw new Error('Invalid state transition')
-    }
+    this.log(`Loading predicates for: ${tx.hash}`)
+    const predicates = await this.loadPredicateBytecode(deposits, transactions)
+    const snapshotManager = new SnapshotManager({
+      predicates,
+    })
 
-    return true
-  }
-
-  /**
-   * Applies a transaction proof to a SnapshotManager.
-   * @param snapshotManager SnapshotManger to apply to.
-   * @param deposits Deposits to apply.
-   * @param proof Proof to apply.
-   */
-  public applyProof(
-    snapshotManager: SnapshotManager,
-    deposits: Deposit[],
-    proof: ProofElement[]
-  ) {
+    this.log(`Applying proof elements for: ${tx.hash}`)
     for (const deposit of deposits) {
       snapshotManager.applyDeposit(deposit)
     }
-
-    for (const element of proof) {
-      const tx = element.transaction
-      if (tx.isEmptyBlockTransaction) {
-        snapshotManager.applyEmptyBlock(tx.block.toNumber())
-      } else {
-        snapshotManager.applyTransaction(element.transaction)
-      }
+    for (const transaction of transactions) {
+      snapshotManager.applyTransaction(transaction)
     }
+
+    this.log(`Checking validity of: ${tx.hash}`)
+    const validTransaction = snapshotManager.snapshots.some((snapshot) => {
+      return snapshot.contains(tx.newState)
+    })
+    if (!validTransaction) {
+      throw new Error('Invalid state transition')
+    }
+
+    return snapshotManager
   }
 
   /**
-   * Checks whether a transaction is valid.
-   * @param transaction An UnsignedTransaction object.
-   * @param proof A TransactionProof object.
-   * @returns `true` if the transaction is valid, `false` otherwise.
+   * Loads the bytecode for all predicates into a cache.
+   * @param deposits Deposits for this proof.
+   * @param proof Proof elements.
+   * @returns an object that maps predicate addresses to bytecode.
    */
-  public async transactionValid(
-    transaction: serialization.models.UnsignedTransaction,
-    proof: serialization.models.TransactionProof
-  ) {
-    let root = await this.services.chaindb.getBlockHeader(
-      transaction.block.toNumber()
-    )
+  private async loadPredicateBytecode(
+    deposits: StateObject[],
+    transactions: Transaction[]
+  ): Promise<PredicateCache> {
+    // Get a list of all predicates used in this proof.
+    const depositPredicates = deposits.map((deposit) => {
+      return deposit.predicate
+    })
+    const transactionPredicates = transactions.map((transaction) => {
+      return transaction.newState.predicate
+    })
+
+    // Remove any duplicates.
+    const predicateAddresses = [
+      ...new Set(depositPredicates.concat(transactionPredicates)),
+    ]
+
+    const predicates: PredicateCache = {}
+    for (const address of predicateAddresses) {
+      let bytecode
+      try {
+        bytecode = await this.services.chaindb.getPredicateBytecode(address)
+      } catch {
+        // Don't have the bytecode stored, pull it and store it.
+        bytecode = await this.services.eth.getContractBytecode(address)
+        await this.services.chaindb.setPredicateBytecode(address, bytecode)
+      }
+      predicates[address] = bytecode
+    }
+
+    return predicates
+  }
+
+  /**
+   * Checks whether a transaction's inclusion proof is valid.
+   * @param transaction The transaction to check.
+   * @returns `true` if the inclusion proof is valid, `false` otherwise.
+   */
+  private async checkInclusionProof(transaction: Transaction) {
+    let root = await this.services.chaindb.getBlockHeader(transaction.block)
     if (root === null) {
       throw new Error(
         `Received transaction for non-existent block #${transaction.block}`
       )
     }
 
-    // If the root is '0x00....', then this block was empty.
-    if (root === EMPTY_BLOCK_HASH) {
-      if (transaction.transfers.length > 0) {
-        this.log(
-          `WARNING: Block #${
-            transaction.block
-          } is empty but received a non-empty proof element. Proof will likely be rejected. This is probably due to an error in the operator.`
-        )
-      }
-      transaction.isEmptyBlockTransaction = true
-      return true
-    }
-
     root = root + 'ffffffffffffffffffffffffffffffff'
 
-    // Hack for now, make sure that all other transactions aren't fake.
-    transaction.isEmptyBlockTransaction = false
-    transaction.transfers.forEach((transfer, i) => {
-      const {
-        implicitStart,
-        implicitEnd,
-      } = PlasmaMerkleSumTree.getTransferProofBounds(
-        transaction,
-        proof.transferProofs[i]
-      )
-      transfer.implicitStart = implicitStart
-      transfer.implicitEnd = implicitEnd
-    })
+    // Determine the implicit bounds of this leaf.
+    const {
+      implicitStart,
+      implicitEnd,
+    } = PlasmaMerkleSumTree.getImplicitBounds(
+      transaction.newState.encode(),
+      transaction.inclusionProof
+    )
+    transaction.newState.implicitStart = implicitStart
+    transaction.newState.implicitEnd = implicitEnd
 
-    return PlasmaMerkleSumTree.checkTransactionProof(transaction, proof, root)
+    // Return the result of the inclusion proof check.
+    return PlasmaMerkleSumTree.checkInclusionProof(
+      transaction.newState.encode(),
+      transaction.inclusionProof,
+      root
+    )
   }
 }

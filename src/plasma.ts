@@ -42,8 +42,8 @@ export interface DebugMap {
 
 export class PlasmaApp extends EventEmitter {
   public options: PlasmaOptions
-  private _services: AppServices
-  private _loggers: DebugMap = {}
+  private appServices: AppServices
+  private appLoggers: DebugMap = {}
 
   constructor(options: UserPlasmaOptions) {
     super()
@@ -51,7 +51,7 @@ export class PlasmaApp extends EventEmitter {
     this.options = { ...defaultOptions, ...options }
 
     debug.enable(this.options.debug)
-    this._services = this.buildRequiredServices()
+    this.appServices = this.buildRequiredServices()
   }
 
   /**
@@ -59,9 +59,9 @@ export class PlasmaApp extends EventEmitter {
    * service is undefined
    */
   get services(): AppServices {
-    return new Proxy(this._services, {
-      get: (services: AppServices, key: string) => {
-        const service = services[key]
+    return new Proxy(this.appServices, {
+      get: (obj: AppServices, key: string) => {
+        const service = obj[key]
         if (service === undefined) {
           throw new Error(`Service does not exist: ${key}`)
         }
@@ -76,12 +76,12 @@ export class PlasmaApp extends EventEmitter {
    * @returns Mapping of available loggers.
    */
   get loggers(): DebugMap {
-    return new Proxy(this._loggers, {
-      get: (obj: DebugMap, prop: string): debug.Debugger => {
-        if (!(prop in obj)) {
-          obj[prop] = debug(prop)
+    return new Proxy(this.appLoggers, {
+      get: (obj: DebugMap, key: string) => {
+        if (!(key in obj)) {
+          obj[key] = debug(key)
         }
-        return obj[prop]
+        return obj[key]
       },
     })
   }

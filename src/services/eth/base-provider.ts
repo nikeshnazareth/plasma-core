@@ -115,13 +115,11 @@ export class BaseETHProvider extends BaseService {
   }
 
   /**
-   * Signs a piece of arbitrary data.
-   * Address must be unlocked.
-   * @param address Address of the account to sign with.
-   * @param data Data to sign
-   * @returns a signature over the data.
+   * Returns the bytecode for the contract at the given address
+   * @param address Contract address.
+   * @returns the contract's bytecode.
    */
-  public async sign(address: string, data: string): Promise<string> {
+  public async getContractBytecode(address: string): Promise<string> {
     throw new Error(
       'Classes that extend BaseETHProvider must implement this method.'
     )

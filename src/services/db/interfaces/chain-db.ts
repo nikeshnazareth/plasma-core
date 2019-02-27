@@ -1,21 +1,10 @@
 import BigNum from 'bn.js'
-import { serialization } from 'plasma-utils'
 
 import { BaseService } from '../../base-service'
-import {
-  Block,
-  Deposit,
-  DepositArgs,
-  Exit,
-  ExitArgs,
-  Snapshot,
-  TypedSnapshot,
-  UntypedRange,
-} from '../../models/chain'
+import { Block, Exit, ExitArgs } from '../../models/chain'
+import { StateObject } from '../../models/chain/state-object'
+import { Transaction } from '../../models/chain/transaction'
 import { BaseDBProvider } from '../backends/base-provider'
-
-const models = serialization.models
-const SignedTransaction = models.SignedTransaction
 
 export class ChainDB extends BaseService {
   get dependencies(): string[] {
@@ -59,23 +48,19 @@ export class ChainDB extends BaseService {
    * @param hash Hash of the transaction.
    * @returns the transaction object.
    */
-  public async getTransaction(
-    hash: string
-  ): Promise<serialization.models.SignedTransaction> {
+  public async getTransaction(hash: string): Promise<Transaction> {
     const encoded = await this.db.get(`transaction:${hash}`, undefined)
     if (encoded === undefined) {
       throw new Error('Transaction not found in database.')
     }
-    return new SignedTransaction(encoded)
+    return encoded
   }
 
   /**
    * Adds a transaction to the database.
    * @param transaction Transaction to store.
    */
-  public async setTransaction(
-    transaction: serialization.models.SignedTransaction
-  ): Promise<void> {
+  public async setTransaction(transaction: Transaction): Promise<void> {
     await this.db.set(`transaction:${transaction.hash}`, transaction.encoded)
   }
 
@@ -145,13 +130,13 @@ export class ChainDB extends BaseService {
    * @param address Address to query.
    * @returns a list of known deposits.
    */
-  public async getDeposits(address: string): Promise<Deposit[]> {
+  public async getDeposits(address: string): Promise<StateObject[]> {
     const deposits = (await this.db.get(
       `deposits:${address}`,
       []
-    )) as DepositArgs[]
+    )) as StateObject[]
     return deposits.map((deposit) => {
-      return new Deposit(deposit)
+      return new StateObject(deposit)
     })
   }
 
@@ -180,11 +165,10 @@ export class ChainDB extends BaseService {
    * Adds an "exitable end" to the database.
    * For more information, see:
    * https://github.com/plasma-group/plasma-contracts/issues/44.
-   * @param token Token of the range.
    * @param end End of the range.
    */
-  public async addExitableEnd(token: BigNum, end: BigNum): Promise<void> {
-    await this.addExitableEnds([{ token, end }])
+  public async addExitableEnd(end: BigNum): Promise<void> {
+    await this.addExitableEnds([end])
   }
 
   /**
@@ -193,12 +177,9 @@ export class ChainDB extends BaseService {
    * https://github.com/plasma-group/plasma-contracts/issues/44.
    * @param exitable Ends to add to the database.
    */
-  public async addExitableEnds(
-    exitables: Array<{ token: BigNum; end: BigNum }>
-  ): Promise<void> {
-    const objects = exitables.map((exitable) => {
-      const key = this.getTypedValue(exitable.token, exitable.end)
-      return { key: `exitable:${key}`, value: exitable.end.toString('hex') }
+  public async addExitableEnds(ends: BigNum[]): Promise<void> {
+    const objects = ends.map((end) => {
+      return { key: `exitable:${end}`, value: end.toString('hex') }
     })
 
     await this.db.bulkPut(objects)
@@ -206,13 +187,11 @@ export class ChainDB extends BaseService {
 
   /**
    * Returns the correct exitable end for a range.
-   * @param token Token of the range.
    * @param end End of the range.
    * @returns the exitable end.
    */
-  public async getExitableEnd(token: BigNum, end: BigNum): Promise<BigNum> {
-    const startKey = this.getTypedValue(token, end)
-    const nextKey = await this.db.findNextKey(`exitable:${startKey}`)
+  public async getExitableEnd(end: BigNum): Promise<BigNum> {
+    const nextKey = await this.db.findNextKey(`exitable:${end}`)
     const exitableEnd = (await this.db.get(nextKey)) as string
     return new BigNum(exitableEnd, 'hex')
   }
@@ -221,8 +200,11 @@ export class ChainDB extends BaseService {
    * Marks a range as exited.
    * @param range Range to mark.
    */
-  public async markExited(range: UntypedRange): Promise<void> {
-    await this.db.set(`exited:${range.token}:${range.start}:${range.end}`, true)
+  public async markExited(range: {
+    start: BigNum
+    end: BigNum
+  }): Promise<void> {
+    await this.db.set(`exited:${range.start}:${range.end}`, true)
   }
 
   /**
@@ -230,9 +212,12 @@ export class ChainDB extends BaseService {
    * @param range Range to check.
    * @returns `true` if the range is exited, `false` otherwise.
    */
-  public async checkExited(range: UntypedRange): Promise<boolean> {
+  public async checkExited(range: {
+    start: BigNum
+    end: BigNum
+  }): Promise<boolean> {
     return (await this.db.get(
-      `exited:${range.token}:${range.start}:${range.end}`,
+      `exited:${range.start}:${range.end}`,
       false
     )) as boolean
   }
@@ -242,11 +227,10 @@ export class ChainDB extends BaseService {
    * @param exit Exit to mark.
    */
   public async markFinalized(exit: {
-    token: BigNum
     start: BigNum
     end: BigNum
   }): Promise<void> {
-    await this.db.set(`finalized:${exit.token}:${exit.start}:${exit.end}`, true)
+    await this.db.set(`finalized:${exit.start}:${exit.end}`, true)
   }
 
   /**
@@ -254,9 +238,12 @@ export class ChainDB extends BaseService {
    * @param exit Exit to check.
    * @returns `true` if the exit is finalized, `false` otherwise.
    */
-  public async checkFinalized(exit: Exit): Promise<boolean> {
+  public async checkFinalized(exit: {
+    start: BigNum
+    end: BigNum
+  }): Promise<boolean> {
     return (await this.db.get(
-      `finalized:${exit.token}:${exit.start}:${exit.end}`,
+      `finalized:${exit.start}:${exit.end}`,
       false
     )) as boolean
   }
@@ -265,10 +252,10 @@ export class ChainDB extends BaseService {
    * Returns the latest state.
    * @returns a list of snapshots.
    */
-  public async getState(): Promise<Snapshot[]> {
-    const snapshots = (await this.db.get(`state:latest`, [])) as TypedSnapshot[]
+  public async getState(): Promise<StateObject[]> {
+    const snapshots = (await this.db.get(`state:latest`, [])) as StateObject[]
     return snapshots.map((snapshot) => {
-      return new Snapshot(snapshot)
+      return new StateObject(snapshot)
     })
   }
 
@@ -276,20 +263,33 @@ export class ChainDB extends BaseService {
    * Sets the latest state.
    * @param state A list of snapshots.
    */
-  public async setState(state: Snapshot[]): Promise<void> {
+  public async setState(state: StateObject[]): Promise<void> {
     await this.db.set('state:latest', state)
   }
 
   /**
-   * Returns the "typed" version of a start or end.
-   * @param token The token ID.
-   * @param value The value to type.
-   * @returns the typed value.
+   * Returns the bytecode of a given predicate.
+   * @param address Address of the predicate.
+   * @returns the predicate bytecode.
    */
-  public getTypedValue(token: BigNum, value: BigNum): string {
-    return new BigNum(
-      token.toString('hex', 8) + value.toString('hex', 24),
-      'hex'
-    ).toString('hex', 32)
+  public async getPredicateBytecode(address: string): Promise<string> {
+    const bytecode = await this.db.get(`predicate:${address}`, undefined)
+    if (bytecode === undefined) {
+      throw new Error('Predicate not found in database.')
+    }
+
+    return bytecode as string
+  }
+
+  /**
+   * Sets the bytecode for a given predicate.
+   * @param address Address of the predicate.
+   * @param bytecode Bytecode of the predicate.
+   */
+  public async setPredicateBytecode(
+    address: string,
+    bytecode: string
+  ): Promise<void> {
+    await this.db.set(`predicate:${address}`, bytecode)
   }
 }

@@ -1,20 +1,10 @@
 import BigNum from 'bn.js'
 import debug, { Debugger } from 'debug'
 import _ from 'lodash'
-import { serialization } from 'plasma-utils'
+import { validStateTransition } from 'plasma-verifier'
 
-import {
-  Deposit,
-  Exit,
-  Range,
-  Snapshot,
-  TransferComponent,
-  UntypedRange,
-  UntypedSnapshot,
-} from '../models/chain'
-
-const models = serialization.models
-const Transfer = models.Transfer
+import { StateObject } from '../models/chain/state-object'
+import { Transaction } from '../models/chain/transaction'
 
 /**
  * Determines the less of two BigNums.
@@ -36,34 +26,34 @@ const bnMax = (a: BigNum, b: BigNum) => {
   return a.gt(b) ? a : b
 }
 
+export interface PredicateCache {
+  [key: string]: string
+}
+
+export interface SnapshotManagerOptions {
+  snapshots?: StateObject[]
+  predicates?: PredicateCache
+}
+
 /**
  * Utility class that manages state transitions.
  */
 export class SnapshotManager {
-  public snapshots: Snapshot[]
+  public snapshots: StateObject[]
+  public predicates: PredicateCache
   public debug: Debugger = debug('debug:snapshots')
 
-  constructor(snapshots: Snapshot[] = []) {
-    this.snapshots = snapshots.map((snapshot) => {
-      return new Snapshot(snapshot)
-    })
+  constructor(options: SnapshotManagerOptions = {}) {
+    this.snapshots = options.snapshots || []
+    this.predicates = options.predicates || {}
   }
 
   /**
    * Returns a copy of the head state.
    * @returns the head state.
    */
-  get state(): Snapshot[] {
+  get state(): StateObject[] {
     return _.cloneDeep(this.snapshots)
-  }
-
-  /**
-   * Returns a list of ranges in the head state.
-   * @returns a list of ranges.
-   */
-  get ranges(): Range[] {
-    const ranges = this.snapshots.map(Range.fromSnapshot)
-    return this.mergeRanges(ranges)
   }
 
   /**
@@ -71,7 +61,7 @@ export class SnapshotManager {
    * @param snapshots A list of Snapshots.
    * @returns `true` if the states are equal, `false` otherwise.
    */
-  public equals(snapshots: Snapshot[]): boolean {
+  public equals(snapshots: StateObject[]): boolean {
     for (let i = 0; i < snapshots.length; i++) {
       if (!this.snapshots[i].equals(snapshots[i])) {
         return false
@@ -96,191 +86,94 @@ export class SnapshotManager {
   }
 
   /**
-   * Returns a list of ranges owned by a specific address.
-   * @param address Address to query.
-   * @returns a list of owned ranges.
-   */
-  public getOwnedRanges(address: string): Range[] {
-    return this.ranges.filter((range) => {
-      return range.owner === address
-    })
-  }
-
-  /**
-   * Returns a list of snapshots owned by a specific address.
-   * @param address Address to query.
-   * @return a list of owned snapshots.
-   */
-  public getOwnedSnapshots(address: string): UntypedSnapshot[] {
-    return this.snapshots.map(UntypedSnapshot.from).filter((snapshot) => {
-      return snapshot.owner === address
-    })
-  }
-
-  /**
-   * Picks snapshots that cover a given amount.
-   * @param address An address.
-   * @param token A token address.
-   * @param amount Number of tokens being sent.
-   * @returns a list of snapshots.
-   */
-  public pickSnapshots(
-    address: string,
-    token: BigNum,
-    amount: BigNum
-  ): UntypedSnapshot[] {
-    const ownedSnapshots = this.getOwnedSnapshots(address)
-    return this.pickElements(ownedSnapshots, token, amount)
-  }
-
-  /**
-   * Picks the best ranges for a given transaction.
-   * @param address An address.
-   * @param token A token address.
-   * @param amount Number of tokens being sent.
-   * @returns a list of ranges to use for the transaction.
-   */
-  public pickRanges(address: string, token: BigNum, amount: BigNum): Range[] {
-    const ownedRanges = this.getOwnedRanges(address)
-    return this.pickElements(ownedRanges, token, amount)
-  }
-
-  /**
-   * Checks if a transaction would be valid given the local state.
-   * @param transaction A Transaction object.
-   * @returns `true` if the transaction is valid, `false` otherwise.
-   */
-  public validateTransaction(
-    transaction: serialization.models.UnsignedTransaction
-  ): boolean {
-    return transaction.transfers.every((transfer) => {
-      const snapshot = Snapshot.from({
-        ...transfer,
-        ...{
-          block: transaction.block,
-        },
-      })
-      return this.hasSnapshot(snapshot) && snapshot.valid
-    })
-  }
-
-  /**
-   * Applies a Deposit to the local state.
+   * Applies a deposit to the local state.
    * @param deposit Deposit to apply.
    */
-  public applyDeposit(deposit: Deposit): void {
-    const snapshot = Snapshot.from(deposit)
-    this.addSnapshot(snapshot)
+  public applyDeposit(deposit: StateObject): void {
+    this.addSnapshot(deposit)
   }
 
   /**
-   * Applies an Exit to the local state.
-   * @param {Exit} exit Exit to apply.
-   */
-  public applyExit(exit: Exit): void {
-    const snapshot = Snapshot.from(exit)
-    this.addSnapshot(snapshot)
-  }
-
-  /**
-   * Applies a sent transaction to the local state.
-   * This is a special case because we don't actually care
-   * if the state transition is valid when sending transactions.
+   * Applies a transaction to the local state.
    * @param transaction Transaction to apply.
    */
-  public applySentTransaction(
-    transaction: serialization.models.UnsignedTransaction
-  ): void {
-    const snapshots = transaction.transfers.map((transfer) => {
-      return Snapshot.from({
-        ...transfer,
-        ...{
-          block: transaction.block,
-        },
-      })
-    })
-
-    for (const snapshot of snapshots) {
-      this.addSnapshot(snapshot)
-    }
-  }
-
-  /**
-   * Applies an empty block.
-   * @param block The block number.
-   */
-  public applyEmptyBlock(block: number): void {
-    this.debug(`Applying empty block: ${block.toString(10)}`)
-    for (const snapshot of this.snapshots) {
-      if (snapshot.block.addn(1).eqn(block)) {
-        snapshot.block = snapshot.block.addn(1)
-      }
-    }
-  }
-
-  /**
-   * Applies a Transaction to the local state.
-   * @param transaction Transaction to apply.
-   */
-  public applyTransfer(transfer: ApplyableTransfer): void {
-    // Pull out all of the transfer components (implicit and explicit).
-    const components = this.getTransferComponents(transfer)
+  public applyTransaction(transaction: Transaction): void {
+    // Each state object explicitly refers to a specific range.
+    // However, each object also "implicitly" proves that
+    // other ranges *weren't* transferred.
+    // Here we break out the object into the explicit
+    // and implicit parts.
+    const components = this.getStateObjectComponents(transaction.newState)
 
     for (const component of components) {
-      this.applyTransferComponent(component)
+      this.applyStateObject(component, transaction.witness)
     }
   }
 
   /**
    * Applies a single TransferComponent to the local state.
-   * @param component Component to apply.
+   * @param stateObject Component to apply.
+   * @param witness Witness that makes the
    */
-  private applyTransferComponent(component: TransferComponent): void {
-    this.debug(`Applying transaction component: ${component.prettify()}`)
+  private async applyStateObject(
+    newState: StateObject,
+    witness: string
+  ): Promise<void> {
+    this.debug(`Applying transaction component: ${newState.prettify()}`)
 
     // Determine which snapshots overlap with this component.
-    const overlapping = this.snapshots.filter((snapshot) => {
-      return bnMax(snapshot.start, component.start).lt(
-        bnMin(snapshot.end, component.end)
+    const overlapping = this.snapshots.filter((oldState) => {
+      return bnMax(oldState.start, newState.start).lt(
+        bnMin(oldState.end, newState.end)
       )
     })
 
     // Apply this component to each snapshot that it overlaps.
-    for (const snapshot of overlapping) {
-      if (!this.validStateTransition(snapshot, component)) {
+    for (const oldState of overlapping) {
+      const bytecode = this.predicates[oldState.predicate]
+      const valid = await validStateTransition(
+        oldState.encode(),
+        newState.encode(),
+        witness,
+        bytecode
+      )
+      if (!valid) {
         continue
       }
 
       // Remove the old snapshot.
-      this.removeSnapshot(snapshot)
+      this.removeSnapshot(oldState)
 
       // Insert any newly created snapshots.
-      if (snapshot.start.lt(component.start)) {
+      if (oldState.start.lt(newState.start)) {
         this.addSnapshot(
-          new Snapshot({
-            ...snapshot,
+          new StateObject({
+            ...oldState,
             ...{
-              end: component.start,
+              end: newState.start,
             },
           })
         )
       }
-      if (snapshot.end.gt(component.end)) {
+      if (oldState.end.gt(newState.end)) {
         this.addSnapshot(
-          new Snapshot({
-            ...snapshot,
+          new StateObject({
+            ...oldState,
             ...{
-              start: component.end,
+              start: newState.end,
             },
           })
         )
       }
       this.addSnapshot(
-        new Snapshot({
-          block: component.block,
-          end: bnMin(snapshot.end, component.end),
-          owner: component.implicit ? snapshot.owner : component.recipient,
-          start: bnMax(snapshot.start, component.start),
+        new StateObject({
+          block: newState.block,
+          end: bnMin(oldState.end, newState.end),
+          predicate: newState.implicit
+            ? oldState.predicate
+            : newState.predicate,
+          start: bnMax(oldState.start, newState.start),
+          state: newState.implicit ? oldState.data : newState.data,
         })
       )
     }
@@ -290,7 +183,7 @@ export class SnapshotManager {
    * Inserts a snapshot into the local store of snapshots.
    * @param snapshot Snapshot to insert.
    */
-  private addSnapshot(snapshot: Snapshot): void {
+  private addSnapshot(snapshot: StateObject): void {
     if (!snapshot.valid) {
       throw new Error('Invalid snapshot')
     }
@@ -308,7 +201,7 @@ export class SnapshotManager {
    * Removes a snapshot from the local store of snapshots.
    * @param snapshot Snapshot to remove.
    */
-  private removeSnapshot(snapshot: Snapshot): void {
+  private removeSnapshot(snapshot: StateObject): void {
     this.snapshots = this.snapshots.filter((existing) => {
       return !existing.equals(snapshot)
     })
@@ -321,8 +214,8 @@ export class SnapshotManager {
    * @param snapshots A list of Snapshot objects.
    * @returns the merged list of Snapshot objects.
    */
-  private mergeSnapshots(snapshots: Snapshot[]): Snapshot[] {
-    const merged: Snapshot[] = []
+  private mergeSnapshots(snapshots: StateObject[]): StateObject[] {
+    const merged: StateObject[] = []
 
     snapshots.forEach((snapshot) => {
       let left
@@ -360,7 +253,7 @@ export class SnapshotManager {
    * @param snapshots A list of snapshots.
    * @returns the list with overlapping snapshots resolved.
    */
-  private removeOverlapping(snapshots: Snapshot[]): Snapshot[] {
+  private removeOverlapping(snapshots: StateObject[]): StateObject[] {
     // Sort by start, then end.
     snapshots.sort((a, b) => {
       if (!a.start.eq(b.start)) {
@@ -372,7 +265,7 @@ export class SnapshotManager {
 
     // Resolve any overlap by giving preference
     // to the snapshot with the highest block.
-    let reduced: Snapshot[] = []
+    let reduced: StateObject[] = []
     for (let snapshotA of snapshots) {
       // Because we already sorted by start and end,
       // we can easily catch overlap by seeing if the start
@@ -404,7 +297,7 @@ export class SnapshotManager {
           //         |xxx|   right remainder
           if (snapshotB.start.lt(snapshotA.start)) {
             reduced.push(
-              new Snapshot({
+              new StateObject({
                 ...snapshotB,
                 ...{
                   end: snapshotA.start,
@@ -414,7 +307,7 @@ export class SnapshotManager {
           }
           if (snapshotB.end.gt(snapshotA.end)) {
             reduced.push(
-              new Snapshot({
+              new StateObject({
                 ...snapshotB,
                 ...{
                   start: snapshotA.end,
@@ -425,7 +318,7 @@ export class SnapshotManager {
 
           // Add the new overlapping part.
           reduced.push(
-            new Snapshot({
+            new StateObject({
               ...snapshotA,
               ...{
                 end: bnMin(snapshotA.end, snapshotB.end),
@@ -437,7 +330,7 @@ export class SnapshotManager {
         // Check if the new snapshot went beyond the end of the old one.
         // If so, we have to continue the process with the remainder.
         if (snapshotA.end.gt(snapshotB.end)) {
-          snapshotA = new Snapshot({
+          snapshotA = new StateObject({
             ...snapshotA,
             ...{
               start: snapshotB.end,
@@ -459,126 +352,45 @@ export class SnapshotManager {
   }
 
   /**
-   * Merges and reduces a list of ranges.
-   * Combines any ranges that share the same start or end
-   * and also share the same owner.
-   * @param ranges A list of Range objects.
-   * @returns the merged list of Range objects.
-   */
-  private mergeRanges(ranges: Range[]): Range[] {
-    const orderRanges = (rangeA: Range, rangeB: Range): Range[] => {
-      if (rangeA.owner !== rangeB.owner || rangeA.end.lt(rangeB.start)) {
-        return [rangeA, rangeB]
-      } else if (rangeA.start.eq(rangeB.end)) {
-        rangeB.end = rangeA.end
-        return [rangeB]
-      } else if (rangeA.end.eq(rangeB.start)) {
-        rangeB.start = rangeA.start
-        return [rangeB]
-      } else {
-        return [rangeB, rangeA]
-      }
-    }
-
-    // Sort by address and then by start.
-    ranges.sort((a, b) => {
-      if (a.owner !== b.owner) {
-        return a.owner < b.owner ? -1 : 1
-      } else {
-        return a.start.sub(b.start).toNumber()
-      }
-    })
-
-    return ranges.reduce((merged: Range[], range) => {
-      const lastRange = merged.pop()
-      if (lastRange === undefined) {
-        return [range]
-      }
-      return merged.concat(orderRanges(lastRange, range))
-    }, [])
-  }
-
-  /**
-   * Determines if the local state contains a specific snapshot.
-   * @param snapshot A Snapshot object.
-   * @returns `true` if the state contains the snapshot, `false` otherwise.
-   */
-  private hasSnapshot(snapshot: Snapshot): boolean {
-    return this.snapshots.some((existing) => {
-      return existing.contains(snapshot)
-    })
-  }
-
-  /**
-   * Checks whether a transfer is a valid state transition from an existing
-   * snapshot.
-   * @param snapshot Existing snapshot object.
-   * @param transfer Transfer from one user to another.
-   * @returns `true` if the transition is valid, `false` otherwise.
-   */
-  private validStateTransition(
-    snapshot: Snapshot,
-    transfer: TransferComponent
-  ): boolean {
-    const validSender = transfer.implicit || snapshot.owner === transfer.sender
-    const validBlock = snapshot.block.addn(1).eq(transfer.block)
-    return validSender && validBlock
-  }
-
-  /**
    * Break down the list of TransferComponents that make up a Transfer.
    * @param transfer A Transfer object.
    * @returns a list of TransferComponents.
    */
-  private getTransferComponents(
-    transfer: serialization.models.Transfer
-  ): TransferComponent[] {
-    const serialized = new Transfer(transfer)
-    serialized.block = transfer.block
-    serialized.implicitStart = transfer.implicitStart
-    if (transfer.implicitStart === undefined) {
-      serialized.implicitStart = serialized.typedStart
-    }
-    serialized.implicitEnd = transfer.implicitEnd
-    if (transfer.implicitEnd === undefined) {
-      serialized.implicitEnd = serialized.typedEnd
-    }
-
+  private getStateObjectComponents(stateObject: StateObject): StateObject[] {
     const components = []
 
-    // TODO: Get rid of this.
     if (
-      serialized.typedStart === undefined ||
-      serialized.typedEnd === undefined ||
-      serialized.implicitStart === undefined ||
-      serialized.implicitEnd === undefined
+      stateObject.implicitStart === undefined ||
+      stateObject.implicitEnd === undefined
     ) {
-      throw new Error('Invalid Tranfer.')
+      return [stateObject]
     }
 
     // Left implicit component.
-    if (!serialized.typedStart.eq(serialized.implicitStart)) {
+    if (!stateObject.start.eq(stateObject.implicitStart)) {
       components.push(
-        TransferComponent.from({
-          ...serialized,
+        new StateObject({
+          ...stateObject,
           ...{
-            end: serialized.typedStart,
+            end: stateObject.start,
+            start: stateObject.implicitStart,
+
             implicit: true,
-            start: serialized.implicitStart,
           },
         })
       )
     }
 
     // Right implicit component.
-    if (!serialized.typedEnd.eq(serialized.implicitEnd)) {
+    if (!stateObject.end.eq(stateObject.implicitEnd)) {
       components.push(
-        TransferComponent.from({
-          ...serialized,
+        new StateObject({
+          ...stateObject,
           ...{
-            end: serialized.implicitEnd,
+            end: stateObject.implicitEnd,
+            start: stateObject.end,
+
             implicit: true,
-            start: serialized.typedEnd,
           },
         })
       )
@@ -586,74 +398,15 @@ export class SnapshotManager {
 
     // Transfer (non-implicit) component.
     components.push(
-      TransferComponent.from({
-        ...serialized,
+      new StateObject({
+        ...stateObject,
         ...{
-          end: serialized.typedEnd,
-          start: serialized.typedStart,
+          end: stateObject.end,
+          start: stateObject.start,
         },
       })
     )
 
     return components
-  }
-
-  /**
-   * Picks elements from a list that cover a given amount.
-   * @param arr List to pick from.
-   * @param token A token address.
-   * @param amount Number of tokens being sent.
-   * @returns a list of items that cover the amount.
-   */
-  private pickElements<T extends UntypedRange>(
-    arr: T[],
-    token: BigNum,
-    amount: BigNum
-  ): T[] {
-    const available = arr
-      .filter((item) => {
-        return item.token.eq(token)
-      })
-      .sort((a, b) => {
-        return b.end
-          .sub(b.start)
-          .sub(a.end.sub(a.start))
-          .toNumber()
-      })
-    const picked: T[] = []
-
-    while (amount.gtn(0)) {
-      const smallest = available.pop()
-      if (smallest === undefined) {
-        throw new Error(
-          'Address does not have enough balance to cover the amount.'
-        )
-      }
-
-      const smallestAmount = smallest.end.sub(smallest.start)
-
-      if (smallestAmount.lte(amount)) {
-        picked.push(smallest)
-        amount = amount.sub(smallestAmount)
-      } else {
-        picked.push({
-          ...smallest,
-          ...{
-            end: smallest.start.add(amount),
-          },
-        })
-        break
-      }
-    }
-
-    picked.sort((a, b) => {
-      if (!a.token.eq(b.token)) {
-        return a.token.sub(b.token).toNumber()
-      } else {
-        return a.start.sub(b.start).toNumber()
-      }
-    })
-
-    return picked
   }
 }
