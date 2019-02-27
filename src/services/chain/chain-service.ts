@@ -44,7 +44,11 @@ export class ChainService extends BaseService {
       await this.saveState(stateManager)
     })
 
-    await this.services.chaindb.addExitableEnds(deposits)
+    // Add exitable ends to database.
+    const ends = deposits.map((deposit) => {
+      return deposit.end
+    })
+    await this.services.chaindb.addExitableEnds(ends)
 
     for (const deposit of deposits) {
       this.log(
@@ -107,10 +111,7 @@ export class ChainService extends BaseService {
     const finalizedTxHashes = []
     for (const exit of completed) {
       try {
-        const exitableEnd = await this.services.chaindb.getExitableEnd(
-          exit.token,
-          exit.end
-        )
+        const exitableEnd = await this.services.chaindb.getExitableEnd(exit.end)
         const finalizeTx = await this.services.eth.contract.finalizeExit(
           exit.id.toString(10),
           exitableEnd,

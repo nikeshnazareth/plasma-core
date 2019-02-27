@@ -53,7 +53,7 @@ export class ChainDB extends BaseService {
     if (encoded === undefined) {
       throw new Error('Transaction not found in database.')
     }
-    return encoded
+    return Transaction.fromEncoded(encoded as string)
   }
 
   /**
