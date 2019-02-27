@@ -52,4 +52,66 @@ export class StateObject extends PrettyPrint {
       this.state === other.state
     )
   }
+
+  /**
+   * Breaks a StateObject into the implicit and
+   * explicit components that make it up.
+   * @param stateObject Object to break down
+   * @returns a list of StateObjects.
+   */
+  public components(): StateObject[] {
+    const components = []
+
+    if (
+      this.implicitStart === undefined ||
+      this.implicitEnd === undefined
+    ) {
+      return [this]
+    }
+
+    // Left implicit component.
+    if (!this.start.eq(this.implicitStart)) {
+      components.push(
+        new StateObject({
+          ...this,
+          ...{
+            end: this.start,
+            start: this.implicitStart,
+
+            implicit: true,
+          },
+        })
+      )
+    }
+
+    // Right implicit component.
+    if (!this.end.eq(this.implicitEnd)) {
+      components.push(
+        new StateObject({
+          ...this,
+          ...{
+            end: this.implicitEnd,
+            start: this.end,
+
+            implicit: true,
+          },
+        })
+      )
+    }
+
+    // Explicit component.
+    if (this.start.lt(this.end)) {
+      components.push(
+        new StateObject({
+          ...this,
+          ...{
+            end: this.end,
+            start: this.start,
+          },
+        })
+      )
+    }
+
+    return components
+  }
 }
