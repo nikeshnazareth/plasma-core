@@ -62,10 +62,7 @@ export class StateObject extends PrettyPrint {
   public components(): StateObject[] {
     const components = []
 
-    if (
-      this.implicitStart === undefined ||
-      this.implicitEnd === undefined
-    ) {
+    if (this.implicitStart === undefined || this.implicitEnd === undefined) {
       return [this]
     }
 

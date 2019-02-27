@@ -69,7 +69,12 @@ export class ProofService extends BaseService {
       let validStateObject = true
       for (const oldState of oldStates) {
         const bytecode = await this.getPredicateBytecode(oldState.predicate)
-        const valid = await validStateTransition(oldState.encode(), newState.encode(), witness, bytecode)
+        const valid = await validStateTransition(
+          oldState.encode(),
+          newState.encode(),
+          witness,
+          bytecode
+        )
 
         if (!valid) {
           validStateObject = false
