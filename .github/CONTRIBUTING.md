@@ -10,7 +10,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 1. Ensure that tests pass and code is lint free: `npm test`
 2. Update the README.md if any changes invalidate its current content.
 3. Include any tests for new functionality.
-4. Reference any revelant issues in your PR comment.
+4. Reference any relevant issues in your PR comment.
 
 ## Code of Conduct
 
