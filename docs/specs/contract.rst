@@ -109,7 +109,7 @@ For those interested in a formal writeup and safety proof for this scheme, it's 
 
 Per-coin Transaction Validity
 =============================
-An unintuitive property of our exit games worth that's noting up front is that a certain transaction might be "valid" for some of the coins in its range, but not for others.
+An unintuitive property of our exit games that's worth noting up front is that a certain transaction might be "valid" for some of the coins in its range, but not for others.
 
 For example, imagine that Alice sends ``(0, 100)`` to Bob, who in turn sends ``(50, 100)`` to Carol.
 Carol doesn't need to verify that Alice was the rightful owner of the full ``(0, 100)``.
